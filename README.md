@@ -5,4 +5,4 @@ Renaming/Ordering/Modifying Fotos using EXIF tool https://sno.phy.queensu.ca/~ph
 Developed for Panasonic Lumix TZ101.
 
 renamed to pattern:
-[AbrivationforPlace][YearMonthDay]_[Filenumber][SeriesType][SeriesSubNumber]_[FotoMode]
+[AbrivationforPlace][YearMonthDay]\_[Filenumber][SeriesType][SeriesSubNumber]\_[FotoMode]
