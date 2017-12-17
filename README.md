@@ -1,4 +1,4 @@
-# NamingFotosViaEXIF
+# EXIFnaming
 
 Renaming/Ordering/Modifying Fotos using EXIF tool https://sno.phy.queensu.ca/~phil/exiftool/.
 "exiftool.exe" has to be in same folder as python script.
