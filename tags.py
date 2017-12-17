@@ -23,6 +23,7 @@ import numpy as np
 from IPython import get_ipython
 get_ipython().magic('reload_ext autoreload')
 from tags_misc import * 
+from constants import *
 
 print('loaded collection of Tag operations')
 
@@ -482,7 +483,7 @@ def adjustDate(timeshift=[-1,0,0]):
         time=giveDatetime(Tagdict["Date/Time Original"][i])
         newtime=time+delta_t
         timestring=dateformating(newtime,"YYYY:MM:DD HH:mm:ss")
-        callExiftool(name, ["-DateTimeOriginal='"+timestring+"'"])
+        callExiftool(name, ["-DateTimeOriginal='"+timestring+"'"],True)
     
 def addLocation(country="Germany",city="Nueremberg",location="Location"):
 
@@ -495,7 +496,7 @@ def addLocation(country="Germany",city="Nueremberg",location="Location"):
         optionCity = "-City="+city
         optionLocation = "-Location="+location
         
-        callExiftool(name, [optionCountry,optionCity,optionLocation])
+        callExiftool(name, [optionCountry,optionCity,optionLocation],True)
 
 def nameToExif():
 
@@ -530,7 +531,7 @@ def nameToExif():
         options.append("-Title="+title)   
         options.append("-State="+state)   
         name=Tagdict["Directory"][i]+"\\"+Tagdict["File Name"][i]
-        callExiftool(name, options)
+        callExiftool(name, options,True)
         
 def test():
     print(inpath,subdir)   
