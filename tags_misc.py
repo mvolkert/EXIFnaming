@@ -5,7 +5,7 @@ collection of Tag tools
 '''
 
 __author__ = "Marco Volkert"
-__copyright__ = ("Copyright 2016, Marco Volkert")
+__copyright__ = ("Copyright 2017, Marco Volkert")
 __email__ = "marco.volkert24@gmx.de"       
 __status__ = "Development"
 
@@ -19,7 +19,7 @@ import numpy as np
 
 
 standardDir="F:\\Bilder\\bearbeitung\\"
-scriptDir=standardDir+"tags\\"
+savesDir=standardDir+"tags\\saves"
 
 TagNames=OrderedDict()
 
@@ -103,6 +103,14 @@ unknownTags[("Advanced Scene Mode","Unknown (0 7)") ]="4K"
 unknownTags[("Scene Mode","Unknown (60)")]="4K"
 unknownTags[("Scene Mode","Unknown (54)") ]="HS"
 
+SceneToTag=OrderedDict()
+SceneToTag['PANO']="Panorama"
+SceneToTag['NIGHT5']="night"
+SceneToTag['SUN1']="sunset"
+SceneToTag['SUN2']="sunset"
+SceneToTag['HDR']="HDR"
+SceneToTag['HDRT']="HDR"
+
 def getRecMode(filename="",Advanced_Scene_Mode="",Image_Quality="",Video_Frame_Rate=""):
     if any(ext in filename for ext in ['.mp4','.MP4']):
         #print(Advanced_Scene_Mode,Image_Quality)
@@ -171,12 +179,22 @@ dateformating.numberofDates=0
 
 def renameTemp(DirectoryList,FileNameList):
     if not len(DirectoryList)==len(FileNameList): 
-        print("error in renameTemp: len(DirectoryList)!=len(DirectoryList)")
+        print("error in renameTemp: len(DirectoryList)!=len(FileNameList)")
         return ""
     temppostfix="temp"
     for i in range(len(FileNameList)):
         os.rename(DirectoryList[i]+"\\"+FileNameList[i], DirectoryList[i]+"\\"+FileNameList[i]+temppostfix)
-    return temppostfix    
+    return temppostfix 
+
+def renameTemp2(inpath):
+    temppostfix="temp"
+    if not os.path.isdir(inpath): 
+        print('not found directory: '+inpath)
+        return 
+    for (dirpath, dirnames, filenames) in os.walk(inpath): 
+        for filename in filenames:
+            os.rename(dirpath+"\\"+filename, dirpath+"\\"+filename+temppostfix)
+    return temppostfix       
 
     
 def sortDict(indict={"foo":[1,3,2],"bar":[8,7,6]},keys=["foo"]):
@@ -225,7 +243,9 @@ def readTags(inpath=os.getcwd(),subdir=False,Fileext=".JPG"):
             if not Fileext.lower()==filename.lower()[filename.rfind("."):]: continue
             if not subdir and not inpath==dirpath:continue
             NFiles+=1
-    print("prozess",NFiles,"Files") 
+    print("prozess",NFiles,"Files in ",inpath,"subdir:",subdir) 
+    response = input("Do you want to continue ?")
+
     timebegin=dt.datetime.now()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not subdir and not inpath==dirpath:break
@@ -311,4 +331,47 @@ def getPostfix(filename,postfix_stay=True):
             elif np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1]): found=True
 
     return  postfix   
+    
+def moveFiles(filenames,path):
+    if os.path.isdir(path): 
+        print("directory already exists: ",path)
+        return 
+    if len(filenames) == 0: return
+    os.makedirs(path)
+    for filename in filenames:
+        os.rename(filename[0]+"\\"+filename[1], path+"\\"+filename[1]) 
+
+def moveFiles2(filenames,dirpath,newpath):
+    if len(filenames) == 0: return
+    os.makedirs(dirpath+"\\"+newpath, exist_ok=True)
+    for filename in filenames:                    
+        os.rename(dirpath+"\\"+filename, dirpath+"\\"+newpath+"\\"+filename)
+
+def moveFile(filename,dirpath,newpath):
+    os.makedirs(dirpath+"\\"+newpath, exist_ok=True)             
+    os.rename(dirpath+"\\"+filename, dirpath+"\\"+newpath+"\\"+filename)
+    
+def moveFile2(filename,oldpath,newpath):
+    os.makedirs(newpath, exist_ok=True)             
+    os.rename(oldpath+"\\"+filename, newpath+"\\"+filename)    
  
+def renameInPlace(dirpath,oldFilename,newFilename):            
+    os.rename(dirpath+"\\"+oldFilename, dirpath+"\\"+newFilename)
+  
+def searchDirByTime(dirDict,time,jump):
+    timedelta=dt.timedelta(seconds=jump)
+    for lasttime in list(dirDict.keys()):
+        timedelta_new=time-lasttime
+        timedelta_new_sec=timedelta_new.days*3600*24+timedelta_new.seconds
+        if timedelta_new_sec<timedelta.seconds: 
+            timedelta=timedelta_new
+            return dirDict[lasttime] 
+    return None   
+
+def callExiftool(name, options=[],override=True):
+
+    list=["exiftool", name] + options
+    if override: list.append("-overwrite_original_in_place")
+    proc = subprocess.Popen(list, stdout=subprocess.PIPE)#, shell=True 
+    (out, err) = proc.communicate()
+    

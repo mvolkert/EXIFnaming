@@ -2,7 +2,7 @@
 exec(open("./start.py").read())
     
 print(os.getcwd())
-os.chdir("F:\Bilder\bearbeitung\tags\pyScripts")
+os.chdir("E:\\Bilder\\bearbeitung\\tags")
 print(os.getcwd())
 
 import tags
