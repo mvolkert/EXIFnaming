@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-'''
+"""
 collection of Tag tools
-'''
+"""
 
 __author__ = "Marco Volkert"
 __copyright__ = "Copyright 2017, Marco Volkert"
@@ -146,7 +146,7 @@ def sortDict(indict={"foo": [1, 3, 2], "bar": [8, 7, 6]}, keys=["foo"]):
 
 
 def has_not_keys(indict, keys=[]):
-    if keys == []: return True
+    if not keys: return True
     for key in keys:
         if not key in indict:
             print(key + " not in dict")
@@ -172,6 +172,7 @@ def readTags(inpath=os.getcwd(), subdir=False, Fileext=".JPG"):
             NFiles += 1
     print("prozess", NFiles, "Files in ", inpath, "subdir:", subdir)
     response = input("Do you want to continue ?")
+    print(response)
 
     timebegin = dt.datetime.now()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -226,8 +227,8 @@ def readTags(inpath=os.getcwd(), subdir=False, Fileext=".JPG"):
     return outdict
 
 
-def readTag_fromFile(inpath=os.getcwd(), subdir=False, Fileext=".JPG"):
-    '''not tested'''
+def readTag_fromFile(inpath=os.getcwd(), Fileext=".JPG"):
+    """not tested"""
     dirname = scriptDir + inpath.replace(standardDir, '')
     if not os.path.isdir(dirname):  os.makedirs(dirname)
     Tagdict = np.load(dirname + "\\Tags" + Fileext)["Tagdict"].item()
@@ -304,7 +305,6 @@ def searchDirByTime(dirDict, time, jump):
         timedelta_new = time - lasttime
         timedelta_new_sec = timedelta_new.days * 3600 * 24 + timedelta_new.seconds
         if timedelta_new_sec < timedelta.seconds:
-            timedelta = timedelta_new
             return dirDict[lasttime]
     return None
 

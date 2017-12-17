@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-'''
+"""
 collection of rename operations
-'''
+"""
 
 __author__ = "Marco Volkert"
 __copyright__ = "Copyright 2017, Marco Volkert"
@@ -42,7 +42,7 @@ def renameFolderCountMulti():
             renameFolderCount(dirname, 1)
 
 
-def renameIndexNorm(subpath=""):
+def renameIndexNorm(subpath="", write=False):
     import re
     if not subpath == "": subpath = "\\" + subpath
     inpath = renameIndexNorm.path + subpath
@@ -51,14 +51,17 @@ def renameIndexNorm(subpath=""):
     lastNameMain = ""
     lastNameMid = ""
     matchreg = r"^([-\w]+)_([0-9]+)_([0-9]+)"
-    temppostfix = renameTemp2(inpath)
+    if write: temppostfix = renameTemp2(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         for filename in filenames:
             match = re.search(matchreg, filename)
-            if not match: continue
+            if not match:
+                print("no match", dirpath, filename)
+                newFilename = filename[:filename.rfind(".")] + ".jpg"
+                if write: renameInPlace(dirpath, filename, newFilename)
+                continue
             nameMain = match.group(1)
             nameMid = match.group(2)
-            nameEnd = match.group(3)
             if not nameMain == lastNameMain:
                 dirCounter = 1
                 fileCounter = 1
@@ -68,7 +71,7 @@ def renameIndexNorm(subpath=""):
             else:
                 fileCounter += 1
             newFilename = nameMain + "_%02d_%02d" % (dirCounter, fileCounter) + ".jpg"
-            renameInPlace(dirpath, filename, newFilename)
+            if write: renameInPlace(dirpath, filename, newFilename)
             lastNameMain = nameMain
             lastNameMid = nameMid
 
@@ -96,7 +99,6 @@ def renameIndexNorm2(subpath="", name="", start=1, write=False):
                 if write: renameInPlace(dirpath, filename, newFilename)
                 continue
             nameMid = match.group(1)
-            nameEnd = match.group(2)
             if not nameMid == lastNameMid:
                 dirCounter += 1
                 fileCounter = 1
@@ -106,12 +108,6 @@ def renameIndexNorm2(subpath="", name="", start=1, write=False):
             print(dirpath, newFilename)
             if write: renameInPlace(dirpath, filename, newFilename)
             lastNameMid = nameMid
-    # for (dirpath, dirnames, filenames) in os.walk(inpath):
-    # for filename in filenames:
-    # if "jpg"+temppostfix in filename[filename.rfind("."):]:
-    #    newFilename=filename[:filename.rfind(".")]+".jpg"
-    # renameInPlace(dirpath,filename,newFilename)
-
     return dirCounter
 
 

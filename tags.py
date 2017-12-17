@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-'''
+"""
 collection of Tag operations
 works with: www.sno.phy.queensu.ca/~phil/exiftool/
 exiftool.exe has to be in the same folder
-'''
+"""
 
 __author__ = "Marco Volkert"
 __copyright__ = "Copyright 2017, Marco Volkert"
@@ -97,9 +97,9 @@ def readTag(dirpath, filename):
 
 def rename_PM(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, easymode=False, onlyprint=False,
               postfix_stay=True, Fileext=".JPG", Fileext_video=".MP4", Fileext_Raw=".Raw"):
-    rename(inpath, Prefix, dateformat, name, startindex, digits, easymode, onlyprint, postfix_stay, Fileext,
+    rename(Prefix, dateformat, name, startindex, digits, easymode, onlyprint, postfix_stay, Fileext,
            Fileext_Raw)
-    rename(inpath, Prefix, dateformat, name, 1, 2, easymode, onlyprint, postfix_stay, Fileext_video, Fileext_Raw)
+    rename(Prefix, dateformat, name, 1, 2, easymode, onlyprint, postfix_stay, Fileext_video, Fileext_Raw)
 
 
 def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, easymode=False, onlyprint=False,
@@ -132,7 +132,6 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
     # initialize
     leng = len(list(Tagdict.values())[0])
     counter = startindex - 1
-    mp4counter = 0
     digits = str(digits)
     time_old = giveDatetime()
     outstring = ""
@@ -193,7 +192,7 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
 
         elif any(Fileext == ext for ext in ['.mp4', '.MP4']):
             counter += 1
-            counterString = "_M" + ("%02d") % counter
+            counterString = "_M" + "%02d" % counter
             if not easymode:
                 recmode = getRecMode(filename, Tagdict["Advanced Scene Mode"][i], Tagdict["Image Quality"][i],
                                      Tagdict["Video Frame Rate"][
@@ -263,7 +262,7 @@ def renameBack(Fileext=".JPG"):
 
 
 def order(outpath=None):
-    if outpath == None:
+    if outpath is None:
         outpath = inpath
     elif not ":\\" in outpath:
         outpath = standardDir + outpath
@@ -311,8 +310,6 @@ def order(outpath=None):
     dirNameDict_lasttime[time_old] = daystring + "%02d" % dircounter
     moveFiles(filenames, outpath + "\\" + daystring + "%02d" % dircounter)
     moveFiles(filenames_S, outpath + "\\" + daystring + "%02d_S" % dircounter)
-    filenames = []
-    filenames_S = []
 
     Tagdict_mp4 = readTags(inpath, subdir, Fileext=".MP4")
     if has_not_keys(Tagdict_mp4, keys=["Directory", "File Name", "Date/Time Original"]): return
@@ -383,7 +380,6 @@ def filterSeries():
     [0-9]+B[1-7]
     [0-9]+S[0-9]+
     '''
-    BList = []
     skipdirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single"]
 
     print(inpath)
@@ -466,7 +462,6 @@ def renameHDR(mode="HDRT", ext=".jpg", folder="HDR"):
                         # print(filename_new)
                 os.rename(dirpath + "\\" + filename, dirpath + "\\" + filename_new)
             else:
-                match = re.search(matchreg2, filename)
                 print("no match:", filename)
 
 
@@ -476,9 +471,6 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
 
     # Import Pillow:
     from PIL import Image
-
-    if not ":\\" in inpath: inpath = standardDir + inpath
-    if not os.path.isdir(inpath): return
 
     NFiles = 0
     timebegin = dt.datetime.now()
@@ -566,12 +558,9 @@ def nameToExif():
                 else:
                     id += subname + "_"
                     if np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1]): found = True
-        if (id != ''): id = id[:-1]
-        if (title != ''): title = title[:-1]
-        options = []
-        options.append("-ImageDescription=" + id)
-        options.append("-Title=" + title)
-        options.append("-State=" + state)
+        if id != '': id = id[:-1]
+        if title != '': title = title[:-1]
+        options = ["-ImageDescription=" + id, "-Title=" + title, "-State=" + state]
         name = Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i]
         callExiftool(name, options, True)
 
