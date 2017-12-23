@@ -11,13 +11,12 @@ __status__ = "Development"
 
 import subprocess
 import os
-import shutil
 from collections import OrderedDict
 import datetime as dt
 import operator
 import numpy as np
 
-from constants import unknownTags
+from constants import unknownTags,standardDir,savesDir
 
 
 def getRecMode(filename="", Advanced_Scene_Mode="", Image_Quality="", Video_Frame_Rate=""):
@@ -71,8 +70,6 @@ def dateformating(time, dateformat):
         yfirst = 0
     else:
         yfirst = 4 - dateformat.count('Y')
-    # m="%02d"%time.month
-    # d="%02d"%time.day
     y = dateformat.count('Y')
     m = dateformat.count('M')
     d = dateformat.count('D')
@@ -85,11 +82,8 @@ def dateformating(time, dateformat):
     if m > 0: daystring = daystring.replace('M' * m, ("%0" + str(m) + "d") % time.month)
     if d > 0: daystring = daystring.replace('D' * d, ("%0" + str(d) + "d") % time.day)
     if n > 0:
-        # print("1",dateformating.numberofDates)
         dateformating.numberofDates += 1
-        # print("2",dateformating.numberofDates)
         daystring = daystring.replace('N' * n, ("%0" + str(n) + "d") % dateformating.numberofDates)
-    # print("3",daystring)
     if h > 0: daystring = daystring.replace('H' * h, ("%0" + str(h) + "d") % time.hour)
     if min > 0: daystring = daystring.replace('m' * min, ("%0" + str(min) + "d") % time.minute)
     if sec > 0: daystring = daystring.replace('s' * sec, ("%0" + str(sec) + "d") % time.second)
@@ -109,7 +103,7 @@ def renameTemp(DirectoryList, FileNameList):
     return temppostfix
 
 
-def renameTemp2(inpath):
+def renameEveryTemp(inpath):
     temppostfix = "temp"
     if not os.path.isdir(inpath):
         print('not found directory: ' + inpath)
@@ -120,7 +114,13 @@ def renameTemp2(inpath):
     return temppostfix
 
 
-def sortDict(indict={"foo": [1, 3, 2], "bar": [8, 7, 6]}, keys=["foo"]):
+def sortDict(indict, keys):
+    """example:
+    sort indict by keys
+    indict={"foo": [1, 3, 2], "bar": [8, 7, 6]}
+    keys=["foo"]
+    """
+
     indictkeys = list(indict.keys())
     cols = [indictkeys.index(key) for key in keys]
     lists = []
@@ -145,7 +145,7 @@ def sortDict(indict={"foo": [1, 3, 2], "bar": [8, 7, 6]}, keys=["foo"]):
     return outdict
 
 
-def has_not_keys(indict, keys=[]):
+def has_not_keys(indict, keys):
     if not keys: return True
     for key in keys:
         if not key in indict:
@@ -170,7 +170,7 @@ def readTags(inpath=os.getcwd(), subdir=False, Fileext=".JPG"):
             if not Fileext.lower() == filename.lower()[filename.rfind("."):]: continue
             if not subdir and not inpath == dirpath: continue
             NFiles += 1
-    print("prozess", NFiles, "Files in ", inpath, "subdir:", subdir)
+    print("process", NFiles, "Files in ", inpath, "subdir:", subdir)
     response = input("Do you want to continue ?")
     print(response)
 
@@ -229,28 +229,18 @@ def readTags(inpath=os.getcwd(), subdir=False, Fileext=".JPG"):
 
 def readTag_fromFile(inpath=os.getcwd(), Fileext=".JPG"):
     """not tested"""
-    dirname = scriptDir + inpath.replace(standardDir, '')
+    dirname = savesDir + inpath.replace(standardDir, '')
     if not os.path.isdir(dirname):  os.makedirs(dirname)
     Tagdict = np.load(dirname + "\\Tags" + Fileext)["Tagdict"].item()
-    if isfile(Tagdict["Directory"][0] + "\\" + Tagdict["File Name"][0]):
+    if os.path.isfile(Tagdict["Directory"][0] + "\\" + Tagdict["File Name"][0]):
         print("load")
-    elif isfile(Tagdict["Directory"][0] + "\\" + Tagdict["File Name new"][0]):
+    elif os.path.isfile(Tagdict["Directory"][0] + "\\" + Tagdict["File Name new"][0]):
         Tagdict["File Name"] = list(Tagdict["File Name new"])
         Tagdict["File Name new"] = []
         print("switch")
     else:
         print("load again")
     return Tagdict
-
-
-def getPostfix_old(filename):
-    postfix = ''
-    filename_splited = filename.split('_')
-    if postfix_stay and len(filename_splited) > 1:
-        post = filename_splited[-1]
-        post2 = post[post.rfind(".") - 1]
-        if not np.chararray.isdigit(post2): postfix = "_" + post[:post.rfind(".")]
-    return postfix
 
 
 def getPostfix(filename, postfix_stay=True):
@@ -278,19 +268,19 @@ def moveFiles(filenames, path):
         os.rename(filename[0] + "\\" + filename[1], path + "\\" + filename[1])
 
 
-def moveFiles2(filenames, dirpath, subpath):
+def moveFilesToSubpath(filenames, dirpath, subpath):
     if len(filenames) == 0: return
     os.makedirs(dirpath + "\\" + subpath, exist_ok=True)
     for filename in filenames:
         os.rename(dirpath + "\\" + filename, dirpath + "\\" + subpath + "\\" + filename)
 
 
-def moveFile(filename, dirpath, subpath):
+def moveToSubpath(filename, dirpath, subpath):
     os.makedirs(dirpath + "\\" + subpath, exist_ok=True)
     os.rename(dirpath + "\\" + filename, dirpath + "\\" + subpath + "\\" + filename)
 
 
-def moveFile2(filename, oldpath, newpath):
+def move(filename, oldpath, newpath):
     os.makedirs(newpath, exist_ok=True)
     os.rename(oldpath + "\\" + filename, newpath + "\\" + filename)
 
@@ -310,8 +300,8 @@ def searchDirByTime(dirDict, time, jump):
 
 
 def callExiftool(name, options=[], override=True):
-    list = ["exiftool", name] + options
-    if override: list.append("-overwrite_original_in_place")
-    proc = subprocess.Popen(list, stdout=subprocess.PIPE)  # , shell=True
+    args = ["exiftool", name] + options
+    if override: args.append("-overwrite_original_in_place")
+    proc = subprocess.Popen(args, stdout=subprocess.PIPE)  # , shell=True
     (out, err) = proc.communicate()
     return str(out)

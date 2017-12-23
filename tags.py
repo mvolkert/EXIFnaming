@@ -11,13 +11,7 @@ __copyright__ = "Copyright 2017, Marco Volkert"
 __email__ = "marco.volkert24@gmx.de"
 __status__ = "Development"
 
-import subprocess
-import os
 import shutil
-from collections import OrderedDict
-import datetime as dt
-import operator
-import numpy as np
 
 from tags_misc import *
 from constants import *
@@ -44,7 +38,7 @@ def setInpath(path=os.getcwd(), modifySubdirs=True):
     print(inpath, "modifySubdirs:", subdir)
 
 
-def printinfo(tagGroupNames=[], Fileext=".JPG"):
+def printinfo(tagGroupNames=(), Fileext=".JPG"):
     outdict = readTags(inpath, subdir, Fileext)
     for tagGroupName in TagNames:
         if not tagGroupNames == [] and not tagGroupName in tagGroupNames: continue
@@ -65,7 +59,7 @@ def printinfo(tagGroupNames=[], Fileext=".JPG"):
                 outstring += "%-30s\t" % val[i]
             outstring += "\n"
 
-        dirname = scriptDir + inpath.replace(standardDir, '')
+        dirname = savesDir + inpath.replace(standardDir, '')
         if not os.path.isdir(dirname):  os.makedirs(dirname)
         ofile = open(dirname + "\\tags_" + tagGroupName + ".txt", 'a')
         ofile.write(outstring)
@@ -256,8 +250,7 @@ def renameBack(Fileext=".JPG"):
         filename = Tagdict["File Name new"][i]
         if not os.path.isfile(Tagdict["Directory"][i] + "\\" + filename): continue
         filename_old = Tagdict["File Name"][i]
-        os.rename(Tagdict["Directory"][i] + "\\" + filename + temppostfix,
-                  Tagdict["Directory"][i] + "\\" + filename_old)
+        renameInPlace(Tagdict["Directory"][i],filename + temppostfix,filename_old)
         Tagdict["File Name new"][i], Tagdict["File Name"][i] = Tagdict["File Name"][i], Tagdict["File Name new"][i]
 
 
@@ -322,7 +315,7 @@ def order(outpath=None):
             dirName = searchDirByTime(dirNameDict_firsttime, time, bigJump)
 
         if dirName:
-            moveFile2(Tagdict_mp4["File Name"][i], Tagdict_mp4["Directory"][i], outpath + "\\" + dirName + "_mp4")
+            move(Tagdict_mp4["File Name"][i], Tagdict_mp4["Directory"][i], outpath + "\\" + dirName + "_mp4")
 
 
 def detect3D():
@@ -331,10 +324,9 @@ def detect3D():
                     keys=["Directory", "File Name", "Date/Time Original", "Burst Mode", "Sequence Number"]): return
     time_old = giveDatetime()
     filenames = []
-    dir = "\\3D"
+    dir3D = "\\3D"
     for i in range(len(list(Tagdict.values())[0])):
-        if not os.path.isdir(Tagdict["Directory"][i] + dir):
-            os.makedirs(Tagdict["Directory"][i] + dir)
+        os.makedirs(Tagdict["Directory"][i] + dir3D, exist_ok=True)
         is_series = Tagdict["Burst Mode"][i] == "On"
         SequenceNumber = int(Tagdict["Sequence Number"][i])
         if is_series or SequenceNumber > 1: continue
@@ -346,8 +338,8 @@ def detect3D():
             filenames.append(Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i])
         elif len(filenames) > 1:
             for filename in filenames:
-                if os.path.isfile(filename.replace(Tagdict["Directory"][i], Tagdict["Directory"][i] + dir)): continue
-                shutil.copy2(filename, Tagdict["Directory"][i] + dir)
+                if os.path.isfile(filename.replace(Tagdict["Directory"][i], Tagdict["Directory"][i] + dir3D)): continue
+                shutil.copy2(filename, Tagdict["Directory"][i] + dir3D)
             filenames = []
             # shutil.copy2("filename","destdir")
     # exclude is_series and SequenceNumber>1
@@ -358,7 +350,6 @@ def detectSunsetLig():
     Tagdict = readTags(inpath, subdir)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Scene Mode"]): return
     dir = "\\Sunset"
-    time_old = giveDatetime()
     for i in range(len(list(Tagdict.values())[0])):
         if not os.path.isdir(Tagdict["Directory"][i] + dir):
             os.makedirs(Tagdict["Directory"][i] + dir)
@@ -383,40 +374,38 @@ def filterSeries():
     skipdirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single"]
 
     print(inpath)
-    # print(skipdirs)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         print(dirpath, len(dirnames), len(filenames))
         if not subdir and not inpath == dirpath: continue
         if any([skipdir == dirpath.split("\\")[-1] for skipdir in skipdirs]): continue
-        # dir=dirpath.replace(inpath,"")+"\\"
         counter_old = "000"
         counter2_old = "0"
         BList = []
         for filename in filenames:
             # example: filename="MS17-4_552B2.JPG"
             if not ".JPG" in filename: continue
-            match = re.search("_([0-9]+)B([1-7])", filename)
+            match = re.search('_([0-9]+)B([1-7])', filename)
             if match:
                 counter, counter2 = match.groups()
                 if not counter == counter_old:
-                    moveFiles2(BList, dirpath, "B" + counter2_old)
+                    moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
                     BList = []
                 BList.append(filename)
             else:
-                moveFiles2(BList, dirpath, "B" + counter2_old)
+                moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
                 BList = []
-                match = re.search("_([0-9]+)S([0-9]+)", filename)
+                match = re.search('_([0-9]+)S([0-9]+)', filename)
                 if match:
                     counter, counter2 = match.groups()
-                    moveFile(filename, dirpath, "S")
+                    moveToSubpath(filename, dirpath, "S")
 
                 else:
                     counter = "000"
                     counter2 = "0"
-                    moveFile(filename, dirpath, "single")
+                    moveToSubpath(filename, dirpath, "single")
             counter_old = counter
             counter2_old = counter2
-        moveFiles2(BList, dirpath, "B" + counter2_old)
+        moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
 
     return
 
@@ -430,7 +419,7 @@ def filterSeries_back():
         if not any([skipdir in dirpath for skipdir in skipdirs]): continue
         for filename in filenames:
             if not ".JPG" in filename: continue
-            os.rename(dirpath + "\\" + filename, os.path.dirname(dirpath) + "\\" + filename)
+            move(filename,dirpath,os.path.dirname(dirpath))
             # os.path.delete(os.path.dirname(dirpath))
 
 
@@ -452,7 +441,6 @@ def renameHDR(mode="HDRT", ext=".jpg", folder="HDR"):
                 match = re.search(matchreg2, filename)
             if match:
                 filename_new = match.group(1) + "_" + match.group(2) + "_" + mode + match.group(3) + ext
-                # print(match.groups())
                 if os.path.isfile(dirpath + "\\" + filename_new):
                     i = 2
                     while os.path.isfile(dirpath + "\\" + filename_new):
@@ -460,7 +448,7 @@ def renameHDR(mode="HDRT", ext=".jpg", folder="HDR"):
                             3) + ext
                         i += 1
                         # print(filename_new)
-                os.rename(dirpath + "\\" + filename, dirpath + "\\" + filename_new)
+                renameInPlace(dirpath,filename,filename_new)
             else:
                 print("no match:", filename)
 
@@ -505,7 +493,7 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
     print("rotated %3d files in %2d min, %2d sec" % (NFiles, int(timedelta.seconds / 60), timedelta.seconds % 60))
 
 
-def adjustDate(timeshift=[-1, 0, 0]):
+def adjustDate(timeshift=(-1, 0, 0)):
     delta_t = dt.timedelta(hours=timeshift[0], minutes=timeshift[1], seconds=timeshift[2])
     Tagdict = readTags(inpath, subdir)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
@@ -532,8 +520,6 @@ def addLocation(country="Germany", city="Nueremberg", location="Location"):
 
 
 def nameToExif():
-    import re
-
     Tagdict = readTags(inpath, subdir)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
