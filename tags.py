@@ -12,9 +12,13 @@ __email__ = "marco.volkert24@gmx.de"
 __status__ = "Development"
 
 import shutil
+import datetime as dt
 
 from tags_misc import *
 from constants import *
+from fileop import *
+from decode import readTags, has_not_keys, callExiftool
+from date import giveDatetime, newdate, dateformating,searchDirByTime
 
 # for reloading
 from IPython import get_ipython
@@ -22,7 +26,7 @@ from IPython import get_ipython
 get_ipython().magic('reload_ext autoreload')
 print('loaded collection of Tag operations')
 
-inpath = standardDir
+inpath = getStandardDir()
 modifySubdirs = True
 
 
@@ -58,10 +62,6 @@ def printinfo(tagGroupNames=(), Fileext=".JPG"):
 
         dirname = concatPathToSave(inpath)
         writeToFile(dirname + "\\tags_" + tagGroupName + ".txt", outstring)
-
-def readTag(dirpath, filename):
-    out = callExiftool(dirpath + "\\" + filename, [], False)
-    return decodeTags(out)
 
 
 def rename_PM(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, easymode=False, onlyprint=False,
@@ -138,24 +138,7 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
                 else:
                     last_SequenceNumber = 1e4  # SequenceNumber==0 -> no sequence -> high possible value such that even sequences with deleted first pictures can be registered
 
-                # check Modes
-                is_series = Tagdict["Burst Mode"][i] == "On"
-                is_Bracket = not Tagdict["Bracket Settings"][i] == "No Bracket"
-                is_stopmotion = Tagdict["Timer Recording"][i] == "Stop-motion Animation"
-                is_timelapse = Tagdict["Timer Recording"][i] == "Time Lapse"
-                is_4K = Tagdict["Image Quality"][i] == '8.2'
-
-                # Name Sequence Modes
-                if is_Bracket:
-                    sequenceString += "B%d" % SequenceNumber
-                elif is_series:
-                    sequenceString += "S%02d" % SequenceNumber
-                elif is_stopmotion:
-                    sequenceString += "SM%03d" % SequenceNumber
-                elif is_timelapse:
-                    sequenceString += "TL%03d" % SequenceNumber
-                elif is_4K:
-                    sequenceString += "4KBSF"
+                sequenceString = getSequenceString(SequenceNumber,Tagdict, i)
 
             counterString = ("_%0" + digits + "d") % counter
 
@@ -163,23 +146,12 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
             counter += 1
             counterString = "_M" + "%02d" % counter
             if not easymode:
-                recmode = getRecMode(filename, Tagdict["Advanced Scene Mode"][i], Tagdict["Image Quality"][i],
-                                     Tagdict["Video Frame Rate"][
-                                         i])  # Video Frame Rate is deleted in mergeDicts, even interesting: search for standbilder aus 4K via Megapixels
+                recmode = getRecMode(filename, Tagdict,i)
                 if not recmode == "": newpostfix += "_" + recmode
 
         if not easymode:
             # Name Scene Modes
-            is_creative = Tagdict["Scene Mode"][i] == "Creative Control" or Tagdict["Scene Mode"][i] == "Digital Filter"
-            is_scene = not is_creative and not Tagdict["Scene Mode"][i] == "Off" and Tagdict["Advanced Scene Mode"][
-                i] in SceneShort
-            is_HDR = not Tagdict["HDR"][i] == "Off"
-            if is_scene:
-                newpostfix += "_" + SceneShort[Tagdict["Advanced Scene Mode"][i]]
-            elif is_creative:
-                newpostfix += "_" + KreativeShort[Tagdict["Advanced Scene Mode"][i]]
-            elif is_HDR:
-                newpostfix += "_HDR"
+            newpostfix = getMode(Tagdict,i)
             if newpostfix in postfix:
                 newpostfix = postfix
             else:

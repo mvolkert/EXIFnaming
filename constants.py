@@ -1,20 +1,4 @@
 from collections import OrderedDict
-import os
-
-def getStandardDir():
-    path = os.path.realpath(__file__)
-    for i in range(3):
-        path=os.path.dirname(path)
-    return path + "\\"
-
-def getSavesDir():
-    path = os.path.realpath(__file__)
-    for i in range(2):
-        path=os.path.dirname(path)
-    return path + "\\saves\\"
-
-standardDir=getStandardDir()
-savesDir=getSavesDir()
 
 TagNames=OrderedDict()
 
