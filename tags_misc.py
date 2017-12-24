@@ -67,31 +67,27 @@ newdate.dateswitch = False
 
 
 def dateformating(time, dateformat):
-    if dateformat.count('Y') > 4:
-        yfirst = 0
-    else:
-        yfirst = 4 - dateformat.count('Y')
-    y = dateformat.count('Y')
-    m = dateformat.count('M')
-    d = dateformat.count('D')
-    n = dateformat.count('N')
-    h = dateformat.count('H')
-    min = dateformat.count('m')
-    sec = dateformat.count('s')
-    daystring = dateformat
-    if y > 0: daystring = daystring.replace('Y' * y, str(time.year)[yfirst:])
-    if m > 0: daystring = daystring.replace('M' * m, ("%0" + str(m) + "d") % time.month)
-    if d > 0: daystring = daystring.replace('D' * d, ("%0" + str(d) + "d") % time.day)
-    if n > 0:
-        dateformating.numberofDates += 1
-        daystring = daystring.replace('N' * n, ("%0" + str(n) + "d") % dateformating.numberofDates)
-    if h > 0: daystring = daystring.replace('H' * h, ("%0" + str(h) + "d") % time.hour)
-    if min > 0: daystring = daystring.replace('m' * min, ("%0" + str(min) + "d") % time.minute)
-    if sec > 0: daystring = daystring.replace('s' * sec, ("%0" + str(sec) + "d") % time.second)
-    return daystring
 
+    y = dateformat.count('Y')
+    if y > 0: dateformat = dateformat.replace('Y' * y, str(time.year)[-y:])
+    if dateformat.count('N') > 0:
+        dateformating.numberofDates += 1
+        dateformat = replaceDateID(dateformat, 'N', dateformating.numberofDates)
+    dateformat = replaceDateID(dateformat,'M',time.month)
+    dateformat = replaceDateID(dateformat, 'D', time.day)
+    dateformat = replaceDateID(dateformat, 'H', time.hour)
+    dateformat = replaceDateID(dateformat, 'm', time.minute)
+    dateformat = replaceDateID(dateformat, 's', time.second)
+    return dateformat
 
 dateformating.numberofDates = 0
+
+
+def replaceDateID(dateformat,search_str,value):
+    count = dateformat.count(search_str)
+    if count==0: return dateformat
+    return dateformat.replace(search_str * count, ("%0" + str(count) + "d") % value)
+
 
 
 def renameTemp(DirectoryList, FileNameList):
@@ -288,7 +284,7 @@ def getPostfix(filename, postfix_stay=True):
     return postfix
 
 
-def moveFiles(filenames: str, path: str):
+def moveFiles(filenames, path: str):
     if os.path.isdir(path):
         print("directory already exists: ", path)
         return
@@ -358,3 +354,9 @@ def writeToFile(path,content):
 
 def removeIfEmtpy(dirpath):
     if not os.listdir(dirpath): os.rmdir(dirpath)
+
+def getPath(Tagdict,i):
+    if not all([x in Tagdict for x in ["Directory","File Name"]]):
+        print("Directory or File Name is not in Tagdict")
+        return ""
+    return Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i]

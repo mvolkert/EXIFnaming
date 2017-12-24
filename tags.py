@@ -291,6 +291,9 @@ def order(outpath=None):
 
 
 def detect3D():
+    """
+    not yet fully implemented
+    """
     Tagdict = readTags(inpath, modifySubdirs)
     if has_not_keys(Tagdict,
                     keys=["Directory", "File Name", "Date/Time Original", "Burst Mode", "Sequence Number"]): return
@@ -426,10 +429,11 @@ def renameHDR(mode="HDRT", ext=".jpg", folder="HDR"):
 
 
 def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
-    # Rotation: Rotate 90 CW or Rotate 270 CW
-    # Rotate back
+    """
+    Rotation: Rotate 90 CW or Rotate 270 CW
+    Rotate back
+    """
 
-    # Import Pillow:
     from PIL import Image
 
     NFiles = 0
@@ -471,11 +475,10 @@ def adjustDate(timeshift=(-1, 0, 0)):
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     for i in range(leng):
-        name = Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i]
         time = giveDatetime(Tagdict["Date/Time Original"][i])
         newtime = time + delta_t
         timestring = dateformating(newtime, "YYYY:MM:DD HH:mm:ss")
-        callExiftool(name, ["-DateTimeOriginal='" + timestring + "'"], True)
+        callExiftool(getPath(Tagdict,i), ["-DateTimeOriginal='" + timestring + "'"], True)
 
 
 def addLocation(country="", city="", location=""):
@@ -486,13 +489,12 @@ def addLocation(country="", city="", location=""):
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     for i in range(leng):
-        name = Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i]
         options=[]
         if country: options.append("-Country=" + country)
         if city: options.append("-City=" + city)
         if location: options.append("-Location=" + location)
 
-        callExiftool(name, options, True)
+        callExiftool(getPath(Tagdict,i), options, True)
 
 
 def nameToExif():
@@ -514,17 +516,17 @@ def nameToExif():
                 if found:
                     print(subname)
                     if subname in SceneToTag:
-                        state = SceneToTag[subname]
+                        state += SceneToTag[subname]
                     else:
                         title += subname + "_"
                 else:
                     id += subname + "_"
                     if np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1]): found = True
-        if id != '': id = id[:-1]
-        if title != '': title = title[:-1]
-        options = ["-ImageDescription=" + id, "-Title=" + title, "-State=" + state]
-        name = Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i]
-        callExiftool(name, options, True)
+        options=[]
+        if id: options.append("-ImageDescription=" + id[:-1])
+        if title: options.append("-Title=" + title[:-1])
+        if state: options.append("-State=" + state[:-1])
+        callExiftool(getPath(Tagdict,i), options, True)
 
 
 def test():
