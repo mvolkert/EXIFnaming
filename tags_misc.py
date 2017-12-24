@@ -147,10 +147,15 @@ def sortDict(indict, keys):
 
 def has_not_keys(indict, keys):
     if not keys: return True
+    notContains=[]
     for key in keys:
         if not key in indict:
+            notContains.append(key)
             print(key + " not in dict")
             return True
+    if notContains:         
+        print("dictonary of tags doesn't contain ",notContains)   
+        return True        
     return False
 
 
@@ -189,7 +194,7 @@ def readTags(inpath=os.getcwd(), subdir=False, Fileext=".JPG"):
             print("%4d tags extracted in " % len(out_split), dirpath.replace(inpath + "\\", ""))
         else:
             print("%4d tags extracted in " % 1, dirpath.replace(inpath + "\\", ""))
-        for tags in out_split:
+        for i,tags in enumerate(out_split):
             tagNamesDetected = []  # to check for multiple occurrences within one tag information
             for tag in tags.split("\\r\\n"):
                 try:
@@ -203,6 +208,9 @@ def readTags(inpath=os.getcwd(), subdir=False, Fileext=".JPG"):
                     tagNamesDetected.append(key)
                 if (key, val) in unknownTags: val = unknownTags[(key, val)]
                 outdict.setdefault(key, []).append(val)
+                #todo: refactor to local dict which gets concat to outdict
+            if not date_org_name in tagNamesDetected:
+                print("error: " + date_org_name + " not in",tags)
 
     if len(outdict) == 0: return outdict
     keys = list(outdict.keys())
