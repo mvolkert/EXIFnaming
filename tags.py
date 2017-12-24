@@ -23,20 +23,20 @@ get_ipython().magic('reload_ext autoreload')
 print('loaded collection of Tag operations')
 
 inpath = standardDir
-subdir = True
+modifySubdirs = True
 
 
-def setInpath(path=os.getcwd(), modifySubdirs=True):
+def setInpath(path=os.getcwd(), subdirs=True):
     path = concatPathToStandard(path)
     if not path: return
-    global inpath, subdir
+    global inpath, modifySubdirs
     inpath = path
-    subdir = modifySubdirs
-    print(inpath, "modifySubdirs:", subdir)
+    modifySubdirs = subdirs
+    print(inpath, "modifySubdirs:", modifySubdirs)
 
 
 def printinfo(tagGroupNames=(), Fileext=".JPG"):
-    outdict = readTags(inpath, subdir, Fileext)
+    outdict = readTags(inpath, modifySubdirs, Fileext)
     for tagGroupName in TagNames:
         if not tagGroupNames == [] and not tagGroupName in tagGroupNames: continue
         outstring = ""
@@ -56,12 +56,8 @@ def printinfo(tagGroupNames=(), Fileext=".JPG"):
                 outstring += "%-30s\t" % val[i]
             outstring += "\n"
 
-        dirname = savesDir + inpath.replace(standardDir, '')
-        if not os.path.isdir(dirname):  os.makedirs(dirname)
-        ofile = open(dirname + "\\tags_" + tagGroupName + ".txt", 'a')
-        ofile.write(outstring)
-        ofile.close()
-
+        dirname = concatPathToSave(inpath)
+        writeToFile(dirname + "\\tags_" + tagGroupName + ".txt", outstring)
 
 def readTag(dirpath, filename):
     out = callExiftool(dirpath + "\\" + filename, [], False)
@@ -77,7 +73,7 @@ def rename_PM(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3,
 
 def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, easymode=False, onlyprint=False,
            postfix_stay=True, Fileext=".JPG", Fileext_Raw=".Raw"):
-    Tagdict = readTags(inpath, subdir, Fileext)
+    Tagdict = readTags(inpath, modifySubdirs, Fileext)
 
     # check integrity
     if len(Tagdict) == 0: return
@@ -212,17 +208,14 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
             outstring += "%-50s\t %-50s\n" % (filename, newname)
             if not onlyprint: renameInPlace(Tagdict["Directory"][i], filename_Raw + temppostfix, newname_Raw)
 
-    dirname = savesDir + inpath.replace(standardDir, '')
-    if not os.path.isdir(dirname):  os.makedirs(dirname)
+    dirname = concatPathToSave(inpath)
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
     np.savez_compressed(dirname + "\\Tags" + Fileext + timestring, Tagdict=Tagdict)
-    ofile = open(dirname + "\\newnames" + Fileext + timestring + ".txt", 'a')
-    ofile.write(outstring)
-    ofile.close()
+    writeToFile(dirname + "\\newnames" + Fileext + timestring + ".txt", outstring)
 
 
 def renameBack(Fileext=".JPG"):
-    dirname = savesDir + inpath.replace(standardDir, '')
+    dirname = concatPathToSave(inpath)
     Tagdict = np.load(dirname + "\\Tags" + Fileext + ".npz")["Tagdict"].item()
     temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
     for i in range(len(list(Tagdict.values())[0])):
@@ -236,11 +229,11 @@ def renameBack(Fileext=".JPG"):
 def order(outpath=None):
     if outpath is None:
         outpath = inpath
-    elif not ":\\" in outpath:
-        outpath = standardDir + outpath
+    else:
+        outpath = concatPathToStandard(outpath)
     if not os.path.isdir(outpath): return
 
-    Tagdict = readTags(inpath, subdir)
+    Tagdict = readTags(inpath, modifySubdirs)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     lowJump = 1200.
     bigJump = 3600.
@@ -283,7 +276,7 @@ def order(outpath=None):
     moveFiles(filenames, outpath + "\\" + daystring + "%02d" % dircounter)
     moveFiles(filenames_S, outpath + "\\" + daystring + "%02d_S" % dircounter)
 
-    Tagdict_mp4 = readTags(inpath, subdir, Fileext=".MP4")
+    Tagdict_mp4 = readTags(inpath, modifySubdirs, Fileext=".MP4")
     if has_not_keys(Tagdict_mp4, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict_mp4.values())[0])
     print('Number of mp4: %d' % leng)
@@ -298,7 +291,7 @@ def order(outpath=None):
 
 
 def detect3D():
-    Tagdict = readTags(inpath, subdir)
+    Tagdict = readTags(inpath, modifySubdirs)
     if has_not_keys(Tagdict,
                     keys=["Directory", "File Name", "Date/Time Original", "Burst Mode", "Sequence Number"]): return
     time_old = giveDatetime()
@@ -326,7 +319,7 @@ def detect3D():
 
 
 def detectSunsetLig():
-    Tagdict = readTags(inpath, subdir)
+    Tagdict = readTags(inpath, modifySubdirs)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Scene Mode"]): return
     dir = "\\Sunset"
     for i in range(len(list(Tagdict.values())[0])):
@@ -355,7 +348,7 @@ def filterSeries():
     print(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         print(dirpath, len(dirnames), len(filenames))
-        if not subdir and not inpath == dirpath: continue
+        if not modifySubdirs and not inpath == dirpath: continue
         if any([skipdir == dirpath.split("\\")[-1] for skipdir in skipdirs]): continue
         counter_old = "000"
         counter2_old = "0"
@@ -394,12 +387,12 @@ def filterSeries_back():
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         print(dirpath, len(dirnames), len(filenames))
-        if not subdir and not inpath == dirpath: continue
+        if not modifySubdirs and not inpath == dirpath: continue
         if not any([skipdir in dirpath for skipdir in skipdirs]): continue
         for filename in filenames:
             if not ".JPG" in filename: continue
             move(filename,dirpath,os.path.dirname(dirpath))
-            # os.path.delete(os.path.dirname(dirpath))
+        removeIfEmtpy(dirpath)
 
 
 def renameHDR(mode="HDRT", ext=".jpg", folder="HDR"):
@@ -409,7 +402,7 @@ def renameHDR(mode="HDRT", ext=".jpg", folder="HDR"):
     matchreg2 = r"^([-a-zA-Z0-9]+)[-a-zA-Z_]*_([0-9]+)([-\w\s'&]*)_([0-9]+)\3"
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         print("Folder: " + dirpath)
-        if not subdir and not inpath == dirpath: continue
+        if not modifySubdirs and not inpath == dirpath: continue
         if not folder == "" and not folder == dirpath.split("\\")[-1]: continue
         print("Folder: " + dirpath)
         for filename in filenames:
@@ -443,10 +436,10 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
     timebegin = dt.datetime.now()
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not subdir and not inpath == dirpath: continue
+        if not modifySubdirs and not inpath == dirpath: continue
         if not folder == "" and not folder == dirpath.split("\\")[-1]: continue
         print(dirpath)
-        Tagdict = readTags(dirpath, subdir)
+        Tagdict = readTags(dirpath, modifySubdirs)
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Rotation"]): return
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):
@@ -474,7 +467,7 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
 
 def adjustDate(timeshift=(-1, 0, 0)):
     delta_t = dt.timedelta(hours=timeshift[0], minutes=timeshift[1], seconds=timeshift[2])
-    Tagdict = readTags(inpath, subdir)
+    Tagdict = readTags(inpath, modifySubdirs)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     for i in range(leng):
@@ -489,7 +482,7 @@ def addLocation(country="", city="", location=""):
     """
     country="Germany", city="Nueremberg", location="Location"
     """
-    Tagdict = readTags(inpath, subdir)
+    Tagdict = readTags(inpath, modifySubdirs)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     for i in range(leng):
@@ -503,7 +496,7 @@ def addLocation(country="", city="", location=""):
 
 
 def nameToExif():
-    Tagdict = readTags(inpath, subdir)
+    Tagdict = readTags(inpath, modifySubdirs)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
 
@@ -535,4 +528,4 @@ def nameToExif():
 
 
 def test():
-    print(inpath, subdir)
+    print(inpath, modifySubdirs)

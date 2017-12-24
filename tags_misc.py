@@ -261,9 +261,7 @@ def listsOfDictsToDictOfLists(ListOfDicts):
 
 def readTag_fromFile(inpath=os.getcwd(), Fileext=".JPG"):
     """not tested"""
-    dirname = savesDir + inpath.replace(standardDir, '')
-    if not os.path.isdir(dirname):  os.makedirs(dirname)
-    Tagdict = np.load(dirname + "\\Tags" + Fileext)["Tagdict"].item()
+    Tagdict = np.load(concatPathToSave(inpath) + "\\Tags" + Fileext)["Tagdict"].item()
     if os.path.isfile(Tagdict["Directory"][0] + "\\" + Tagdict["File Name"][0]):
         print("load")
     elif os.path.isfile(Tagdict["Directory"][0] + "\\" + Tagdict["File Name new"][0]):
@@ -349,6 +347,14 @@ def concatPathToStandard(path):
 
 
 def concatPathToSave(path):
-    dirname = savesDir + path.replace(standardDir, '')
-    os.makedirs(dirname, exist_ok=True)
+    path = savesDir + os.path.basename(path)
+    os.makedirs(path, exist_ok=True)
     return path
+
+def writeToFile(path,content):
+    ofile = open(path, 'a')
+    ofile.write(content)
+    ofile.close()
+
+def removeIfEmtpy(dirpath):
+    if not os.listdir(dirpath): os.rmdir(dirpath)
