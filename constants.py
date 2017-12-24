@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 standardDir="F:\\Bilder\\bearbeitung\\"
-savesDir=standardDir+"tags\\saves"
+savesDir=standardDir+"tags\\saves\\"
 
 TagNames=OrderedDict()
 

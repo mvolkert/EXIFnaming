@@ -27,13 +27,10 @@ subdir = True
 
 
 def setInpath(path=os.getcwd(), modifySubdirs=True):
-    newpath = path
-    if ":\\" not in path: newpath = standardDir + path
-    if not os.path.isdir(newpath):
-        print(newpath, "is not a valid path")
-        return
+    path = concatPathToStandard(path)
+    if not path: return
     global inpath, subdir
-    inpath = newpath
+    inpath = path
     subdir = modifySubdirs
     print(inpath, "modifySubdirs:", subdir)
 
@@ -67,26 +64,8 @@ def printinfo(tagGroupNames=(), Fileext=".JPG"):
 
 
 def readTag(dirpath, filename):
-    outdict = OrderedDict()
-    proc = subprocess.Popen(["exiftool", dirpath + "\\" + filename], stdout=subprocess.PIPE, shell=True)
-    (out, err) = proc.communicate()
-    out = str(out)
-    already_date_org = False
-    for tag in out.split("\\r\\n"):
-        try:
-            key = tag.split(": ")[0].strip()
-            val = tag.split(": ")[1].strip()
-        except:
-            continue
-        if "Date/Time Original" in tag:
-            if already_date_org:
-                pass
-            else:
-                already_date_org = True
-                continue
-        if val in unknownTags: val = unknownTags[val]
-        outdict[key] = [val]
-    return outdict
+    out = callExiftool(dirpath + "\\" + filename, [], False)
+    return decodeTags(out)
 
 
 def rename_PM(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, easymode=False, onlyprint=False,

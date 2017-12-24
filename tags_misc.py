@@ -9,6 +9,7 @@ __copyright__ = "Copyright 2017, Marco Volkert"
 __email__ = "marco.volkert24@gmx.de"
 __status__ = "Development"
 
+import sys
 import subprocess
 import os
 from collections import OrderedDict
@@ -114,7 +115,7 @@ def renameEveryTemp(inpath):
     return temppostfix
 
 
-def sortDict(indict, keys):
+def sortDict(indict: OrderedDict, keys: list):
     """example:
     sort indict by keys
     indict={"foo": [1, 3, 2], "bar": [8, 7, 6]}
@@ -132,7 +133,6 @@ def sortDict(indict, keys):
             except:
                 print("sortDict_badkey", key)
         lists.append(vals)
-        # lists.append([indict[key][i] for key in indict])
 
     for col in reversed(cols):
         lists = sorted(lists, key=operator.itemgetter(col))
@@ -154,85 +154,109 @@ def has_not_keys(indict, keys):
             print(key + " not in dict")
             return True
     if notContains:         
-        print("dictonary of tags doesn't contain ",notContains)   
+        print("dictionary of tags doesn't contain ",notContains)
         return True        
     return False
 
 
-def readTags(inpath=os.getcwd(), subdir=False, Fileext=".JPG"):
-    outdict = OrderedDict()
+def countFilesIn(inpath, subdir=False, Fileext=".JPG" ):
     NFiles = 0
-    date_org_name = "Date/Time Original"
-
-    if not ":\\" in inpath: inpath = standardDir + inpath
-
-    if not os.path.isdir(inpath):
-        print('not found directory: ' + inpath)
-        return outdict
-
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         for filename in filenames:
             if not Fileext.lower() == filename.lower()[filename.rfind("."):]: continue
             if not subdir and not inpath == dirpath: continue
             NFiles += 1
-    print("process", NFiles, "Files in ", inpath, "subdir:", subdir)
+    return NFiles
+
+def countFiles(filenames, Fileext=".JPG" ):
+    return len([filename for filename in filenames if Fileext.lower() in filename.lower()])
+
+def askToContinue():
     response = input("Do you want to continue ?")
     print(response)
+    if 'n' in response:
+        sys.exit('aborted')
+
+def readTags(inpath=os.getcwd(), subdir=False, Fileext=".JPG"):
+    date_org_name = "Date/Time Original"
+    inpath = concatPathToStandard(inpath)
+
+    print("process", countFilesIn(inpath,subdir,Fileext), "Files in ", inpath, "subdir:", subdir)
+    askToContinue()
 
     timebegin = dt.datetime.now()
+    ListOfDicts = []
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not subdir and not inpath == dirpath: break
-        # todo: bug: case insensitive
-        if len([filename for filename in filenames if Fileext.lower() in filename.lower()]) == 0:
+        if countFiles(filenames,Fileext) == 0:
             print("  No matching files in ", dirpath.replace(inpath + "\\", ""))
             continue
         out = callExiftool(dirpath + "\\*" + Fileext, [], False)
         out = out[out.find("ExifTool Version Number"):]
         out_split = out.split("========")
-        # if len(out_split)<2: return {}
-        if len(out_split) > 1:
-            print("%4d tags extracted in " % len(out_split), dirpath.replace(inpath + "\\", ""))
-        else:
-            print("%4d tags extracted in " % 1, dirpath.replace(inpath + "\\", ""))
-        for i,tags in enumerate(out_split):
-            tagNamesDetected = []  # to check for multiple occurrences within one tag information
-            for tag in tags.split("\\r\\n"):
-                try:
-                    key = tag.split(": ")[0].strip()
-                    val = tag.split(": ")[1].strip()
-                except:
-                    continue
-                if key in tagNamesDetected:
-                    continue
-                else:
-                    tagNamesDetected.append(key)
-                if (key, val) in unknownTags: val = unknownTags[(key, val)]
-                outdict.setdefault(key, []).append(val)
-                #todo: refactor to local dict which gets concat to outdict
-            if not date_org_name in tagNamesDetected:
-                print("error: " + date_org_name + " not in",tags)
+        print("%4d tags extracted in " % len(out_split), dirpath.replace(inpath + "\\", ""))
+        for tags in out_split:
+            ListOfDicts.append(decodeTags(tags))
 
-    if len(outdict) == 0: return outdict
-    keys = list(outdict.keys())
-    # print(outdict)
-    badkeys = []
-    for key in keys:
-        # print(key,len(outdict[key]))
-        if not len(outdict[key]) == len(outdict["File Name"]):
-            badkeys.append(key)
-            del outdict[key]
-    print("badkeys:", badkeys)
-    if date_org_name in badkeys:
-        print("error: " + date_org_name + " in badkeys")
-        return {}
-    outdict = sortDict(outdict, [date_org_name])  # "Directory",
-    dirs = outdict["Directory"].copy()
-    outdict["Directory"] = []
-    for dir in dirs:
-        outdict["Directory"].append(dir.replace("/", "\\"))
+    outdict = listsOfDictsToDictOfLists(ListOfDicts)
+    outdict = sortDict(outdict, [date_org_name])
+    for i in range(len(outdict["Directory"])):
+        outdict["Directory"][i].replace("/", "\\")
     timedelta = dt.datetime.now() - timebegin
     print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
     return outdict
+
+def decodeTags(tags):
+    date_org_name = "Date/Time Original"
+    tagDict = OrderedDict()
+    for tag in tags.split("\\r\\n"):
+        keyval = tag.split(": ")
+        if not len(keyval) == 2: continue
+        key = keyval[0].strip()
+        val = keyval[1].strip()
+        if key in tagDict: continue
+        if (key, val) in unknownTags: val = unknownTags[(key, val)]
+        tagDict[key] = val
+    if not date_org_name in tagDict:
+        print("error:", date_org_name, "not in", tagDict)
+    return tagDict
+
+
+def listsOfDictsToDictOfLists(ListOfDicts):
+    """
+
+    :type ListOfDicts: list
+    """
+    essential= ["File Name","Directory","Date/Time Original"]
+    if not ListOfDicts or not ListOfDicts[0] or not ListOfDicts[0].keys(): return {}
+    if has_not_keys(ListOfDicts[0],essential): return {}
+
+    DictOfLists=OrderedDict()
+    for key in ListOfDicts[0]:
+        val=ListOfDicts[0][key]
+        DictOfLists[key] = [val]
+
+    badkeys=OrderedDict()
+    for i,subdict in enumerate(ListOfDicts[1:],start=1):
+        for key in subdict:
+            if not key in DictOfLists:
+                badkeys[key] = i
+                DictOfLists[key] = [""]*i
+            DictOfLists[key].append(subdict[key])
+        for key in DictOfLists:
+            if not key in subdict:
+                if not key in badkeys: badkeys[key]=0
+                badkeys[key] += 1
+                DictOfLists[key].append("")
+
+    if badkeys:
+        for key in essential:
+            if key in badkeys:
+                raise AssertionError(key + ' is essential but not in one of the files')
+        print("Following keys did not occur in every file. Number of not occurrences is listed in following dictionary:", badkeys)
+        askToContinue()
+
+    return DictOfLists
 
 
 def readTag_fromFile(inpath=os.getcwd(), Fileext=".JPG"):
@@ -266,7 +290,7 @@ def getPostfix(filename, postfix_stay=True):
     return postfix
 
 
-def moveFiles(filenames, path):
+def moveFiles(filenames: str, path: str):
     if os.path.isdir(path):
         print("directory already exists: ", path)
         return
@@ -313,3 +337,18 @@ def callExiftool(name, options=[], override=True):
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)  # , shell=True
     (out, err) = proc.communicate()
     return str(out)
+
+
+def concatPathToStandard(path):
+    if ":\\" not in path: path = standardDir + path
+    if not os.path.isdir(path):
+        print(path, "is not a valid path")
+        return None
+    print(path)
+    return path
+
+
+def concatPathToSave(path):
+    dirname = savesDir + path.replace(standardDir, '')
+    os.makedirs(dirname, exist_ok=True)
+    return path
