@@ -506,17 +506,21 @@ def adjustDate(timeshift=(-1, 0, 0)):
         callExiftool(name, ["-DateTimeOriginal='" + timestring + "'"], True)
 
 
-def addLocation(country="Germany", city="Nueremberg", location="Location"):
+def addLocation(country="", city="", location=""):
+    """
+    country="Germany", city="Nueremberg", location="Location"
+    """
     Tagdict = readTags(inpath, subdir)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     for i in range(leng):
         name = Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i]
-        optionCountry = "-Country=" + country + "\ testSpace"
-        optionCity = "-City=" + city
-        optionLocation = "-Location=" + location
+        options=[]
+        if country: options.append("-Country=" + country)
+        if city: options.append("-City=" + city)
+        if location: options.append("-Location=" + location)
 
-        callExiftool(name, [optionCountry, optionCity, optionLocation], True)
+        callExiftool(name, options, True)
 
 
 def nameToExif():
