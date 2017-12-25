@@ -17,7 +17,7 @@ import datetime as dt
 from tags_misc import *
 from constants import *
 from fileop import *
-from decode import readTags, has_not_keys, callExiftool
+from decode import readTags, has_not_keys, callExiftool,askToContinue
 from date import giveDatetime, newdate, dateformating,searchDirByTime
 
 # for reloading
@@ -99,6 +99,7 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
         temppostfix = ""
 
     # initialize
+    if name: name= "_" + name
     leng = len(list(Tagdict.values())[0])
     counter = startindex - 1
     digits = str(digits)
@@ -109,15 +110,12 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
     Tagdict["File Name new"] = []
 
     for i in range(leng):
-
-        dateTimeString = Tagdict["Date/Time Original"][i]
-        if "Sub Sec Time Original" in Tagdict: dateTimeString += "." + Tagdict["Sub Sec Time Original"][i]
-        time = giveDatetime(dateTimeString)
+        time = giveDatetime(getDate(Tagdict,i))
 
         if newdate(time, time_old, 'D' in dateformat or 'N' in dateformat):
             daystring = dateformating(time, dateformat)
             NamePrefix = Prefix + daystring
-            if not name == '': NamePrefix += "_" + name
+            NamePrefix += name
             if not i == 0: counter = 0
 
         filename = Tagdict["File Name"][i]
@@ -131,7 +129,7 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
                 counter += 1
             else:
                 # SequenceNumber
-                SequenceNumber = int(Tagdict["Sequence Number"][i])
+                SequenceNumber = getSequenceNumber(Tagdict,i)
                 if last_SequenceNumber >= SequenceNumber and not time == time_old: counter += 1
                 if SequenceNumber > 0:
                     last_SequenceNumber = SequenceNumber
@@ -146,12 +144,11 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
             counter += 1
             counterString = "_M" + "%02d" % counter
             if not easymode:
-                recmode = getRecMode(filename, Tagdict,i)
-                if not recmode == "": newpostfix += "_" + recmode
+                newpostfix += getRecMode(Tagdict,i)
 
         if not easymode:
             # Name Scene Modes
-            newpostfix = getMode(Tagdict,i)
+            newpostfix += getMode(Tagdict,i)
             if newpostfix in postfix:
                 newpostfix = postfix
             else:
@@ -174,9 +171,9 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
         Tagdict["File Name new"].append(newname)
         outstring += "%-50s\t %-50s\n" % (filename, newname)
         if not onlyprint: renameInPlace(Tagdict["Directory"][i], filename + temppostfix, newname)
-        filename_Raw = filename[:filename.rfind(".")] + Fileext_Raw
+        filename_Raw = changeExtension(filename, Fileext_Raw)
         if not Fileext_Raw == "" and os.path.isfile(Tagdict["Directory"][i] + "\\" + filename_Raw):
-            newname_Raw = newname[:newname.rfind(".")] + Fileext_Raw
+            newname_Raw = changeExtension(newname, Fileext_Raw)
             outstring += "%-50s\t %-50s\n" % (filename, newname)
             if not onlyprint: renameInPlace(Tagdict["Directory"][i], filename_Raw + temppostfix, newname_Raw)
 
@@ -273,20 +270,20 @@ def detect3D():
     filenames = []
     dir3D = "\\3D"
     for i in range(len(list(Tagdict.values())[0])):
-        os.makedirs(Tagdict["Directory"][i] + dir3D, exist_ok=True)
-        is_series = Tagdict["Burst Mode"][i] == "On"
-        SequenceNumber = int(Tagdict["Sequence Number"][i])
-        if is_series or SequenceNumber > 1: continue
-        time = giveDatetime(Tagdict["Date/Time Original"][i])
+        newDir=Tagdict["Directory"][i] + dir3D
+        os.makedirs(newDir, exist_ok=True)
+        SequenceNumber = getSequenceNumber(Tagdict,i)
+        if is_series(Tagdict,i) or SequenceNumber > 1: continue
+        time = giveDatetime(getDate(Tagdict,i))
         timedelta = time - time_old
         timedelta_sec = timedelta.days * 3600 * 24 + timedelta.seconds
         time_old = time
         if timedelta_sec < 10 or (SequenceNumber == 1 and timedelta_sec < 15) or filenames == []:
-            filenames.append(Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i])
+            filenames.append(getPath(Tagdict,i))
         elif len(filenames) > 1:
             for filename in filenames:
-                if os.path.isfile(filename.replace(Tagdict["Directory"][i], Tagdict["Directory"][i] + dir3D)): continue
-                shutil.copy2(filename, Tagdict["Directory"][i] + dir3D)
+                if os.path.isfile(filename.replace(Tagdict["Directory"][i], newDir)): continue
+                shutil.copy2(filename, newDir)
             filenames = []
             # shutil.copy2("filename","destdir")
     # exclude is_series and SequenceNumber>1
@@ -296,17 +293,15 @@ def detect3D():
 def detectSunsetLig():
     Tagdict = readTags(inpath, modifySubdirs)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Scene Mode"]): return
-    dir = "\\Sunset"
     for i in range(len(list(Tagdict.values())[0])):
-        if not os.path.isdir(Tagdict["Directory"][i] + dir):
-            os.makedirs(Tagdict["Directory"][i] + dir)
-        is_sun = Tagdict["Scene Mode"][i] == "Sun1" or Tagdict["Scene Mode"][i] == "Sun2"
-        time = giveDatetime(Tagdict["Date/Time Original"][i])
+        newDir = Tagdict["Directory"][i] + "\\Sunset"
+        os.makedirs(newDir,exist_ok=True)
+        time = giveDatetime(getDate(Tagdict,i))
         if 23 < time.hour or time.hour < 17: continue
-        if not is_sun: continue
-        filename = Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i]
-        if os.path.isfile(filename.replace(Tagdict["Directory"][i], Tagdict["Directory"][i] + dir)): continue
-        shutil.copy2(filename, Tagdict["Directory"][i] + dir)
+        if not is_sun(Tagdict,i): continue
+        filename = getPath(Tagdict,i)
+        if os.path.isfile(filename.replace(Tagdict["Directory"][i], newDir)): continue
+        shutil.copy2(filename, newDir)
         # evening and Sun1 or Sun2 are used
 
 
@@ -458,7 +453,7 @@ def addLocation(country="", city="", location=""):
     country="Germany", city="Nueremberg", location="Location"
     """
     Tagdict = readTags(inpath, modifySubdirs)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
+    if has_not_keys(Tagdict, keys=["Directory", "File Name"]): return
     leng = len(list(Tagdict.values())[0])
     for i in range(leng):
         options=[]
@@ -471,7 +466,7 @@ def addLocation(country="", city="", location=""):
 
 def nameToExif():
     Tagdict = readTags(inpath, modifySubdirs)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
+    if has_not_keys(Tagdict, keys=["Directory", "File Name"]): return
     leng = len(list(Tagdict.values())[0])
 
     for i in range(leng):
@@ -503,3 +498,24 @@ def nameToExif():
 
 def test():
     print(inpath, modifySubdirs)
+
+def searchFileByTagEquality(TagName,Value):
+    """
+    TODO
+    :param TagName:
+    :param Value:
+    :return:
+    """
+    Tagdict = readTags(inpath, modifySubdirs, ".JPG")
+    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original",TagName]): return
+    leng = len(list(Tagdict.values())[0])
+    files=[]
+    for i in range(leng):
+        if not Tagdict[TagName][i]==Value: continue
+        files.append(getPath(Tagdict,i))
+    newDir = inpath + "\\matches"
+    print(len(files),"matches are to be copied to",newDir)
+    askToContinue()
+    os.makedirs(newDir, exist_ok=True)
+    for filename in files:
+        shutil.copy2(filename, newDir)

@@ -13,7 +13,7 @@ def readTags(inpath=os.getcwd(), subdir=False, Fileext=".JPG"):
     inpath = concatPathToStandard(inpath)
 
     print("process", countFilesIn(inpath,subdir,Fileext), "Files in ", inpath, "subdir:", subdir)
-    _askToContinue()
+    askToContinue()
 
     timebegin = dt.datetime.now()
     ListOfDicts = []
@@ -98,7 +98,7 @@ def countFilesIn(inpath, subdir=False, Fileext=".JPG" ):
 def countFiles(filenames, Fileext=".JPG" ):
     return len([filename for filename in filenames if Fileext.lower() in filename.lower()])
 
-def _askToContinue():
+def askToContinue():
     response = input("Do you want to continue ?")
     print(response)
     if 'n' in response:
@@ -157,6 +157,6 @@ def listsOfDictsToDictOfLists(ListOfDicts):
             if key in badkeys:
                 raise AssertionError(key + ' is essential but not in one of the files')
         print("Following keys did not occur in every file. Number of not occurrences is listed in following dictionary:", badkeys)
-        _askToContinue()
+        askToContinue()
 
     return DictOfLists
