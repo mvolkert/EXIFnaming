@@ -13,9 +13,10 @@ __status__ = "Development"
 
 import shutil
 import datetime as dt
+from collections import OrderedDict
 
 from tags_misc import *
-from constants import *
+from constants import TagNames,SceneToTag
 from fileop import *
 from decode import readTags, has_not_keys, callExiftool,askToContinue, writeTags, countFilesIn
 from date import giveDatetime, newdate, dateformating,searchDirByTime
@@ -305,49 +306,20 @@ def detectSunsetLig():
 
 
 def filterSeries():
-    import re
     '''
-    r"^[-a-zA-Z0-9]+(_[-a-zA-Z0-9]*)?+_[0-9]+B[1-7](_[a-zA-Z0-9]*)?"
-    
-    [0-9]+B[1-7]
-    [0-9]+S[0-9]+
     '''
-    skipdirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single"]
+    skipdirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single", "HDR", ".git", "tags"]
 
     print(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         print(dirpath, len(dirnames), len(filenames))
         if not modifySubdirs and not inpath == dirpath: continue
-        if any([skipdir == dirpath.split("\\")[-1] for skipdir in skipdirs]): continue
-        counter_old = "000"
-        counter2_old = "0"
-        BList = []
-        for filename in filenames:
-            # example: filename="MS17-4_552B2.JPG"
+        if os.path.basename(dirpath) in skipdirs: continue
+        moveBracketSeries(dirpath, filenames)
+        moveSeries(dirpath, filenames)
+        for filename in filenames: 
             if not ".JPG" in filename: continue
-            match = re.search('_([0-9]+)B([1-7])', filename)
-            if match:
-                counter, counter2 = match.groups()
-                if not counter == counter_old:
-                    moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
-                    BList = []
-                BList.append(filename)
-            else:
-                moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
-                BList = []
-                match = re.search('_([0-9]+)S([0-9]+)', filename)
-                if match:
-                    counter, counter2 = match.groups()
-                    moveToSubpath(filename, dirpath, "S")
-
-                else:
-                    counter = "000"
-                    counter2 = "0"
-                    moveToSubpath(filename, dirpath, "single")
-            counter_old = counter
-            counter2_old = counter2
-        moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
-
+            moveToSubpath(filename, dirpath, "single")
     return
 
 
@@ -355,9 +327,8 @@ def filterSeries_back():
     skipdirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single"]
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not os.path.basename(dirpath) in skipdirs: continue
         print(dirpath, len(dirnames), len(filenames))
-        if not modifySubdirs and not inpath == dirpath: continue
-        if not any([skipdir in dirpath for skipdir in skipdirs]): continue
         for filename in filenames:
             if not ".JPG" in filename: continue
             move(filename,dirpath,os.path.dirname(dirpath))

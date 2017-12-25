@@ -1,4 +1,5 @@
 import os
+import re
 
 def getStandardDir():
     path = os.path.realpath(__file__)
@@ -31,11 +32,14 @@ def moveFilesToSubpath(filenames, dirpath, subpath):
 
 def moveToSubpath(filename, dirpath, subpath):
     os.makedirs(dirpath + "\\" + subpath, exist_ok=True)
+    if not os.path.isfile(dirpath + "\\" + filename): return
     os.rename(dirpath + "\\" + filename, dirpath + "\\" + subpath + "\\" + filename)
 
 
 def move(filename, oldpath, newpath):
     os.makedirs(newpath, exist_ok=True)
+    if not os.path.isfile(oldpath + "\\" + filename): return
+    if os.path.isfile(newpath + "\\" + filename): return
     os.rename(oldpath + "\\" + filename, newpath + "\\" + filename)
 
 
@@ -84,3 +88,31 @@ def renameEveryTemp(inpath):
         for filename in filenames:
             os.rename(dirpath + "\\" + filename, dirpath + "\\" + filename + temppostfix)
     return temppostfix
+
+
+def moveBracketSeries(dirpath,filenames):
+    counter_old = "000"
+    counter2_old = "0"
+    BList = []
+    for filename in filenames:
+        # example: filename="MS17-4_552B2.JPG"
+        if not ".JPG" in filename: continue
+        match = re.search('_([0-9]+)B([1-7])', filename)
+        if match:
+            counter, counter2 = match.groups()
+            if not counter == counter_old:
+                moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
+                BList = []
+            BList.append(filename)
+            counter_old = counter
+            counter2_old = counter2
+        else:
+            moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
+            BList = []
+    moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
+
+def moveSeries(dirpath,filenames):
+    for filename in filenames:
+        match = re.search('_([0-9]+)S([0-9]+)', filename)
+        if match:
+            moveToSubpath(filename, dirpath, "S")
