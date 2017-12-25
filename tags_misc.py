@@ -12,20 +12,7 @@ __status__ = "Development"
 import os
 import numpy as np
 from fileop import concatPathToSave
-from constants import SceneShort, KreativeShort
-
-
-def getRecMode(Tagdict,i):
-    if is_4KBurst(Tagdict,i):
-        return "_4KB"
-    elif is_4KFilm(Tagdict,i):
-        return "_4K"
-    elif is_HighSpeed(Tagdict,i):
-        return "_HS"
-    elif is_FullHD(Tagdict,i):
-        return "_FHD"
-    else:
-        return ""
+from constants import SceneShort, KreativeShort,CameraModelShort
 
 def is_4KBurst(Tagdict,i):
     return Tagdict["Image Quality"][i] == "4k Movie" and Tagdict["Video Frame Rate"][i] == "29.97"
@@ -38,7 +25,7 @@ def is_FullHD(Tagdict,i):
 def is_series(Tagdict,i):
     return Tagdict["Burst Mode"][i] == "On"
 def is_Bracket(Tagdict,i):
-    return not Tagdict["Bracket Settings"][i] == "No Bracket"
+    return Tagdict["Bracket Settings"][i] and not Tagdict["Bracket Settings"][i] == "No Bracket"
 def is_stopmotion(Tagdict,i):
     return Tagdict["Timer Recording"][i] == "Stop-motion Animation"
 def is_timelapse(Tagdict,i):
@@ -48,11 +35,23 @@ def is_4K(Tagdict,i):
 def is_creative(Tagdict,i):
     return Tagdict["Scene Mode"][i] == "Creative Control" or Tagdict["Scene Mode"][i] == "Digital Filter"
 def is_scene(Tagdict,i):
-    return not Tagdict["Scene Mode"][i] == "Off" and Tagdict["Advanced Scene Mode"][i] in SceneShort
+    return Tagdict["Scene Mode"][i] and not Tagdict["Scene Mode"][i] == "Off" and Tagdict["Advanced Scene Mode"][i] in SceneShort
 def is_HDR(Tagdict,i):
-    return not Tagdict["HDR"][i] == "Off"
+    return Tagdict["HDR"][i] and not Tagdict["HDR"][i] == "Off"
 def is_sun(Tagdict,i):
     return Tagdict["Scene Mode"][i] == "Sun1" or Tagdict["Scene Mode"][i] == "Sun2"
+
+def getRecMode(Tagdict,i):
+    if is_4KBurst(Tagdict,i):
+        return "_4KB"
+    elif is_4KFilm(Tagdict,i):
+        return "_4K"
+    elif is_HighSpeed(Tagdict,i):
+        return "_HS"
+    elif is_FullHD(Tagdict,i):
+        return "_FHD"
+    else:
+        return ""
 
 def getSequenceString(SequenceNumber,Tagdict,i):
     if is_Bracket(Tagdict,i): return "B%d" % SequenceNumber
@@ -83,6 +82,12 @@ def getSequenceNumber(Tagdict,i):
     if np.chararray.isdigit(sequence_str): return int(sequence_str)
     return 0
 
+def getCameraModel(Tagdict,i):
+    if not 'Camera Model Name' in Tagdict: return ""
+    model = Tagdict['Camera Model Name'][i]
+    if model in CameraModelShort: model = CameraModelShort[model]
+    if model: model = "_"+model
+    return model
 
 def readTag_fromFile(inpath=os.getcwd(), Fileext=".JPG"):
     """not tested"""

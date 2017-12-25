@@ -89,3 +89,12 @@ SceneToTag['SUN1']="sunset"
 SceneToTag['SUN2']="sunset"
 SceneToTag['HDR']="HDR"
 SceneToTag['HDRT']="HDR"
+SceneToTag['4KB']=""
+SceneToTag['4K']=""
+SceneToTag['FHD']=""
+SceneToTag['HS']=""
+
+CameraModelShort=OrderedDict()
+CameraModelShort['DMC-TZ7']='TZ7'
+CameraModelShort['SM-G900F']='S5'
+CameraModelShort['DMC-TZ101']=''

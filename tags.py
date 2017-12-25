@@ -17,7 +17,7 @@ import datetime as dt
 from tags_misc import *
 from constants import *
 from fileop import *
-from decode import readTags, has_not_keys, callExiftool,askToContinue
+from decode import readTags, has_not_keys, callExiftool,askToContinue, writeTags, countFilesIn
 from date import giveDatetime, newdate, dateformating,searchDirByTime
 
 # for reloading
@@ -73,7 +73,7 @@ def rename_PM(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3,
 
 def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, easymode=False, onlyprint=False,
            postfix_stay=True, Fileext=".JPG", Fileext_Raw=".Raw"):
-    Tagdict = readTags(inpath, modifySubdirs, Fileext)
+    Tagdict = readTags(inpath, modifySubdirs, Fileext,["HDR"])
 
     # check integrity
     if len(Tagdict) == 0: return
@@ -114,8 +114,7 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
 
         if newdate(time, time_old, 'D' in dateformat or 'N' in dateformat):
             daystring = dateformating(time, dateformat)
-            NamePrefix = Prefix + daystring
-            NamePrefix += name
+            NamePrefix = Prefix + daystring + getCameraModel(Tagdict,i) + name
             if not i == 0: counter = 0
 
         filename = Tagdict["File Name"][i]
@@ -452,49 +451,49 @@ def addLocation(country="", city="", location=""):
     """
     country="Germany", city="Nueremberg", location="Location"
     """
-    Tagdict = readTags(inpath, modifySubdirs)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name"]): return
-    leng = len(list(Tagdict.values())[0])
-    for i in range(leng):
-        options=[]
-        if country: options.append("-Country=" + country)
-        if city: options.append("-City=" + city)
-        if location: options.append("-Location=" + location)
-
-        callExiftool(getPath(Tagdict,i), options, True)
+    options=[]
+    if country: options.append("-Country=" + country)
+    if city: options.append("-City=" + city)
+    if location: options.append("-Location=" + location)
+    if not options: return
+    writeTags(inpath,options,modifySubdirs,".JPG")
 
 
 def nameToExif():
-    Tagdict = readTags(inpath, modifySubdirs)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name"]): return
-    leng = len(list(Tagdict.values())[0])
-
-    for i in range(leng):
-
-        id = ''
-        title = ''
-        state = ''
-        filename = Tagdict["File Name"][i]
-        filename = filename[:filename.rfind(".")]
-        filename_splited = filename.split('_')
-        if len(filename_splited) > 1:
+    timebegin = dt.datetime.now()
+    print("process", countFilesIn(inpath, modifySubdirs, ""), "Files in ", inpath, "subdir:", modifySubdirs)
+    askToContinue()
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not modifySubdirs and not inpath == dirpath: break
+        print(dirpath)
+        for filename in filenames:
+            filename,ext = filename.rsplit(".",1)
+            ext = "."+ext
+            if ext not in [".JPG",".jpg",".MP4",".mp4"]: continue
+            filename_splited = filename.split('_')
+            if len(filename_splited) ==0: continue
+            id = ''
+            title = ''
+            state = ''
             found = False
             for subname in filename_splited:
                 if found:
-                    print(subname)
                     if subname in SceneToTag:
-                        state += SceneToTag[subname]
+                        if SceneToTag[subname]: state += SceneToTag[subname] + "_"
                     else:
                         title += subname + "_"
                 else:
                     id += subname + "_"
-                    if np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1]): found = True
-        options=[]
-        if id: options.append("-ImageDescription=" + id[:-1])
-        if title: options.append("-Title=" + title[:-1])
-        if state: options.append("-State=" + state[:-1])
-        callExiftool(getPath(Tagdict,i), options, True)
-
+                    if (np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1])) or \
+                            subname[0]=="M" or  "HDR" in subname: found = True
+            options=[]
+            if id: options.append("-ImageDescription=" + id[:-1])
+            if title: options.append("-Title=" + title[:-1])
+            if state: options.append("-State=" + state[:-1])
+            if not options: continue
+            callExiftool(dirpath+"\\"+filename+ext, options, True)
+    timedelta = dt.datetime.now() - timebegin
+    print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
 
 def test():
     print(inpath, modifySubdirs)
