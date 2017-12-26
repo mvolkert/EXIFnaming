@@ -67,6 +67,8 @@ def writeToFile(path,content):
     ofile.close()
 
 def removeIfEmtpy(dirpath):
+    if len(os.listdir(dirpath))==1:
+        if os.path.isfile(dirpath+"\\thumbs.db"): os.remove(dirpath+"\\thumbs.db")
     if not os.listdir(dirpath): os.rmdir(dirpath)
 
 def renameTemp(DirectoryList, FileNameList):

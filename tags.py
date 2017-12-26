@@ -14,12 +14,14 @@ __status__ = "Development"
 import shutil
 import datetime as dt
 from collections import OrderedDict
+import itertools as it
 
 from tags_misc import *
 from constants import TagNames,SceneToTag
 from fileop import *
 from decode import readTags, has_not_keys, callExiftool,askToContinue, writeTags, countFilesIn
 from date import giveDatetime, newdate, dateformating,searchDirByTime
+from cv2op import is_blurry, are_similar
 
 # for reloading
 from IPython import get_ipython
@@ -305,6 +307,28 @@ def detectSunsetLig():
         # evening and Sun1 or Sun2 are used
 
 
+def detectBlurry():
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not modifySubdirs and not inpath == dirpath: continue
+        print(dirpath, len(dirnames), len(filenames))
+        for filename in filenames:
+            if not ".JPG" in filename: continue
+            if not is_blurry(dirpath + "\\" + filename, 30): continue
+            moveToSubpath(filename, dirpath, "blurry")
+
+def detectSimilar():
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not modifySubdirs and not inpath == dirpath: continue
+        print(dirpath, len(dirnames), len(filenames))
+        dircounter=0
+        filenames = [filename for filename in filenames if ".JPG" in filename]
+        for filenameA,filenameB in it.combinations(filenames, 2):
+            print(filenameA,filenameB)
+            if not are_similar(dirpath+"\\"+filenameA,dirpath+"\\"+filenameB,0.9): continue
+            dircounter+=1
+            moveToSubpath(filenameA, dirpath, "%2d"%dircounter)
+            moveToSubpath(filenameB, dirpath, "%2d" % dircounter)
+
 def filterSeries():
     '''
     '''
@@ -312,9 +336,9 @@ def filterSeries():
 
     print(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        print(dirpath, len(dirnames), len(filenames))
         if not modifySubdirs and not inpath == dirpath: continue
         if os.path.basename(dirpath) in skipdirs: continue
+        print(dirpath, len(dirnames), len(filenames))
         moveBracketSeries(dirpath, filenames)
         moveSeries(dirpath, filenames)
         for filename in filenames: 
@@ -324,10 +348,10 @@ def filterSeries():
 
 
 def filterSeries_back():
-    skipdirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single"]
+    reverseDirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single","blurry"]
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not os.path.basename(dirpath) in skipdirs: continue
+        if not os.path.basename(dirpath) in reverseDirs: continue
         print(dirpath, len(dirnames), len(filenames))
         for filename in filenames:
             if not ".JPG" in filename: continue
@@ -356,8 +380,8 @@ def renameHDR(mode="HDRT", ext=".jpg", folder="HDR"):
                 if os.path.isfile(dirpath + "\\" + filename_new):
                     i = 2
                     while os.path.isfile(dirpath + "\\" + filename_new):
-                        filename_new = match.group(1) + "_" + match.group(2) + "_" + mode + "%d" % i + match.group(
-                            3) + ext
+                        filename_new = match.group(1) + "_" + match.group(2) + "_" + mode
+                        filename_new += "%d" % i + match.group(3) + ext
                         i += 1
                         # print(filename_new)
                 renameInPlace(dirpath,filename,filename_new)

@@ -6,16 +6,16 @@ import numpy as np
 import cv2
 
 
-def is_blury(filename, threshold=100):
+def is_blurry(filename, threshold=100):
     image = read_picture(filename)
-    if not image: return False
+    if image is None: return False
     return variance_of_laplacian(image)<threshold
 
 
 def are_similar(filenameA, filenameB, threshold=0.9):
-    imageA = read_picture(filenameA)
-    imageB = read_picture(filenameB)
-    if not imageA or not imageB: return False
+    imageA = read_picture(filenameA,100)
+    imageB = read_picture(filenameB,100)
+    if imageA is None or imageB is None: return False
     s = ssim(imageA, imageB)
     return threshold<s
 
@@ -49,12 +49,12 @@ def compare_images(directory, nameA, nameB):
     print("s",s)
 
 
-def read_picture(name=""):
+def read_picture(name="", xscale=500):
     picture = cv2.imread(name)
-    if picture is None:
+    if picture is None or not picture.data:
         print("failed to load", name)
         return
-    picture = cv2.resize(picture, (100, 154))
+    picture = cv2.resize(picture, (xscale, int(xscale*2./3.)))
     # convert the images to grayscale
     picture = cv2.cvtColor(picture, cv2.COLOR_BGR2GRAY)
     return picture
