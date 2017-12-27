@@ -5,20 +5,18 @@ from collections import OrderedDict
 import datetime as dt
 import operator
 from constants import unknownTags
-from fileop import concatPathToStandard
 
 
-def readTags(inpath=os.getcwd(), modifySubdirs=False, Fileext=".JPG", skipdirs=[]):
+def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=[]):
     date_org_name = "Date/Time Original"
-    inpath = concatPathToStandard(inpath)
 
-    print("process", countFilesIn(inpath, modifySubdirs, Fileext, skipdirs), "Files in ", inpath, "subdir:", modifySubdirs)
+    print("process", countFilesIn(inpath, includeSubdirs, Fileext, skipdirs), "Files in ", inpath, "includeSubdirs:", includeSubdirs)
     askToContinue()
 
     timebegin = dt.datetime.now()
     ListOfDicts = []
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not modifySubdirs and not inpath == dirpath: break
+        if not includeSubdirs and not inpath == dirpath: break
         if os.path.basename(dirpath) in skipdirs: continue
         if countFiles(filenames,Fileext) == 0:
             print("  No matching files in ", dirpath.replace(inpath + "\\", ""))
@@ -38,10 +36,10 @@ def readTags(inpath=os.getcwd(), modifySubdirs=False, Fileext=".JPG", skipdirs=[
     print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
     return outdict
 
-def writeTags(inpath,options, modifySubdirs=False, Fileext=".JPG"):
+def writeTags(inpath, options, includeSubdirs=False, Fileext=".JPG"):
     timebegin = dt.datetime.now()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not modifySubdirs and not inpath == dirpath: break
+        if not includeSubdirs and not inpath == dirpath: break
         n = countFiles(filenames, Fileext)
         if n == 0:
             print("  No matching files in ", dirpath.replace(inpath + "\\", ""))
@@ -66,7 +64,8 @@ def has_not_keys(indict, keys):
     return False
 
 def callExiftool(name, options=[], override=True):
-    args = ["exiftool", name] + options
+    path = os.path.dirname(os.path.realpath(__file__))+"\\"
+    args = [path+"exiftool", name] + options
     if override: args.append("-overwrite_original_in_place")
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)  # , shell=True
     (out, err) = proc.communicate()
@@ -101,10 +100,10 @@ def sortDict(indict: OrderedDict, keys: list):
             outdict[indictkeys[i]].append(val)
     return outdict
 
-def countFilesIn(inpath, subdir=False, Fileext="", skipdirs=[] ):
+def countFilesIn(inpath, includeSubdirs=False, Fileext="", skipdirs=[]):
     NFiles = 0
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not subdir and not inpath == dirpath: break
+        if not includeSubdirs and not inpath == dirpath: break
         if os.path.basename(dirpath) in skipdirs: continue
         for filename in filenames:
             if Fileext and not Fileext.lower() == filename.lower()[filename.rfind("."):]: continue

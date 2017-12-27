@@ -1,5 +1,9 @@
 import os
 import re
+import shutil
+
+import sys
+
 
 def getStandardDir():
     path = os.path.realpath(__file__)
@@ -118,3 +122,17 @@ def moveSeries(dirpath,filenames):
         match = re.search('_([0-9]+)S([0-9]+)', filename)
         if match:
             moveToSubpath(filename, dirpath, "S")
+
+
+def copyFilesTo(files, path):
+    print(len(files), "matches are to be copied to", path)
+    askToContinue()
+    os.makedirs(path, exist_ok=True)
+    for filename in files:
+        shutil.copy2(filename, path)
+
+def askToContinue():
+    response = input("Do you want to continue ?")
+    print(response)
+    if 'n' in response:
+        sys.exit('aborted')
