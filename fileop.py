@@ -2,14 +2,7 @@ import os
 import re
 import shutil
 
-import sys
-
-
-def getStandardDir():
-    path = os.path.realpath(__file__)
-    for i in range(3):
-        path=os.path.dirname(path)
-    return path + "\\"
+from misc import askToContinue
 
 def getSavesDir():
     path = os.path.realpath(__file__)
@@ -49,15 +42,6 @@ def move(filename, oldpath, newpath):
 
 def renameInPlace(dirpath, oldFilename, newFilename):
     os.rename(dirpath + "\\" + oldFilename, dirpath + "\\" + newFilename)
-
-
-def concatPathToStandard(path):
-    if ":\\" not in path: path = getStandardDir() + path
-    if not os.path.isdir(path):
-        print(path, "is not a valid path")
-        return None
-    print(path)
-    return path
 
 
 def concatPathToSave(path):
@@ -131,8 +115,6 @@ def copyFilesTo(files, path):
     for filename in files:
         shutil.copy2(filename, path)
 
-def askToContinue():
-    response = input("Do you want to continue ?")
-    print(response)
-    if 'n' in response:
-        sys.exit('aborted')
+
+def changeExtension(filename,ext):
+    return filename[:filename.rfind(".")] + ext

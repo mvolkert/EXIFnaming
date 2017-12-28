@@ -9,15 +9,16 @@ import cv2
 def is_blurry(filename, threshold=100):
     image = read_picture(filename)
     if image is None: return False
-    return variance_of_laplacian(image)<threshold
+    return variance_of_laplacian(image) < threshold
 
 
 def are_similar(filenameA, filenameB, threshold=0.9):
-    imageA = read_picture(filenameA,100)
-    imageB = read_picture(filenameB,100)
+    imageA = read_picture(filenameA, 100)
+    imageB = read_picture(filenameB, 100)
     if imageA is None or imageB is None: return False
     s = ssim(imageA, imageB)
-    return threshold<s
+    return threshold < s
+
 
 def variance_of_laplacian(image):
     # compute the Laplacian of the image and then return the focus
@@ -45,8 +46,8 @@ def compare_images(directory, nameA, nameB):
     imageB = read_picture(directory + "\\" + nameB)
     m = mse(imageA, imageB)
     s = ssim(imageA, imageB)
-    print("m:",m)
-    print("s",s)
+    print("m:", m)
+    print("s", s)
 
 
 def read_picture(name="", xscale=500):
@@ -54,35 +55,34 @@ def read_picture(name="", xscale=500):
     if picture is None or not picture.data:
         print("failed to load", name)
         return
-    picture = cv2.resize(picture, (xscale, int(xscale*2./3.)))
+    picture = cv2.resize(picture, (xscale, int(xscale * 2. / 3.)))
     # convert the images to grayscale
     picture = cv2.cvtColor(picture, cv2.COLOR_BGR2GRAY)
     return picture
 
-
-#In [10]: compare.compare_images("F:\\Bilder\\bearbeitung\\HDR","L17-0831_01_HDRT_SUN2_Sunset.jpg","L17-0831_02_HDRT_
+# In [10]: compare.compare_images("F:\\Bilder\\bearbeitung\\HDR","L17-0831_01_HDRT_SUN2_Sunset.jpg","L17-0831_02_HDRT_
 #    ...: SUN2_Sunset.jpg")
-#m: 158.948441558
-#s 0.627520235931
+# m: 158.948441558
+# s 0.627520235931
 #
-#In [11]: compare.compare_images("F:\\Bilder\\bearbeitung\\testcomp","L17-0828_02B1_Wolken.JPG","L17-0828_02B2_Wolken
+# In [11]: compare.compare_images("F:\\Bilder\\bearbeitung\\testcomp","L17-0828_02B1_Wolken.JPG","L17-0828_02B2_Wolken
 #    ...: .JPG")
-#m: 1050.44272727
-#s 0.866533901056
+# m: 1050.44272727
+# s 0.866533901056
 #
-#In [12]: compare.compare_images("F:\\Bilder\\bearbeitung\\testcomp","L17-0828_02B1_Wolken.JPG","H171006_Butter.JPG")
+# In [12]: compare.compare_images("F:\\Bilder\\bearbeitung\\testcomp","L17-0828_02B1_Wolken.JPG","H171006_Butter.JPG")
 #    ...:
-#m: 5565.24084416
-#s 0.149896912847
+# m: 5565.24084416
+# s 0.149896912847
 #
-#In [13]: compare.compare_images("F:\\Bilder\\bearbeitung\\testcomp","Kisa_01_01.jpg","Kisa_40_01.jpg")
-#m: 0.131948051948
-#s 0.999741746826
+# In [13]: compare.compare_images("F:\\Bilder\\bearbeitung\\testcomp","Kisa_01_01.jpg","Kisa_40_01.jpg")
+# m: 0.131948051948
+# s 0.999741746826
 #
-#In [14]: compare.compare_images("F:\\Bilder\\bearbeitung\\testcomp","Kisa_01_01.jpg","Kisa_01_02.jpg")
-#m: 1945.7161039
-#s 0.389233502472
+# In [14]: compare.compare_images("F:\\Bilder\\bearbeitung\\testcomp","Kisa_01_01.jpg","Kisa_01_02.jpg")
+# m: 1945.7161039
+# s 0.389233502472
 #
-#In [15]: compare.compare_images("F:\\Bilder\\bearbeitung\\testcomp","Kisa_01_01.jpg","Kisa_04_15.jpg")
-#m: 6661.06090909
-#s 0.0779526264583
+# In [15]: compare.compare_images("F:\\Bilder\\bearbeitung\\testcomp","Kisa_01_01.jpg","Kisa_04_15.jpg")
+# m: 6661.06090909
+# s 0.0779526264583

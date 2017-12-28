@@ -10,7 +10,8 @@ from constants import unknownTags
 def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=[]):
     date_org_name = "Date/Time Original"
 
-    print("process", countFilesIn(inpath, includeSubdirs, Fileext, skipdirs), "Files in ", inpath, "includeSubdirs:", includeSubdirs)
+    print("process", countFilesIn(inpath, includeSubdirs, Fileext, skipdirs), "Files in ", inpath, "includeSubdirs:",
+          includeSubdirs)
     askToContinue()
 
     timebegin = dt.datetime.now()
@@ -18,7 +19,7 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
         if os.path.basename(dirpath) in skipdirs: continue
-        if countFiles(filenames,Fileext) == 0:
+        if countFiles(filenames, Fileext) == 0:
             print("  No matching files in ", dirpath.replace(inpath + "\\", ""))
             continue
         out = callExiftool(dirpath + "\\*" + Fileext, [], False)
@@ -36,6 +37,7 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
     print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
     return outdict
 
+
 def writeTags(inpath, options, includeSubdirs=False, Fileext=".JPG"):
     timebegin = dt.datetime.now()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -52,24 +54,26 @@ def writeTags(inpath, options, includeSubdirs=False, Fileext=".JPG"):
 
 def has_not_keys(indict, keys):
     if not keys: return True
-    notContains=[]
+    notContains = []
     for key in keys:
         if not key in indict:
             notContains.append(key)
             print(key + " not in dict")
             return True
     if notContains:
-        print("dictionary of tags doesn't contain ",notContains)
+        print("dictionary of tags doesn't contain ", notContains)
         return True
     return False
 
+
 def callExiftool(name, options=[], override=True):
-    path = os.path.dirname(os.path.realpath(__file__))+"\\"
-    args = [path+"exiftool", name] + options
+    path = os.path.dirname(os.path.realpath(__file__)) + "\\"
+    args = [path + "exiftool", name] + options
     if override: args.append("-overwrite_original_in_place")
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)  # , shell=True
     (out, err) = proc.communicate()
     return str(out)
+
 
 def sortDict(indict: OrderedDict, keys: list):
     """example:
@@ -100,6 +104,7 @@ def sortDict(indict: OrderedDict, keys: list):
             outdict[indictkeys[i]].append(val)
     return outdict
 
+
 def countFilesIn(inpath, includeSubdirs=False, Fileext="", skipdirs=[]):
     NFiles = 0
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -111,14 +116,17 @@ def countFilesIn(inpath, includeSubdirs=False, Fileext="", skipdirs=[]):
             NFiles += 1
     return NFiles
 
-def countFiles(filenames, Fileext=".JPG" ):
+
+def countFiles(filenames, Fileext=".JPG"):
     return len([filename for filename in filenames if Fileext.lower() in filename.lower()])
+
 
 def askToContinue():
     response = input("Do you want to continue ?")
     print(response)
     if 'n' in response:
         sys.exit('aborted')
+
 
 def readTag(dirpath, filename):
     out = callExiftool(dirpath + "\\" + filename, [], False)
@@ -146,25 +154,25 @@ def listsOfDictsToDictOfLists(ListOfDicts):
 
     :type ListOfDicts: list
     """
-    essential= ["File Name","Directory","Date/Time Original"]
+    essential = ["File Name", "Directory", "Date/Time Original"]
     if not ListOfDicts or not ListOfDicts[0] or not ListOfDicts[0].keys(): return {}
-    if has_not_keys(ListOfDicts[0],essential): return {}
+    if has_not_keys(ListOfDicts[0], essential): return {}
 
-    DictOfLists=OrderedDict()
+    DictOfLists = OrderedDict()
     for key in ListOfDicts[0]:
-        val=ListOfDicts[0][key]
+        val = ListOfDicts[0][key]
         DictOfLists[key] = [val]
 
-    badkeys=OrderedDict()
-    for i,subdict in enumerate(ListOfDicts[1:],start=1):
+    badkeys = OrderedDict()
+    for i, subdict in enumerate(ListOfDicts[1:], start=1):
         for key in subdict:
             if not key in DictOfLists:
                 badkeys[key] = i
-                DictOfLists[key] = [""]*i
+                DictOfLists[key] = [""] * i
             DictOfLists[key].append(subdict[key])
         for key in DictOfLists:
             if not key in subdict:
-                if not key in badkeys: badkeys[key]=0
+                if not key in badkeys: badkeys[key] = 0
                 badkeys[key] += 1
                 DictOfLists[key].append("")
 
@@ -172,7 +180,9 @@ def listsOfDictsToDictOfLists(ListOfDicts):
         for key in essential:
             if key in badkeys:
                 raise AssertionError(key + ' is essential but not in one of the files')
-        print("Following keys did not occur in every file. Number of not occurrences is listed in following dictionary:", badkeys)
+        print(
+            "Following keys did not occur in every file. Number of not occurrences is listed in following dictionary:",
+            badkeys)
         askToContinue()
 
     return DictOfLists
