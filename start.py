@@ -30,7 +30,7 @@ print(os.getcwd())
 os.chdir("F:\\Bilder\\bearbeitung\\tags\\pyScripts")
 print(os.getcwd())
 
-import EXIFnaming,setTags,getTags,picture
+import EXIFnaming, setTags, getTags, picture
 
 print(os.getcwd())
 os.chdir("F:\\Bilder\\bearbeitung")

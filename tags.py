@@ -4,11 +4,6 @@
 collection of Tag tools
 """
 
-__author__ = "Marco Volkert"
-__copyright__ = "Copyright 2017, Marco Volkert"
-__email__ = "marco.volkert24@gmx.de"
-__status__ = "Development"
-
 import os
 import numpy as np
 from fileop import concatPathToSave

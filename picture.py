@@ -2,7 +2,8 @@ import datetime as dt
 import itertools as it
 import os
 import numpy as np
-from fileop import concatPathToSave,renameInPlace,renameTemp,moveToSubpath,moveBracketSeries,moveSeries,move,removeIfEmtpy
+from fileop import concatPathToSave, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, moveSeries, move, \
+    removeIfEmtpy
 from decode import readTags, has_not_keys
 from cv2op import is_blurry, are_similar
 

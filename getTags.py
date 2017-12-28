@@ -5,7 +5,7 @@ import shutil
 from misc import tofloat, getPostfix
 from tags import *
 from constants import TagNames
-from fileop import writeToFile,renameInPlace,changeExtension,moveFiles,renameTemp,move,copyFilesTo
+from fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, copyFilesTo
 from decode import readTags, has_not_keys
 from date import giveDatetime, newdate, dateformating, searchDirByTime
 
