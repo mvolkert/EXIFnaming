@@ -1,6 +1,6 @@
 import datetime as dt
 from tags import *
-from constants import SceneToTag
+import constants as c
 from decode import readTags, has_not_keys, callExiftool, askToContinue, writeTags, countFilesIn
 from date import giveDatetime, dateformating
 
@@ -59,8 +59,8 @@ def nameToExif():
             found = False
             for subname in filename_splited:
                 if found:
-                    if subname in SceneToTag:
-                        if SceneToTag[subname]: state += SceneToTag[subname] + "_"
+                    if subname in c.SceneToTag:
+                        if c.SceneToTag[subname]: state += c.SceneToTag[subname] + "_"
                     else:
                         title += subname + "_"
                 else:

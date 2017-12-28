@@ -7,7 +7,8 @@ collection of Tag tools
 import os
 import numpy as np
 from fileop import concatPathToSave
-from constants import SceneShort, KreativeShort,CameraModelShort
+import constants as c
+from decode import has_not_keys
 
 def is_4KBurst(Tagdict,i):
     return Tagdict["Image Quality"][i] == "4k Movie" and Tagdict["Video Frame Rate"][i] == "29.97"
@@ -30,7 +31,7 @@ def is_4K(Tagdict,i):
 def is_creative(Tagdict,i):
     return Tagdict["Scene Mode"][i] == "Creative Control" or Tagdict["Scene Mode"][i] == "Digital Filter"
 def is_scene(Tagdict,i):
-    return Tagdict["Scene Mode"][i] and not Tagdict["Scene Mode"][i] == "Off" and Tagdict["Advanced Scene Mode"][i] in SceneShort
+    return Tagdict["Scene Mode"][i] and not Tagdict["Scene Mode"][i] == "Off" and Tagdict["Advanced Scene Mode"][i] in c.SceneShort
 def is_HDR(Tagdict,i):
     return Tagdict["HDR"][i] and not Tagdict["HDR"][i] == "Off"
 def is_sun(Tagdict,i):
@@ -58,9 +59,9 @@ def getSequenceString(SequenceNumber,Tagdict,i):
 
 def getMode(Tagdict,i):
     if is_scene(Tagdict,i):
-        return "_" + SceneShort[Tagdict["Advanced Scene Mode"][i]]
+        return "_" + c.SceneShort[Tagdict["Advanced Scene Mode"][i]]
     elif is_creative(Tagdict,i):
-        return "_" + KreativeShort[Tagdict["Advanced Scene Mode"][i]]
+        return "_" + c.KreativeShort[Tagdict["Advanced Scene Mode"][i]]
     elif is_HDR(Tagdict,i):
         return "_HDR"
     return ""
@@ -80,7 +81,7 @@ def getSequenceNumber(Tagdict,i):
 def getCameraModel(Tagdict,i):
     if not 'Camera Model Name' in Tagdict: return ""
     model = Tagdict['Camera Model Name'][i]
-    if model in CameraModelShort: model = CameraModelShort[model]
+    if model in c.CameraModelShort: model = c.CameraModelShort[model]
     if model: model = "_"+model
     return model
 
@@ -103,3 +104,21 @@ def getPath(Tagdict,i):
         return ""
     return Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i]
 
+
+def checkIntegrity(Tagdict, Fileext):
+    # check integrity
+    if len(Tagdict) == 0: return
+    keysPrim = ["Directory", "File Name", "Date/Time Original"]
+    keysJPG = ["Image Quality", "HDR", "Advanced Scene Mode", "Scene Mode", "Bracket Settings", "Burst Mode",
+               "Sequence Number", "Sub Sec Time Original"]
+    keysMP4 = ["Image Quality", "HDR", "Advanced Scene Mode", "Scene Mode", "Video Frame Rate"]
+
+    if has_not_keys(Tagdict, keys=keysPrim): return
+
+    if any(Fileext == ext for ext in ['.jpg', '.JPG']):
+        return has_not_keys(Tagdict, keys=keysJPG)
+    elif any(Fileext == ext for ext in ['.mp4', '.MP4']):
+        return has_not_keys(Tagdict, keys=keysMP4)
+    else:
+        print("unknown file extension")
+        return

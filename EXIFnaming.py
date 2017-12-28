@@ -9,9 +9,9 @@ __copyright__ = "Copyright 2017, Marco Volkert"
 __email__ = "marco.volkert24@gmx.de"
 __status__ = "Development"
 
-from setTags import *
-from getTags import *
-from picture import *
+from setTags import adjustDate, addLocation, nameToExif
+from getTags import printinfo,rename_PM,rename,order,searchByTagEquality,searchByTagInterval
+from picture import detectBlurry,detectSimilar,filterSeries,filterSeries_back,renameHDR,rotate
 
 # for reloading
 from IPython import get_ipython

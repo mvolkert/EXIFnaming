@@ -4,7 +4,7 @@ import shutil
 
 from misc import tofloat, getPostfix
 from tags import *
-from constants import TagNames
+import constants as c
 from fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, copyFilesTo
 from decode import readTags, has_not_keys
 from date import giveDatetime, newdate, dateformating, searchDirByTime
@@ -21,10 +21,10 @@ def setIncludeSubdirs(toInclude=True):
 def printinfo(tagGroupNames=(), Fileext=".JPG"):
     inpath = os.getcwd()
     outdict = readTags(inpath, includeSubdirs, Fileext)
-    for tagGroupName in TagNames:
+    for tagGroupName in c.TagNames:
         if not tagGroupNames == [] and not tagGroupName in tagGroupNames: continue
         outstring = ""
-        for entry in ["File Name"] + TagNames[tagGroupName]:
+        for entry in ["File Name"] + c.TagNames[tagGroupName]:
             if not entry in outdict: continue
             if len(outdict[entry]) == len(outdict["File Name"]):
                 outstring += "%-30s\t" % entry
@@ -34,7 +34,7 @@ def printinfo(tagGroupNames=(), Fileext=".JPG"):
         for i in range(len(outdict["File Name"])):
 
             outstring += "%-40s\t" % outdict["File Name"][i]
-            for entry in TagNames[tagGroupName]:
+            for entry in c.TagNames[tagGroupName]:
                 if not entry in outdict: continue
                 val = outdict[entry]
                 outstring += "%-30s\t" % val[i]
@@ -44,34 +44,31 @@ def printinfo(tagGroupNames=(), Fileext=".JPG"):
         writeToFile(dirname + "\\tags_" + tagGroupName + ".txt", outstring)
 
 
-def rename_PM(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, easymode=False, onlyprint=False,
-              postfix_stay=True, Fileext=".JPG", Fileext_video=".MP4", Fileext_Raw=".Raw"):
-    rename(Prefix, dateformat, name, startindex, digits, easymode, onlyprint, postfix_stay, Fileext,
-           Fileext_Raw)
-    rename(Prefix, dateformat, name, 1, 2, easymode, onlyprint, postfix_stay, Fileext_video, Fileext_Raw)
+def rename_PM(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, postfix_stay=True, name=""):
+    rename(Prefix, dateformat, startindex,  onlyprint, postfix_stay, ".JPG", name)
+    rename(Prefix, dateformat, 1, onlyprint, postfix_stay, ".MP4", name)
 
 
-def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, easymode=False, onlyprint=False,
-           postfix_stay=True, Fileext=".JPG", Fileext_Raw=".Raw"):
+def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
+           postfix_stay=True, Fileext=".JPG", Fileext_Raw=".Raw", name=""):
+    """
+    Rename into Format: [Prefix][dateformat](_[name])_[Filenumber][SeriesType][SeriesSubNumber]_[FotoMode]
+    :param Prefix:
+    :param dateformat: Y:Year,M:Month,D:Day,N:DayCounter; Number of occurrences determine number of digits
+    :param startindex: minimal counter
+    :param onlyprint: do not rename; only output file of proposed renaming into saves directory
+    :param postfix_stay: if you put a postfix after FotoMode with an other program and call this function again, the postfix will be preserved
+    :param Fileext: file extension
+    :param Fileext_Raw: file extension for raw image that is to get same name as the normal one
+    :param name: optional name between date and filenumber, seldom used
+    :return:
+    """
     inpath = os.getcwd()
     Tagdict = readTags(inpath, includeSubdirs, Fileext, ["HDR"])
 
     # check integrity
-    if len(Tagdict) == 0: return
-    keysPrim = ["Directory", "File Name", "Date/Time Original"]
-    keysJPG = ["Image Quality", "HDR", "Advanced Scene Mode", "Scene Mode", "Bracket Settings", "Burst Mode",
-               "Sequence Number", "Sub Sec Time Original"]
-    keysMP4 = ["Image Quality", "HDR", "Advanced Scene Mode", "Scene Mode", "Video Frame Rate"]
-    if easymode:
-        keysImportant = keysPrim
-    elif any(Fileext == ext for ext in ['.jpg', '.JPG']):
-        keysImportant = keysPrim + keysJPG
-    elif any(Fileext == ext for ext in ['.mp4', '.MP4']):
-        keysImportant = keysPrim + keysMP4
-    else:
-        print("unknown file extension")
-        return
-    if has_not_keys(Tagdict, keys=keysImportant): return
+    easymode = checkIntegrity(Tagdict,Fileext)
+    if easymode is None: return
 
     # rename temporary
     if not onlyprint:
@@ -81,16 +78,15 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
 
     # initialize
     if name: name = "_" + name
-    leng = len(list(Tagdict.values())[0])
-    counter = startindex - 1
-    digits = str(digits)
-    time_old = giveDatetime()
     outstring = ""
     lastnewname = ""
-    last_SequenceNumber = 1e4
     Tagdict["File Name new"] = []
+    time_old = giveDatetime()
+    counter = startindex - 1
+    digits = _CountFilesForEachDate(Tagdict, startindex, dateformat)
+    number_of_files = len(list(Tagdict.values())[0])
 
-    for i in range(leng):
+    for i in range(number_of_files):
         time = giveDatetime(getDate(Tagdict, i))
 
         if newdate(time, time_old, 'D' in dateformat or 'N' in dateformat):
@@ -110,12 +106,7 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
             else:
                 # SequenceNumber
                 SequenceNumber = getSequenceNumber(Tagdict, i)
-                if last_SequenceNumber >= SequenceNumber and not time == time_old: counter += 1
-                if SequenceNumber > 0:
-                    last_SequenceNumber = SequenceNumber
-                else:
-                    last_SequenceNumber = 1e4  # SequenceNumber==0 -> no sequence -> high possible value such that even sequences with deleted first pictures can be registered
-
+                if SequenceNumber<2 and not time == time_old: counter += 1
                 sequenceString = getSequenceString(SequenceNumber, Tagdict, i)
 
             counterString = ("_%0" + digits + "d") % counter
@@ -139,7 +130,7 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
 
         if newname in Tagdict["File Name new"]:
             print(
-                Tagdict["Directory"][i] + "\\" + newname + postfix, "already exsists - counted further up - time:",
+                Tagdict["Directory"][i] + "\\" + newname + postfix, "already exists - counted further up - time:",
                 time,
                 "time_old: ", time_old)
             counter += 1
@@ -162,6 +153,24 @@ def rename(Prefix="P", dateformat='YYMM-DD', name="", startindex=1, digits=3, ea
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
     np.savez_compressed(dirname + "\\Tags" + Fileext + timestring, Tagdict=Tagdict)
     writeToFile(dirname + "\\newnames" + Fileext + timestring + ".txt", outstring)
+
+
+def _CountFilesForEachDate(Tagdict,startindex,dateformat):
+    leng = len(list(Tagdict.values())[0])
+    counter = startindex - 1
+    time_old = giveDatetime()
+    maxCounter = 0
+    print("number of files for each date:")
+    for i in range(leng):
+        time = giveDatetime(getDate(Tagdict, i))
+        if not i == 0 and newdate(time, time_old, 'D' in dateformat or 'N' in dateformat):
+            print(time_old.date(), counter)
+            if maxCounter < counter: maxCounter = counter
+            counter = startindex - 1
+        if getSequenceNumber(Tagdict, i)<2: counter += 1
+        time_old = time
+    print(time_old.date(), counter)
+    return str(len(str(maxCounter)))
 
 
 def order():
@@ -224,7 +233,7 @@ def order():
             move(Tagdict_mp4["File Name"][i], Tagdict_mp4["Directory"][i], inpath + "\\" + dirName + "_mp4")
 
 
-def detect3D():
+def _detect3D():
     """
     not yet fully implemented
     """
@@ -256,7 +265,10 @@ def detect3D():
     # more than one picture within 10s
 
 
-def detectSunsetLig():
+def _detectSunset():
+    """
+    not yet fully implemented
+    """
     inpath = os.getcwd()
     Tagdict = readTags(inpath, includeSubdirs)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Scene Mode"]): return
