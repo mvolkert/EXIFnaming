@@ -4,6 +4,7 @@
 from skimage.measure import compare_ssim as ssim
 import numpy as np
 import cv2
+import os
 
 
 def is_blurry(filename, threshold=100):
@@ -17,6 +18,8 @@ def are_similar(filenameA, filenameB, threshold=0.9):
     imageB = read_picture(filenameB, 100)
     if imageA is None or imageB is None: return False
     s = ssim(imageA, imageB)
+    if threshold < s:
+        print(os.path.basename(filenameA), os.path.basename(filenameB), s)
     return threshold < s
 
 

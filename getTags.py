@@ -1,11 +1,13 @@
 import datetime as dt
 from collections import OrderedDict
 import shutil
+import os
 
 from misc import tofloat, getPostfix
 from tags import *
 import constants as c
-from fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, copyFilesTo
+from fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, copyFilesTo, \
+    concatPathToSave
 from decode import readTags, has_not_keys
 from date import giveDatetime, newdate, dateformating, searchDirByTime
 
@@ -172,7 +174,7 @@ def _CountFilesForEachDate(Tagdict,startindex,dateformat):
     counter = startindex - 1
     time_old = giveDatetime()
     maxCounter = 0
-    print("number of files for each date:")
+    print("number of photos for each date:")
     for i in range(leng):
         time = giveDatetime(getDate(Tagdict, i))
         if not i == 0 and newdate(time, time_old, 'D' in dateformat or 'N' in dateformat):
@@ -182,6 +184,7 @@ def _CountFilesForEachDate(Tagdict,startindex,dateformat):
         if getSequenceNumber(Tagdict, i)<2: counter += 1
         time_old = time
     print(time_old.date(), counter)
+    if maxCounter < counter: maxCounter = counter
     return str(len(str(maxCounter)))
 
 

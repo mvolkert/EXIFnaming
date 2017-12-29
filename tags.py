@@ -4,9 +4,7 @@
 collection of Tag tools
 """
 
-import os
 import numpy as np
-from fileop import concatPathToSave
 import constants as c
 from decode import has_not_keys
 
@@ -88,18 +86,6 @@ def getCameraModel(Tagdict,i):
     if model: model = "_"+model
     return model
 
-def readInTagdict(inpath=os.getcwd(),timestring="", Fileext=".JPG"):
-    """not tested"""
-    Tagdict = np.load(concatPathToSave(inpath) + "\\Tags" + Fileext + timestring+ ".npz")["Tagdict"].item()
-    if os.path.isfile(Tagdict["Directory"][0] + "\\" + Tagdict["File Name"][0]):
-        print("load")
-    elif os.path.isfile(Tagdict["Directory"][0] + "\\" + Tagdict["File Name new"][0]):
-        Tagdict["File Name"] = list(Tagdict["File Name new"])
-        Tagdict["File Name new"] = []
-        print("switch")
-    else:
-        print("load again")
-    return Tagdict
 
 def getPath(Tagdict,i):
     if not all([x in Tagdict for x in ["Directory","File Name"]]):

@@ -1,11 +1,11 @@
 import datetime as dt
-import itertools as it
 import os
 import numpy as np
 from fileop import concatPathToSave, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, moveSeries, move, \
     removeIfEmtpy
 from decode import readTags, has_not_keys
 from cv2op import is_blurry, are_similar
+from date import dateformating
 
 includeSubdirs = True
 
@@ -16,7 +16,7 @@ def setIncludeSubdirs(toInclude=True):
     print("modifySubdirs:", includeSubdirs)
 
 
-def renameBack(timestring="",Fileext=".JPG"):
+def renameBack(timestring="", Fileext=".JPG"):
     """
     rename back using backup in saves; change to directory you want o rename back
     :param timestring: time of backup
@@ -25,14 +25,21 @@ def renameBack(timestring="",Fileext=".JPG"):
     """
     inpath = os.getcwd()
     dirname = concatPathToSave(inpath)
-    Tagdict = np.load(dirname + "\\Tags" + Fileext +timestring+ ".npz")["Tagdict"].item()
-    temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
+    tagFile = dirname + "\\Tags" + Fileext + timestring + ".npz"
+    if not timestring or os.path.isfile(tagFile):
+        tagFiles = [x for x in os.listdir(dirname) if ".npz" in x]
+        tagFile = dirname + "\\" + tagFiles[-1]
+    Tagdict = np.load(tagFile)["Tagdict"].item()
+    temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name new"])
+    print(len(list(Tagdict.values())[0]))
     for i in range(len(list(Tagdict.values())[0])):
-        filename = Tagdict["File Name new"][i]
+        filename = Tagdict["File Name new"][i] + temppostfix
         if not os.path.isfile(Tagdict["Directory"][i] + "\\" + filename): continue
         filename_old = Tagdict["File Name"][i]
-        renameInPlace(Tagdict["Directory"][i], filename + temppostfix, filename_old)
+        renameInPlace(Tagdict["Directory"][i], filename, filename_old)
         Tagdict["File Name new"][i], Tagdict["File Name"][i] = Tagdict["File Name"][i], Tagdict["File Name new"][i]
+    timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
+    np.savez_compressed(dirname + "\\Tags" + Fileext + timestring, Tagdict=Tagdict)
 
 
 def detectBlurry():
@@ -65,7 +72,6 @@ def detectSimilar(similarity=0.9):
                 if filenameA == filenameB: continue
                 if not os.path.isfile(dirpath + "\\" + filenameA): continue
                 if not os.path.isfile(dirpath + "\\" + filenameB): continue
-                print(filenameA, filenameB)
                 if not are_similar(dirpath + "\\" + filenameA, dirpath + "\\" + filenameB, similarity): continue
                 dircounter += 1
                 moveToSubpath(filenameA, dirpath, "%03d" % dircounter)
@@ -91,20 +97,21 @@ def filterSeries():
             moveToSubpath(filename, dirpath, "single")
 
 
-
-def foldersToMain(reverse_series=True,reverse_dirs=["blurry"]):
+def foldersToMain( reverse_all=False, reverse_series=True, reverse_dirs=["blurry"]):
     """
     reverses filtering/sorting into directories
     :param reverse_series: reverse filterSeries
+    :param reverse_all: reverse all
     :param reverse_dirs: reverse other dirs
     """
     inpath = os.getcwd()
-    seriesDirs=["B" + str(i) for i in range(1, 8)] + ["S", "single"]
+    seriesDirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single"]
     reverseDirs = list(reverse_dirs)
     if reverse_series: reverseDirs += seriesDirs
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not os.path.basename(dirpath) in reverseDirs: continue
+        if not reverse_all and not os.path.basename(dirpath) in reverseDirs: continue
+        if dirpath == inpath: continue
         print(dirpath, len(dirnames), len(filenames))
         for filename in filenames:
             if not ".JPG" in filename: continue
@@ -191,13 +198,14 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
     timedelta = dt.datetime.now() - timebegin
     print("rotated %3d files in %2d min, %2d sec" % (NFiles, int(timedelta.seconds / 60), timedelta.seconds % 60))
 
+
 def renameTempBackAll():
     """
     rename temporary renamed files back
     """
     import re
     inpath = os.getcwd()
-    matchreg='temp$'
+    matchreg = 'temp$'
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         for filename in filenames:
             match = re.search(matchreg, filename)
