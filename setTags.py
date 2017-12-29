@@ -13,7 +13,10 @@ def setIncludeSubdirs(toInclude=True):
     print("modifySubdirs:", includeSubdirs)
 
 
-def adjustDate(hours=-1, minutes=0, seconds=0, Fileext=".JPG"):
+def adjustDate(hours=0, minutes=0, seconds=0, Fileext=".JPG"):
+    """
+    for example to adjust time zone by one: hours=-1
+    """
     inpath = os.getcwd()
     delta_t = dt.timedelta(hours=hours, minutes=minutes, seconds=seconds)
     Tagdict = readTags(inpath, includeSubdirs, Fileext)
@@ -28,7 +31,9 @@ def adjustDate(hours=-1, minutes=0, seconds=0, Fileext=".JPG"):
 
 def addLocation(country="", city="", location=""):
     """
-    country="Germany", city="Nueremberg", location="Location"
+    :param country: example:"Germany"
+    :param city: example:"Nueremberg"
+    :param location: additional location info
     """
     inpath = os.getcwd()
     options = []
@@ -40,6 +45,9 @@ def addLocation(country="", city="", location=""):
 
 
 def nameToExif():
+    """
+    extract title, description and mode from name and write them to exif
+    """
     inpath = os.getcwd()
     timebegin = dt.datetime.now()
     print("process", countFilesIn(inpath, includeSubdirs, ""), "Files in ", inpath, "subdir:", includeSubdirs)

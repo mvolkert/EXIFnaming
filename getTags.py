@@ -18,9 +18,17 @@ def setIncludeSubdirs(toInclude=True):
     print("modifySubdirs:", includeSubdirs)
 
 
-def printinfo(tagGroupNames=(), Fileext=".JPG"):
+def printinfo(tagGroupNames=(), allGroups=False, Fileext=".JPG"):
+    """
+    write tag info of tagGroupNames to a file in saves dir
+    :param tagGroupNames: selectable groups (look into constants)
+    :param allGroups: take all tagGroupNames
+    :param Fileext: file extension
+    :return:
+    """
     inpath = os.getcwd()
     outdict = readTags(inpath, includeSubdirs, Fileext)
+    if allGroups: tagGroupNames = c.TagNames.keys()
     for tagGroupName in c.TagNames:
         if not tagGroupNames == [] and not tagGroupName in tagGroupNames: continue
         outstring = ""
@@ -45,6 +53,9 @@ def printinfo(tagGroupNames=(), Fileext=".JPG"):
 
 
 def rename_PM(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, postfix_stay=True, name=""):
+    """
+    rename for JPG and MP4
+    """
     rename(Prefix, dateformat, startindex,  onlyprint, postfix_stay, ".JPG", name)
     rename(Prefix, dateformat, 1, onlyprint, postfix_stay, ".MP4", name)
 
@@ -141,18 +152,19 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
 
         newname += filename[filename.rfind("."):]
         Tagdict["File Name new"].append(newname)
-        outstring += "%-50s\t %-50s\n" % (filename, newname)
-        if not onlyprint: renameInPlace(Tagdict["Directory"][i], filename + temppostfix, newname)
+        outstring += _write(Tagdict["Directory"][i], filename, temppostfix, newname, onlyprint)
         filename_Raw = changeExtension(filename, Fileext_Raw)
         if not Fileext_Raw == "" and os.path.isfile(Tagdict["Directory"][i] + "\\" + filename_Raw):
-            newname_Raw = changeExtension(newname, Fileext_Raw)
-            outstring += "%-50s\t %-50s\n" % (filename, newname)
-            if not onlyprint: renameInPlace(Tagdict["Directory"][i], filename_Raw + temppostfix, newname_Raw)
+            outstring += _write(Tagdict["Directory"][i], filename_Raw, temppostfix, changeExtension(newname, Fileext_Raw), onlyprint)
 
     dirname = concatPathToSave(inpath)
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
     np.savez_compressed(dirname + "\\Tags" + Fileext + timestring, Tagdict=Tagdict)
     writeToFile(dirname + "\\newnames" + Fileext + timestring + ".txt", outstring)
+
+def _write(directory, filename,temppostfix, newname, onlyprint):
+    if not onlyprint: renameInPlace(directory, filename + temppostfix, newname)
+    return "%-50s\t %-50s\n" % (filename, newname)
 
 
 def _CountFilesForEachDate(Tagdict,startindex,dateformat):

@@ -74,6 +74,9 @@ def getDate(Tagdict,i):
     return dateTimeString
 
 def getSequenceNumber(Tagdict,i):
+    """
+    sequence starts with 1; 0 means no sequence
+    """
     sequence_str = Tagdict["Sequence Number"][i]
     if np.chararray.isdigit(sequence_str): return int(sequence_str)
     return 0
@@ -85,9 +88,9 @@ def getCameraModel(Tagdict,i):
     if model: model = "_"+model
     return model
 
-def readInTagdict(inpath=os.getcwd(),name="", Fileext=".JPG"):
+def readInTagdict(inpath=os.getcwd(),timestring="", Fileext=".JPG"):
     """not tested"""
-    Tagdict = np.load(concatPathToSave(inpath) + "\\Tags"+name + Fileext)["Tagdict"].item()
+    Tagdict = np.load(concatPathToSave(inpath) + "\\Tags" + Fileext + timestring+ ".npz")["Tagdict"].item()
     if os.path.isfile(Tagdict["Directory"][0] + "\\" + Tagdict["File Name"][0]):
         print("load")
     elif os.path.isfile(Tagdict["Directory"][0] + "\\" + Tagdict["File Name new"][0]):
@@ -105,7 +108,10 @@ def getPath(Tagdict,i):
     return Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i]
 
 
-def checkIntegrity(Tagdict, Fileext):
+def checkIntegrity(Tagdict, Fileext=".JPG"):
+    """
+    :return: None if not primary keys, false if not advanced keys
+    """
     # check integrity
     if len(Tagdict) == 0: return
     keysPrim = ["Directory", "File Name", "Date/Time Original"]

@@ -16,10 +16,16 @@ def setIncludeSubdirs(toInclude=True):
     print("modifySubdirs:", includeSubdirs)
 
 
-def renameBack(Fileext=".JPG"):
+def renameBack(timestring="",Fileext=".JPG"):
+    """
+    rename back using backup in saves; change to directory you want o rename back
+    :param timestring: time of backup
+    :param Fileext: file extension
+    :return:
+    """
     inpath = os.getcwd()
     dirname = concatPathToSave(inpath)
-    Tagdict = np.load(dirname + "\\Tags" + Fileext + ".npz")["Tagdict"].item()
+    Tagdict = np.load(dirname + "\\Tags" + Fileext +timestring+ ".npz")["Tagdict"].item()
     temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
     for i in range(len(list(Tagdict.values())[0])):
         filename = Tagdict["File Name new"][i]
@@ -43,19 +49,27 @@ def detectBlurry():
             moveToSubpath(filename, dirpath, "blurry")
 
 
-def detectSimilar():
+def detectSimilar(similarity=0.9):
+    """
+    :param similarity: -1: completely different, 1: same
+    """
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: continue
         print(dirpath, len(dirnames), len(filenames))
         dircounter = 0
-        filenames = [filename for filename in filenames if ".JPG" in filename]
-        for filenameA, filenameB in it.combinations(filenames, 2):
-            print(filenameA, filenameB)
-            if not are_similar(dirpath + "\\" + filenameA, dirpath + "\\" + filenameB, 0.9): continue
-            dircounter += 1
-            moveToSubpath(filenameA, dirpath, "%2d" % dircounter)
-            moveToSubpath(filenameB, dirpath, "%2d" % dircounter)
+        filenamesA = [filename for filename in filenames if ".JPG" in filename]
+        for filenameA in filenamesA:
+            print(filenameA)
+            for filenameB in filenamesA:
+                if filenameA == filenameB: continue
+                if not os.path.isfile(dirpath + "\\" + filenameA): continue
+                if not os.path.isfile(dirpath + "\\" + filenameB): continue
+                print(filenameA, filenameB)
+                if not are_similar(dirpath + "\\" + filenameA, dirpath + "\\" + filenameB, similarity): continue
+                dircounter += 1
+                moveToSubpath(filenameA, dirpath, "%03d" % dircounter)
+                moveToSubpath(filenameB, dirpath, "%03d" % dircounter)
 
 
 def filterSeries():
@@ -78,9 +92,16 @@ def filterSeries():
 
 
 
-def filterSeries_back():
+def foldersToMain(reverse_series=True,reverse_dirs=["blurry"]):
+    """
+    reverses filtering/sorting into directories
+    :param reverse_series: reverse filterSeries
+    :param reverse_dirs: reverse other dirs
+    """
     inpath = os.getcwd()
-    reverseDirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single", "blurry"]
+    seriesDirs=["B" + str(i) for i in range(1, 8)] + ["S", "single"]
+    reverseDirs = list(reverse_dirs)
+    if reverse_series: reverseDirs += seriesDirs
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not os.path.basename(dirpath) in reverseDirs: continue
@@ -171,6 +192,9 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
     print("rotated %3d files in %2d min, %2d sec" % (NFiles, int(timedelta.seconds / 60), timedelta.seconds % 60))
 
 def renameTempBackAll():
+    """
+    rename temporary renamed files back
+    """
     import re
     inpath = os.getcwd()
     matchreg='temp$'
