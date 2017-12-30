@@ -7,6 +7,22 @@ import operator
 
 from EXIFnaming.helpers.constants import unknownTags
 
+umlauts_dict = {
+    '\\xc3\\xa4': 'ä',  # U+00E4	   \xc3\xa4
+    '\\xc3\\xb6': 'ö',  # U+00F6	   \xc3\xb6
+    '\\xc3\\xbc': 'ü',  # U+00FC	   \xc3\xbc
+    '\\xc3\\x84': 'Ä',  # U+00C4	   \xc3\x84
+    '\\xc3\\x96': 'Ö',  # U+00D6	   \xc3\x96
+    '\\xc3\\x9c': 'Ü',  # U+00DC	   \xc3\x9c
+    '\\xc3\\x9f': 'ß',  # U+00DF	   \xc3\x9f
+}
+
+
+def replace_umlauts(string):
+    for x in umlauts_dict:
+        if x in string:
+            string=string.replace(x, umlauts_dict[x])
+    return string
 
 def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=[]):
     date_org_name = "Date/Time Original"
@@ -31,6 +47,7 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
             ListOfDicts.append(decodeTags(tags))
 
     outdict = listsOfDictsToDictOfLists(ListOfDicts)
+    if not outdict: return {}
     outdict = sortDict(outdict, [date_org_name])
     for i in range(len(outdict["Directory"])):
         outdict["Directory"][i].replace("/", "\\")
@@ -69,11 +86,12 @@ def has_not_keys(indict, keys):
 
 def callExiftool(name, options=[], override=True):
     path = os.path.dirname(os.path.realpath(__file__)) + "\\"
-    args = [path + "exiftool", name] + options
-    if override: args.append("-overwrite_original_in_place")
+    args = [path + "exiftool", name] + ["-charset","FileName=Latin2"]+ options
+    if override and options: args.append("-overwrite_original_in_place")
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)  # , shell=True
     (out, err) = proc.communicate()
-    return str(out)
+    out = replace_umlauts(str(out))
+    return out
 
 
 def sortDict(indict: OrderedDict, keys: list):
@@ -145,7 +163,9 @@ def decodeTags(tags):
         if key in tagDict: continue
         if (key, val) in unknownTags: val = unknownTags[(key, val)]
         tagDict[key] = val
-    if not date_org_name in tagDict:
+    if not tagDict:
+        print("error: no tags extracted from:",tags)
+    elif not date_org_name in tagDict:
         print("error:", date_org_name, "not in", tagDict)
     return tagDict
 

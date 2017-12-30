@@ -105,6 +105,7 @@ def checkIntegrity(Tagdict, Fileext=".JPG"):
                "Sequence Number", "Sub Sec Time Original"]
     keysMP4 = ["Image Quality", "HDR", "Advanced Scene Mode", "Scene Mode", "Video Frame Rate"]
 
+    if not Tagdict: return
     if has_not_keys(Tagdict, keys=keysPrim): return
 
     if any(Fileext == ext for ext in ['.jpg', '.JPG']):

@@ -199,6 +199,7 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
     :param mode: name for HDR-Mode written to file
     :param sign: direction of rotation
     :param folder: only files in folders of this name are renamed
+    :param override: override file with rotated one
     """
 
     from PIL import Image
@@ -210,7 +211,7 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
         if not includeSubdirs and not inpath == dirpath: continue
         if not folder == "" and not folder == dirpath.split("\\")[-1]: continue
         print(dirpath)
-        Tagdict = readTags(dirpath, includeSubdirs)
+        Tagdict = readTags(dirpath, includeSubdirs,".jpg")
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Rotation"]): return
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):

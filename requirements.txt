@@ -1,2 +1,3 @@
 skimage
 cv2
+numpy
