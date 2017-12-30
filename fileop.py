@@ -101,11 +101,11 @@ def moveBracketSeries(dirpath,filenames):
             BList = []
     moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
 
-def moveSeries(dirpath,filenames):
+def moveSeries(dirpath,filenames,series_type="S"):
     for filename in filenames:
-        match = re.search('_([0-9]+)S([0-9]+)', filename)
+        match = re.search('_([0-9]+)'+series_type+'([0-9]+)', filename)
         if match:
-            moveToSubpath(filename, dirpath, "S")
+            moveToSubpath(filename, dirpath, series_type)
 
 
 def copyFilesTo(files, path):

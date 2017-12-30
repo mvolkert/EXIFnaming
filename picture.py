@@ -58,6 +58,7 @@ def detectBlurry():
 
 def detectSimilar(similarity=0.9):
     """
+    put similar pictures in same sub folder
     :param similarity: -1: completely different, 1: same
     """
     inpath = os.getcwd()
@@ -66,16 +67,21 @@ def detectSimilar(similarity=0.9):
         print(dirpath, len(dirnames), len(filenames))
         dircounter = 0
         filenamesA = [filename for filename in filenames if ".JPG" in filename]
-        for filenameA in filenamesA:
+        for i,filenameA in enumerate(filenamesA):
             print(filenameA)
-            for filenameB in filenamesA:
-                if filenameA == filenameB: continue
+            notSimCounter=0
+            for filenameB in filenamesA[i+1:]:
+                if notSimCounter == 10: break
                 if not os.path.isfile(dirpath + "\\" + filenameA): continue
                 if not os.path.isfile(dirpath + "\\" + filenameB): continue
-                if not are_similar(dirpath + "\\" + filenameA, dirpath + "\\" + filenameB, similarity): continue
-                dircounter += 1
-                moveToSubpath(filenameA, dirpath, "%03d" % dircounter)
+                if not are_similar(dirpath + "\\" + filenameA, dirpath + "\\" + filenameB, similarity):
+                    notSimCounter+=1
+                    continue
+                notSimCounter = 0
                 moveToSubpath(filenameB, dirpath, "%03d" % dircounter)
+            if not os.path.isdir(dirpath+"\\"+"%03d" % dircounter): continue
+            moveToSubpath(filenameA, dirpath, "%03d" % dircounter)
+            dircounter += 1
 
 
 def filterSeries():
@@ -91,26 +97,57 @@ def filterSeries():
         if os.path.basename(dirpath) in skipdirs: continue
         print(dirpath, len(dirnames), len(filenames))
         moveBracketSeries(dirpath, filenames)
-        moveSeries(dirpath, filenames)
+        moveSeries(dirpath, filenames,"S")
+        moveSeries(dirpath, filenames, "SM")
+        moveSeries(dirpath, filenames, "TL")
         for filename in filenames:
             if not ".JPG" in filename: continue
             moveToSubpath(filename, dirpath, "single")
 
+def filterPrimary():
+    """
+    put single and B1 in same directory
+    """
+    import re
+    inpath = os.getcwd()
+    skipdirs = ["S", "single", "HDR", ".git", "tags"]
 
-def foldersToMain( reverse_all=False, reverse_series=True, reverse_dirs=["blurry"]):
+    print(inpath)
+    foldersToMain(False, False, ["B" + str(i) for i in range(1, 8)])
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not includeSubdirs and not inpath == dirpath: continue
+        if os.path.basename(dirpath) in skipdirs: continue
+        print(dirpath, len(dirnames), len(filenames))
+        moveSeries(dirpath, filenames, "S")
+        moveSeries(dirpath, filenames, "SM")
+        moveSeries(dirpath, filenames, "TL")
+        for filename in filenames:
+            match = re.search('_([0-9]+)B1', filename)
+            if match: moveToSubpath(filename, dirpath, "primary")
+        moveSeries(dirpath, filenames, "B")
+        for filename in filenames:
+            if not ".JPG" in filename: continue
+            moveToSubpath(filename, dirpath, "primary")
+
+
+def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, dirs=None):
     """
     reverses filtering/sorting into directories
-    :param reverse_series: reverse filterSeries
-    :param reverse_all: reverse all
-    :param reverse_dirs: reverse other dirs
+    :param series: reverse filterSeries
+    :param primary: reverse filterPrimary
+    :param blurry: reverse detectBlurry
+    :param all_folders: reverse all
+    :param dirs: reverse other dirs
     """
     inpath = os.getcwd()
-    seriesDirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single"]
-    reverseDirs = list(reverse_dirs)
-    if reverse_series: reverseDirs += seriesDirs
+    if dirs is None: reverseDirs =[]
+    else: reverseDirs = list(dirs)
+    if series: reverseDirs += ["B" + str(i) for i in range(1, 8)] + ["S", "single"]
+    if primary: reverseDirs += ["B","S","TL","SM", "primary"]
+    if blurry: reverseDirs += ["blurry"]
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not reverse_all and not os.path.basename(dirpath) in reverseDirs: continue
+        if not all_folders and not os.path.basename(dirpath) in reverseDirs: continue
         if dirpath == inpath: continue
         print(dirpath, len(dirnames), len(filenames))
         for filename in filenames:
