@@ -1,8 +1,10 @@
 import datetime as dt
-from tags import *
-import constants as c
-from decode import readTags, has_not_keys, callExiftool, askToContinue, writeTags, countFilesIn
-from date import giveDatetime, dateformating
+import os
+
+from EXIFnaming.helpers.tags import *
+import EXIFnaming.helpers.constants as c
+from EXIFnaming.helpers.decode import readTags, has_not_keys, callExiftool, askToContinue, writeTags, countFilesIn
+from EXIFnaming.helpers.date import giveDatetime, dateformating
 
 includeSubdirs = True
 

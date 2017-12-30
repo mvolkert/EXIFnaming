@@ -8,8 +8,6 @@ exec(open("D:\ProgramData\Anaconda3\Scripts\ipython-script.py").read())
 # imports for utilities often used in ipython
 import time
 import os
-from os import listdir, rename, walk
-from os.path import join, getmtime
 import sys
 from collections import OrderedDict
 from shutil import copyfile
@@ -26,12 +24,13 @@ ipython.magic('autoreload 2')
 # %autoreload 2
 
 # change to working dir
-print(os.getcwd())
-os.chdir("F:\\Bilder\\bearbeitung\\tags\\pyScripts")
-print(os.getcwd())
+os.chdir(r"F:\Bilder\bearbeitung\tags\pyScripts")
 
-import EXIFnaming, setTags, getTags, picture
+import EXIFnaming
 
-print(os.getcwd())
-os.chdir("F:\\Bilder\\bearbeitung")
-print(os.getcwd())
+os.chdir(r"F:\Bilder\bearbeitung\tags\pyScripts\EXIFnaming")
+import getTags
+import setTags
+import picture
+
+os.chdir(r"F:\Bilder\bearbeitung")

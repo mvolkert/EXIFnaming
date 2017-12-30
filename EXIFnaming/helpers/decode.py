@@ -4,7 +4,8 @@ import os
 from collections import OrderedDict
 import datetime as dt
 import operator
-from constants import unknownTags
+
+from EXIFnaming.helpers.constants import unknownTags
 
 
 def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=[]):

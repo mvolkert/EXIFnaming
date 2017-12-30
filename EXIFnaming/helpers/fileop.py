@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 
-from misc import askToContinue
+from EXIFnaming.helpers.misc import askToContinue
 
 def getSavesDir():
     path = os.path.realpath(__file__)

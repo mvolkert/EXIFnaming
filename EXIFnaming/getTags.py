@@ -2,14 +2,16 @@ import datetime as dt
 from collections import OrderedDict
 import shutil
 import os
+import numpy as np
 
-from misc import tofloat, getPostfix
-from tags import *
-import constants as c
-from fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, copyFilesTo, \
-    concatPathToSave
-from decode import readTags, has_not_keys
-from date import giveDatetime, newdate, dateformating, searchDirByTime
+from EXIFnaming.helpers.misc import tofloat, getPostfix
+from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getMode, getCameraModel, getDate, getRecMode, \
+    getSequenceString, checkIntegrity, is_series, is_sun
+import EXIFnaming.helpers.constants as c
+from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
+    copyFilesTo, concatPathToSave
+from EXIFnaming.helpers.decode import readTags, has_not_keys
+from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, searchDirByTime
 
 includeSubdirs = True
 
@@ -58,7 +60,7 @@ def rename_PM(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, po
     """
     rename for JPG and MP4
     """
-    rename(Prefix, dateformat, startindex,  onlyprint, postfix_stay, ".JPG", name)
+    rename(Prefix, dateformat, startindex, onlyprint, postfix_stay, ".JPG", name)
     rename(Prefix, dateformat, 1, onlyprint, postfix_stay, ".MP4", name)
 
 
@@ -80,7 +82,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     Tagdict = readTags(inpath, includeSubdirs, Fileext, ["HDR"])
 
     # check integrity
-    easymode = checkIntegrity(Tagdict,Fileext)
+    easymode = checkIntegrity(Tagdict, Fileext)
     if easymode is None: return
 
     # rename temporary
@@ -96,7 +98,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     Tagdict["File Name new"] = []
     time_old = giveDatetime()
     counter = startindex - 1
-    digits = _CountFilesForEachDate(Tagdict, startindex, dateformat)
+    digits = _countFilesForEachDate(Tagdict, startindex, dateformat)
     number_of_files = len(list(Tagdict.values())[0])
 
     for i in range(number_of_files):
@@ -119,7 +121,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
             else:
                 # SequenceNumber
                 SequenceNumber = getSequenceNumber(Tagdict, i)
-                if SequenceNumber<2 and not time == time_old: counter += 1
+                if SequenceNumber < 2 and not time == time_old: counter += 1
                 sequenceString = getSequenceString(SequenceNumber, Tagdict, i)
 
             counterString = ("_%0" + digits + "d") % counter
@@ -157,19 +159,21 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
         outstring += _write(Tagdict["Directory"][i], filename, temppostfix, newname, onlyprint)
         filename_Raw = changeExtension(filename, Fileext_Raw)
         if not Fileext_Raw == "" and os.path.isfile(Tagdict["Directory"][i] + "\\" + filename_Raw):
-            outstring += _write(Tagdict["Directory"][i], filename_Raw, temppostfix, changeExtension(newname, Fileext_Raw), onlyprint)
+            outstring += _write(Tagdict["Directory"][i], filename_Raw, temppostfix,
+                                changeExtension(newname, Fileext_Raw), onlyprint)
 
     dirname = concatPathToSave(inpath)
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
     np.savez_compressed(dirname + "\\Tags" + Fileext + timestring, Tagdict=Tagdict)
     writeToFile(dirname + "\\newnames" + Fileext + timestring + ".txt", outstring)
 
-def _write(directory, filename,temppostfix, newname, onlyprint):
+
+def _write(directory, filename, temppostfix, newname, onlyprint):
     if not onlyprint: renameInPlace(directory, filename + temppostfix, newname)
     return "%-50s\t %-50s\n" % (filename, newname)
 
 
-def _CountFilesForEachDate(Tagdict,startindex,dateformat):
+def _countFilesForEachDate(Tagdict, startindex, dateformat):
     leng = len(list(Tagdict.values())[0])
     counter = startindex - 1
     time_old = giveDatetime()
@@ -181,7 +185,7 @@ def _CountFilesForEachDate(Tagdict,startindex,dateformat):
             print(time_old.date(), counter)
             if maxCounter < counter: maxCounter = counter
             counter = startindex - 1
-        if getSequenceNumber(Tagdict, i)<2: counter += 1
+        if getSequenceNumber(Tagdict, i) < 2: counter += 1
         time_old = time
     print(time_old.date(), counter)
     if maxCounter < counter: maxCounter = counter
