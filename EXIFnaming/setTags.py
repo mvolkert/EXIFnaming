@@ -6,6 +6,11 @@ import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.decode import readTags, has_not_keys, callExiftool, askToContinue, writeTags, countFilesIn
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 
+"""
+Writes to Tags
+"""
+
+
 includeSubdirs = True
 
 

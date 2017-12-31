@@ -13,6 +13,11 @@ from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtensio
 from EXIFnaming.helpers.decode import readTags, has_not_keys
 from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, searchDirByTime
 
+"""
+Reads Tags to use them, but not write to them
+"""
+
+
 includeSubdirs = True
 
 
@@ -330,3 +335,64 @@ def searchByTagInterval(TagName, min, max, Fileext=".JPG"):
         if not (value and min < value < max): continue
         files.append(getPath(Tagdict, i))
     copyFilesTo(files, inpath + "\\matches")
+
+def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
+    """
+    rotate back according to tag information (Rotate 90 CW or Rotate 270 CW)
+    :param mode: name for HDR-Mode written to file
+    :param sign: direction of rotation
+    :param folder: only files in folders of this name are renamed
+    :param override: override file with rotated one
+    """
+
+    from PIL import Image
+
+    NFiles = 0
+    timebegin = dt.datetime.now()
+    inpath = os.getcwd()
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not includeSubdirs and not inpath == dirpath: continue
+        if not folder == "" and not folder == dirpath.split("\\")[-1]: continue
+        print(dirpath)
+        Tagdict = readTags(dirpath, includeSubdirs, ".jpg")
+        if has_not_keys(Tagdict, keys=["Directory", "File Name", "Rotation"]): return
+        leng = len(list(Tagdict.values())[0])
+        for i in range(leng):
+            # Load the original image:
+            if not mode in Tagdict["File Name"][i]: continue
+            if Tagdict["Rotation"][i] == "Horizontal (normal)":
+                continue
+            else:
+                name = Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i]
+                print(Tagdict["File Name"][i])
+                img = Image.open(name)
+                if Tagdict["Rotation"][i] == "Rotate 90 CW":
+                    img_rot = img.rotate(90 * sign, expand=True)
+                elif Tagdict["Rotation"][i] == "Rotate 270 CW":
+                    img_rot = img.rotate(-90 * sign, expand=True)
+                else:
+                    continue
+                NFiles += 1
+                if not override: name = name[:name.rfind(".")] + "_rot" + name[name.rfind("."):]
+                img_rot.save(name, 'JPEG', quality=99, exif=img.info['exif'])
+
+    timedelta = dt.datetime.now() - timebegin
+    print("rotated %3d files in %2d min, %2d sec" % (NFiles, int(timedelta.seconds / 60), timedelta.seconds % 60))
+
+
+def exifToName(Fileext=".JPG"):
+    """
+    reverse nameToExif()
+    """
+    inpath = os.getcwd()
+    Tagdict = readTags(inpath, includeSubdirs, Fileext)
+    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", "Image Description", "Title","State"]): return
+    temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
+    leng = len(list(Tagdict.values())[0])
+    for i in range(leng):
+        name=Tagdict["Image Description"][i]
+        mode = Tagdict["State"][i]
+        title = Tagdict["Title"][i]
+        if mode: name+="_"+mode
+        if title: name+="_"+title
+        renameInPlace(Tagdict["Directory"][i], Tagdict["File Name"][i] + temppostfix, name+Fileext)

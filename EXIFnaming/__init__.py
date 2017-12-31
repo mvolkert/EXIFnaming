@@ -10,8 +10,10 @@ __email__ = "marco.volkert24@gmx.de"
 __status__ = "Development"
 
 from EXIFnaming.setTags import adjustDate, addLocation, nameToExif
-from EXIFnaming.getTags import printinfo,rename_PM,rename,order,searchByTagEquality,searchByTagInterval
-from EXIFnaming.picture import detectBlurry,detectSimilar,filterSeries,filterPrimary,renameHDR,rotate, renameTempBackAll, foldersToMain
+from EXIFnaming.getTags import printinfo, rename_PM, rename, order, searchByTagEquality, searchByTagInterval, rotate, \
+    exifToName
+from EXIFnaming.picture import detectBlurry, detectSimilar, filterSeries, filterPrimary, renameHDR, renameTempBackAll, \
+    foldersToMain
 
 # for reloading
 from IPython import get_ipython
