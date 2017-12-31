@@ -1,16 +1,14 @@
+#!/usr/bin/env python3
+"""
+Does not uses Tags at all
+"""
 import datetime as dt
 import os
 import numpy as np
 from EXIFnaming.helpers.fileop import concatPathToSave, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, moveSeries, move, \
     removeIfEmtpy
-from EXIFnaming.helpers.decode import readTags, has_not_keys
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
 from EXIFnaming.helpers.date import dateformating
-
-"""
-Does not uses Tags at all
-"""
-
 
 includeSubdirs = True
 

@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Reads Tags to use them, but not write to them
+"""
+
 import datetime as dt
 from collections import OrderedDict
 import shutil
@@ -12,11 +17,6 @@ from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtensio
     copyFilesTo, concatPathToSave
 from EXIFnaming.helpers.decode import readTags, has_not_keys
 from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, searchDirByTime
-
-"""
-Reads Tags to use them, but not write to them
-"""
-
 
 includeSubdirs = True
 

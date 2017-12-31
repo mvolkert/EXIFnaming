@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 collection of Tag operations
 works with: www.sno.phy.queensu.ca/~phil/exiftool/

@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Writes to Tags
+"""
+
 import datetime as dt
 import os
 
@@ -5,11 +10,6 @@ from EXIFnaming.helpers.tags import *
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.decode import readTags, has_not_keys, callExiftool, askToContinue, writeTags, countFilesIn
 from EXIFnaming.helpers.date import giveDatetime, dateformating
-
-"""
-Writes to Tags
-"""
-
 
 includeSubdirs = True
 
