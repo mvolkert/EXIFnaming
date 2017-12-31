@@ -27,10 +27,8 @@ ipython.magic('autoreload 2')
 os.chdir(r"F:\Bilder\bearbeitung\tags\EXIFnaming")
 
 import EXIFnaming
-
-os.chdir(r"F:\Bilder\bearbeitung\tags\EXIFnaming\EXIFnaming")
-import getTags
-import setTags
-import picture
+import EXIFnaming.getTags
+import EXIFnaming.setTags
+import EXIFnaming.picture
 
 os.chdir(r"F:\Bilder\bearbeitung")
