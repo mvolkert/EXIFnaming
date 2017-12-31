@@ -25,8 +25,6 @@ def replace_umlauts(string):
     return string
 
 def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=[]):
-    date_org_name = "Date/Time Original"
-
     print("process", countFilesIn(inpath, includeSubdirs, Fileext, skipdirs), "Files in ", inpath, "includeSubdirs:",
           includeSubdirs)
     askToContinue()
@@ -48,7 +46,7 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
 
     outdict = listsOfDictsToDictOfLists(ListOfDicts)
     if not outdict: return {}
-    outdict = sortDict(outdict, [date_org_name])
+    outdict = sortByDate(outdict)
     for i in range(len(outdict["Directory"])):
         outdict["Directory"][i].replace("/", "\\")
     timedelta = dt.datetime.now() - timebegin
@@ -92,6 +90,12 @@ def callExiftool(name, options=[], override=True):
     (out, err) = proc.communicate()
     out = replace_umlauts(str(out))
     return out
+
+
+def sortByDate(indict: OrderedDict):
+    sortkeys=["Date/Time Original"]
+    if "Sub Sec Time Original" in indict: sortkeys.append("Sub Sec Time Original")
+    return sortDict(indict, sortkeys)
 
 
 def sortDict(indict: OrderedDict, keys: list):

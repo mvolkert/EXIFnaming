@@ -84,7 +84,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     :return:
     """
     inpath = os.getcwd()
-    Tagdict = readTags(inpath, includeSubdirs, Fileext, ["HDR"])
+    Tagdict = readTags(inpath, includeSubdirs, Fileext)
 
     # check integrity
     easymode = checkIntegrity(Tagdict, Fileext)
@@ -127,7 +127,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
                 # SequenceNumber
                 SequenceNumber = getSequenceNumber(Tagdict, i)
                 if SequenceNumber < 2 and not time == time_old: counter += 1
-                sequenceString = getSequenceString(SequenceNumber, Tagdict, i)
+                if not "HDR" in filename: sequenceString = getSequenceString(SequenceNumber, Tagdict, i)
 
             counterString = ("_%0" + digits + "d") % counter
 
