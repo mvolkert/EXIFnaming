@@ -6,7 +6,7 @@ from EXIFnaming.helpers.misc import askToContinue
 
 def getSavesDir():
     path = os.path.realpath(__file__)
-    for i in range(3):
+    for i in range(4):
         path=os.path.dirname(path)
     return path + "\\saves\\"
 
