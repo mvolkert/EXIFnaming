@@ -47,7 +47,7 @@ def rename_join(path1: tuple, path2: tuple):
     os.rename(os.path.join(*path1),os.path.join(*path2))
 
 def isfile(*path):
-    os.path.isfile(os.path.join(*path))
+    return os.path.isfile(os.path.join(*path))
 
 def concatPathToSave(path):
     path = getSavesDir() + os.path.basename(path)
@@ -123,3 +123,9 @@ def copyFilesTo(files: list, path: str):
 
 def changeExtension(filename: str,ext: str):
     return filename[:filename.rfind(".")] + ext
+
+def get_relpath_depth(inpath, dirpath):
+    relpath = os.path.relpath(dirpath, inpath)
+    if relpath == ".": return 0
+    return len(relpath.split(os.sep))
+

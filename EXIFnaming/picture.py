@@ -6,9 +6,10 @@ import datetime as dt
 import os
 import numpy as np
 from EXIFnaming.helpers.fileop import concatPathToSave, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
-    moveSeries, move, removeIfEmtpy, isfile
+    moveSeries, move, removeIfEmtpy, isfile, get_relpath_depth
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
 from EXIFnaming.helpers.date import dateformating
+from EXIFnaming.helpers.misc import askToContinue
 
 includeSubdirs = True
 
@@ -151,6 +152,19 @@ def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, 
     if series: reverseDirs += ["B" + str(i) for i in range(1, 8)] + ["S", "single"]
     if primary: reverseDirs += ["B", "S", "TL", "SM", "primary"]
     if blurry: reverseDirs += ["blurry"]
+
+    deepest =0
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        depth =  get_relpath_depth(dirpath, inpath)
+        deepest = max(deepest,depth)
+    if all_folders and deepest>1:
+        print("A folder structure with a depth of %2d will be flattened"%deepest)
+        askToContinue()
+    elif deepest>3:
+        print("The folder structure has a depth of %2d"%deepest)
+        print("chosen directory names:")
+        print(reverseDirs)
+        askToContinue()
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not all_folders and not os.path.basename(dirpath) in reverseDirs: continue
