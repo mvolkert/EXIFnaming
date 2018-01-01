@@ -48,7 +48,7 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
     if not outdict: return {}
     outdict = sortByDate(outdict)
     for i in range(len(outdict["Directory"])):
-        outdict["Directory"][i].replace("/", os.sep)
+        outdict["Directory"][i] = outdict["Directory"][i].replace("/", os.sep)
     timedelta = dt.datetime.now() - timebegin
     print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
     return outdict
