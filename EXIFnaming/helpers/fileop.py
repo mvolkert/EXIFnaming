@@ -8,7 +8,7 @@ def getSavesDir():
     path = os.path.realpath(__file__)
     for i in range(4):
         path=os.path.dirname(path)
-    return path + "\\saves\\"
+    return os.path.join(path, "saves","")
 
 def moveFiles(filenames, path: str):
     if os.path.isdir(path):
@@ -17,32 +17,37 @@ def moveFiles(filenames, path: str):
     if len(filenames) == 0: return
     os.makedirs(path)
     for filename in filenames:
-        os.rename(filename[0] + "\\" + filename[1], path + "\\" + filename[1])
+        rename_join((filename[0], filename[1]), (path, filename[1]))
 
 
 def moveFilesToSubpath(filenames, dirpath, subpath):
     if len(filenames) == 0: return
-    os.makedirs(dirpath + "\\" + subpath, exist_ok=True)
+    os.makedirs(os.path.join(dirpath, subpath), exist_ok=True)
     for filename in filenames:
-        os.rename(dirpath + "\\" + filename, dirpath + "\\" + subpath + "\\" + filename)
+        rename_join((dirpath, filename), (dirpath, subpath, filename))
 
 
 def moveToSubpath(filename, dirpath, subpath):
-    os.makedirs(dirpath + "\\" + subpath, exist_ok=True)
-    if not os.path.isfile(dirpath + "\\" + filename): return
-    os.rename(dirpath + "\\" + filename, dirpath + "\\" + subpath + "\\" + filename)
+    os.makedirs(os.path.join(dirpath, subpath), exist_ok=True)
+    if not isfile(dirpath, filename): return
+    rename_join((dirpath, filename), (dirpath, subpath, filename))
 
 
 def move(filename, oldpath, newpath):
     os.makedirs(newpath, exist_ok=True)
-    if not os.path.isfile(oldpath + "\\" + filename): return
-    if os.path.isfile(newpath + "\\" + filename): return
-    os.rename(oldpath + "\\" + filename, newpath + "\\" + filename)
+    if not os.path.isfile(os.path.join(oldpath, filename)): return
+    if isfile(newpath, filename): return
+    rename_join((oldpath, filename), (newpath, filename))
 
 
 def renameInPlace(dirpath, oldFilename, newFilename):
-    os.rename(dirpath + "\\" + oldFilename, dirpath + "\\" + newFilename)
+    rename_join((dirpath, oldFilename), (dirpath, newFilename))
 
+def rename_join(path1: tuple, path2: tuple):
+    os.rename(os.path.join(*path1),os.path.join(*path2))
+
+def isfile(*path):
+    os.path.isfile(os.path.join(*path))
 
 def concatPathToSave(path):
     path = getSavesDir() + os.path.basename(path)
@@ -54,33 +59,33 @@ def writeToFile(path,content):
     ofile.write(content)
     ofile.close()
 
-def removeIfEmtpy(dirpath):
+def removeIfEmtpy(dirpath: str):
     if len(os.listdir(dirpath))==1:
-        if os.path.isfile(dirpath+"\\thumbs.db"): os.remove(dirpath+"\\thumbs.db")
+        if isfile(dirpath, "thumbs.db"): os.remove(os.path.join(dirpath, "thumbs.db"))
     if not os.listdir(dirpath): os.rmdir(dirpath)
 
-def renameTemp(DirectoryList, FileNameList):
+def renameTemp(DirectoryList: list, FileNameList:list):
     if not len(DirectoryList) == len(FileNameList):
         print("error in renameTemp: len(DirectoryList)!=len(FileNameList)")
         return ""
     temppostfix = "temp"
     for i in range(len(FileNameList)):
-        os.rename(DirectoryList[i] + "\\" + FileNameList[i], DirectoryList[i] + "\\" + FileNameList[i] + temppostfix)
+        rename_join((DirectoryList[i], FileNameList[i]), (DirectoryList[i], FileNameList[i] + temppostfix))
     return temppostfix
 
 
-def renameEveryTemp(inpath):
+def renameEveryTemp(inpath: str):
     temppostfix = "temp"
     if not os.path.isdir(inpath):
         print('not found directory: ' + inpath)
         return
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         for filename in filenames:
-            os.rename(dirpath + "\\" + filename, dirpath + "\\" + filename + temppostfix)
+            rename_join((dirpath, filename), (dirpath, filename + temppostfix))
     return temppostfix
 
 
-def moveBracketSeries(dirpath,filenames):
+def moveBracketSeries(dirpath: str,filenames: list):
     counter_old = "000"
     counter2_old = "0"
     BList = []
@@ -101,14 +106,14 @@ def moveBracketSeries(dirpath,filenames):
             BList = []
     moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
 
-def moveSeries(dirpath,filenames,series_type="S"):
+def moveSeries(dirpath: str,filenames: list,series_type="S"):
     for filename in filenames:
         match = re.search('_([0-9]+)'+series_type+'([0-9]+)', filename)
         if match:
             moveToSubpath(filename, dirpath, series_type)
 
 
-def copyFilesTo(files, path):
+def copyFilesTo(files: list, path: str):
     print(len(files), "matches are to be copied to", path)
     askToContinue()
     os.makedirs(path, exist_ok=True)
@@ -116,5 +121,5 @@ def copyFilesTo(files, path):
         shutil.copy2(filename, path)
 
 
-def changeExtension(filename,ext):
+def changeExtension(filename: str,ext: str):
     return filename[:filename.rfind(".")] + ext

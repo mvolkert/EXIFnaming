@@ -35,12 +35,12 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
         if not includeSubdirs and not inpath == dirpath: break
         if os.path.basename(dirpath) in skipdirs: continue
         if countFiles(filenames, Fileext) == 0:
-            print("  No matching files in ", dirpath.replace(inpath + "\\", ""))
+            print("  No matching files in ", os.path.relpath(dirpath, inpath))
             continue
-        out = callExiftool(dirpath + "\\*" + Fileext, [], False)
+        out = callExiftool(dirpath, "*" + Fileext, [], False)
         out = out[out.find("ExifTool Version Number"):]
         out_split = out.split("========")
-        print("%4d tags extracted in " % len(out_split), dirpath.replace(inpath + "\\", ""))
+        print("%4d tags extracted in " % len(out_split), os.path.relpath(dirpath, inpath))
         for tags in out_split:
             ListOfDicts.append(decodeTags(tags))
 
@@ -48,7 +48,7 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
     if not outdict: return {}
     outdict = sortByDate(outdict)
     for i in range(len(outdict["Directory"])):
-        outdict["Directory"][i].replace("/", "\\")
+        outdict["Directory"][i].replace("/", os.sep)
     timedelta = dt.datetime.now() - timebegin
     print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
     return outdict
@@ -60,10 +60,10 @@ def writeTags(inpath, options, includeSubdirs=False, Fileext=".JPG"):
         if not includeSubdirs and not inpath == dirpath: break
         n = countFiles(filenames, Fileext)
         if n == 0:
-            print("  No matching files in ", dirpath.replace(inpath + "\\", ""))
+            print("  No matching files in ", os.path.relpath(dirpath, inpath))
             continue
-        callExiftool(dirpath + "\\*" + Fileext, options, True)
-        print("%4d tags written in   " % n, dirpath.replace(inpath + "\\", ""))
+        callExiftool(dirpath,"*" + Fileext, options, True)
+        print("%4d tags written in   " % n, os.path.relpath(dirpath, inpath))
     timedelta = dt.datetime.now() - timebegin
     print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
 
@@ -82,9 +82,10 @@ def has_not_keys(indict, keys):
     return False
 
 
-def callExiftool(name, options=[], override=True):
-    path = os.path.dirname(os.path.realpath(__file__)) + "\\"
-    args = [path + "exiftool", name] + ["-charset","FileName=Latin2"]+ options
+def callExiftool(dirpath, name, options=[], override=True):
+    path = os.path.join(os.path.dirname(os.path.realpath(__file__)),"")
+    fullname = os.path.join(dirpath, name)
+    args = [path + "exiftool", fullname] + ["-charset","FileName=Latin2"]+ options
     if override and options: args.append("-overwrite_original_in_place")
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)  # , shell=True
     (out, err) = proc.communicate()
@@ -152,7 +153,7 @@ def askToContinue():
 
 
 def readTag(dirpath, filename):
-    out = callExiftool(dirpath + "\\" + filename, [], False)
+    out = callExiftool(dirpath, filename, [], False)
     return decodeTags(out)
 
 

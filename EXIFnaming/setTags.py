@@ -33,7 +33,7 @@ def adjustDate(hours=0, minutes=0, seconds=0, Fileext=".JPG"):
         time = giveDatetime(Tagdict["Date/Time Original"][i])
         newtime = time + delta_t
         timestring = dateformating(newtime, "YYYY:MM:DD HH:mm:ss")
-        callExiftool(getPath(Tagdict, i), ["-DateTimeOriginal=" + timestring], True)
+        callExiftool(Tagdict["Directory"][i], Tagdict["File Name"][i], ["-DateTimeOriginal=" + timestring], True)
 
 
 def addLocation(country="", city="", location=""):
@@ -87,6 +87,6 @@ def nameToExif():
             if title: options.append("-Title=" + title[:-1])
             if state: options.append("-State=" + state[:-1])
             if not options: continue
-            callExiftool(dirpath + "\\" + filename + ext, options, True)
+            callExiftool(dirpath, filename + ext, options, True)
     timedelta = dt.datetime.now() - timebegin
     print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))

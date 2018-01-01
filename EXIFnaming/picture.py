@@ -5,8 +5,8 @@ Does not uses Tags at all
 import datetime as dt
 import os
 import numpy as np
-from EXIFnaming.helpers.fileop import concatPathToSave, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, moveSeries, move, \
-    removeIfEmtpy
+from EXIFnaming.helpers.fileop import concatPathToSave, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
+    moveSeries, move, removeIfEmtpy, isfile
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
 from EXIFnaming.helpers.date import dateformating
 
@@ -28,21 +28,21 @@ def renameBack(timestring="", Fileext=".JPG"):
     """
     inpath = os.getcwd()
     dirname = concatPathToSave(inpath)
-    tagFile = dirname + "\\Tags" + Fileext + timestring + ".npz"
+    tagFile = os.path.join(dirname, "Tags" + Fileext + timestring + ".npz")
     if not timestring or os.path.isfile(tagFile):
         tagFiles = [x for x in os.listdir(dirname) if ".npz" in x]
-        tagFile = dirname + "\\" + tagFiles[-1]
+        tagFile = os.path.join(dirname, tagFiles[-1])
     Tagdict = np.load(tagFile)["Tagdict"].item()
     temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name new"])
     print(len(list(Tagdict.values())[0]))
     for i in range(len(list(Tagdict.values())[0])):
         filename = Tagdict["File Name new"][i] + temppostfix
-        if not os.path.isfile(Tagdict["Directory"][i] + "\\" + filename): continue
+        if not os.path.isfile(os.path.join(Tagdict["Directory"][i], filename)): continue
         filename_old = Tagdict["File Name"][i]
         renameInPlace(Tagdict["Directory"][i], filename, filename_old)
         Tagdict["File Name new"][i], Tagdict["File Name"][i] = Tagdict["File Name"][i], Tagdict["File Name new"][i]
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
-    np.savez_compressed(dirname + "\\Tags" + Fileext + timestring, Tagdict=Tagdict)
+    np.savez_compressed(os.path.join(dirname, "Tags" + Fileext + timestring), Tagdict=Tagdict)
 
 
 def detectBlurry():
@@ -55,7 +55,7 @@ def detectBlurry():
         print(dirpath, len(dirnames), len(filenames))
         for filename in filenames:
             if not ".JPG" in filename: continue
-            if not is_blurry(dirpath + "\\" + filename, 30): continue
+            if not is_blurry(dirpath, filename, 30): continue
             moveToSubpath(filename, dirpath, "blurry")
 
 
@@ -70,19 +70,19 @@ def detectSimilar(similarity=0.9):
         print(dirpath, len(dirnames), len(filenames))
         dircounter = 0
         filenamesA = [filename for filename in filenames if ".JPG" in filename]
-        for i,filenameA in enumerate(filenamesA):
+        for i, filenameA in enumerate(filenamesA):
             print(filenameA)
-            notSimCounter=0
-            for filenameB in filenamesA[i+1:]:
+            notSimCounter = 0
+            for filenameB in filenamesA[i + 1:]:
                 if notSimCounter == 10: break
-                if not os.path.isfile(dirpath + "\\" + filenameA): continue
-                if not os.path.isfile(dirpath + "\\" + filenameB): continue
-                if not are_similar(dirpath + "\\" + filenameA, dirpath + "\\" + filenameB, similarity):
-                    notSimCounter+=1
+                if not isfile(dirpath, filenameA): continue
+                if not isfile(dirpath, filenameB): continue
+                if not are_similar(dirpath, filenameA, dirpath, filenameB, similarity):
+                    notSimCounter += 1
                     continue
                 notSimCounter = 0
                 moveToSubpath(filenameB, dirpath, "%03d" % dircounter)
-            if not os.path.isdir(dirpath+"\\"+"%03d" % dircounter): continue
+            if not os.path.isdir(os.path.join(dirpath, "%03d" % dircounter)): continue
             moveToSubpath(filenameA, dirpath, "%03d" % dircounter)
             dircounter += 1
 
@@ -100,12 +100,13 @@ def filterSeries():
         if os.path.basename(dirpath) in skipdirs: continue
         print(dirpath, len(dirnames), len(filenames))
         moveBracketSeries(dirpath, filenames)
-        moveSeries(dirpath, filenames,"S")
+        moveSeries(dirpath, filenames, "S")
         moveSeries(dirpath, filenames, "SM")
         moveSeries(dirpath, filenames, "TL")
         for filename in filenames:
             if not ".JPG" in filename: continue
             moveToSubpath(filename, dirpath, "single")
+
 
 def filterPrimary():
     """
@@ -116,7 +117,7 @@ def filterPrimary():
     skipdirs = ["S", "single", "HDR", ".git", "tags"]
 
     print(inpath)
-    foldersToMain(False, False, ["B" + str(i) for i in range(1, 8)])
+    foldersToMain(False, False, False, False, ["B" + str(i) for i in range(1, 8)])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: continue
         if os.path.basename(dirpath) in skipdirs: continue
@@ -143,10 +144,12 @@ def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, 
     :param dirs: reverse other dirs
     """
     inpath = os.getcwd()
-    if dirs is None: reverseDirs =[]
-    else: reverseDirs = list(dirs)
+    if dirs is None:
+        reverseDirs = []
+    else:
+        reverseDirs = list(dirs)
     if series: reverseDirs += ["B" + str(i) for i in range(1, 8)] + ["S", "single"]
-    if primary: reverseDirs += ["B","S","TL","SM", "primary"]
+    if primary: reverseDirs += ["B", "S", "TL", "SM", "primary"]
     if blurry: reverseDirs += ["blurry"]
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -184,9 +187,9 @@ def renameHDR(mode="HDRT", ext=".jpg", folder="HDR"):
                 match = re.search(matchreg2, filename)
             if match:
                 filename_new = match.group(1) + "_" + match.group(2) + "_" + mode + match.group(3) + ext
-                if os.path.isfile(dirpath + "\\" + filename_new):
+                if os.path.isfile(os.path.join(dirpath, filename_new)):
                     i = 2
-                    while os.path.isfile(dirpath + "\\" + filename_new):
+                    while os.path.isfile(os.path.join(dirpath, filename_new)):
                         filename_new = match.group(1) + "_" + match.group(2) + "_" + mode
                         filename_new += "%d" % i + match.group(3) + ext
                         i += 1

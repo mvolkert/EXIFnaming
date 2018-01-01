@@ -5,6 +5,7 @@ collection of Tag tools
 """
 
 import numpy as np
+import os
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.decode import has_not_keys
 
@@ -91,7 +92,7 @@ def getPath(Tagdict,i):
     if not all([x in Tagdict for x in ["Directory","File Name"]]):
         print("Directory or File Name is not in Tagdict")
         return ""
-    return Tagdict["Directory"][i] + "\\" + Tagdict["File Name"][i]
+    return os.path.join(Tagdict["Directory"][i], Tagdict["File Name"][i])
 
 
 def checkIntegrity(Tagdict, Fileext=".JPG"):
