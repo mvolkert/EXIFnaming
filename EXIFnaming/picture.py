@@ -171,7 +171,7 @@ def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, 
         if dirpath == inpath: continue
         print(dirpath, len(dirnames), len(filenames))
         for filename in filenames:
-            if not ".JPG" in filename: continue
+            if not ".JPG" in filename and  not ".jpg" in filename: continue
             move(filename, dirpath, os.path.dirname(dirpath))
         removeIfEmtpy(dirpath)
 
