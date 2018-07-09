@@ -16,7 +16,7 @@ import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
     copyFilesTo, getSavesDir, isfile
 from EXIFnaming.helpers.decode import readTags, has_not_keys
-from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, searchDirByTime
+from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, searchDirByTime, printFirstLastOfDirName
 
 includeSubdirs = True
 
@@ -200,27 +200,31 @@ def order():
 
     Tagdict = readTags(inpath, includeSubdirs)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
-    lowJump = 1200.
-    bigJump = 3600.
+    lowJump = dt.timedelta(minutes=20)
+    bigJump = dt.timedelta(minutes=60)
     time_old = giveDatetime()
     dircounter = 1
-    daystring = dateformating(giveDatetime(Tagdict["Date/Time Original"][0]), "YYMMDD_")
     filenames = []
     filenames_S = []
     leng = len(list(Tagdict.values())[0])
     dirNameDict_firsttime = OrderedDict()
     dirNameDict_lasttime = OrderedDict()
+    time = giveDatetime(Tagdict["Date/Time Original"][0])
+    daystring = dateformating(time, "YYMMDD_")
+    dirName = daystring + "%02d" % dircounter
+    dirNameDict_firsttime[time] = dirName
     print('Number of JPG: %d' % leng)
     for i in range(leng):
         time = giveDatetime(Tagdict["Date/Time Original"][i])
         timedelta = time - time_old
-        timedelta_seconds = timedelta.days * 3600 * 24 + timedelta.seconds
 
-        if i > 0 and (timedelta_seconds > bigJump or (
-                timedelta_seconds > lowJump and len(filenames) + len(filenames_S) > 100) or newdate(time, time_old)):
-            dirNameDict_lasttime[time_old] = daystring + "%02d" % dircounter
-            moveFiles(filenames, os.path.join(inpath, daystring + "%02d" % dircounter))
-            moveFiles(filenames_S, os.path.join(inpath, daystring + "%02d_S" % dircounter))
+        if i > 0 and (
+                timedelta > bigJump or
+                (timedelta > lowJump and len(filenames) + len(filenames_S) > 100) or
+                newdate(time, time_old)):
+            dirNameDict_lasttime[time_old] = dirName
+            moveFiles(filenames, os.path.join(inpath, dirName))
+            moveFiles(filenames_S, os.path.join(inpath, dirName, "S"))
 
             filenames = []
             filenames_S = []
@@ -229,7 +233,8 @@ def order():
                 dircounter = 1
             else:
                 dircounter += 1
-            dirNameDict_firsttime[time] = daystring + "%02d" % dircounter
+            dirName = daystring + "%02d" % dircounter
+            dirNameDict_firsttime[time] = dirName
         if Tagdict["Burst Mode"][i] == "On":
             filenames_S.append((Tagdict["Directory"][i], Tagdict["File Name"][i]))
         else:
@@ -237,9 +242,11 @@ def order():
 
         time_old = time
 
-    dirNameDict_lasttime[time_old] = daystring + "%02d" % dircounter
-    moveFiles(filenames, os.path.join(inpath, daystring + "%02d" % dircounter))
-    moveFiles(filenames_S, os.path.join(inpath, daystring + "%02d_S" % dircounter))
+    dirNameDict_lasttime[time_old] = dirName
+    moveFiles(filenames, os.path.join(inpath, dirName))
+    moveFiles(filenames_S, os.path.join(inpath, dirName, "S"))
+
+    printFirstLastOfDirName(dirNameDict_firsttime, dirNameDict_lasttime)
 
     Tagdict_mp4 = readTags(inpath, includeSubdirs, Fileext=".MP4")
     if has_not_keys(Tagdict_mp4, keys=["Directory", "File Name", "Date/Time Original"]): return
@@ -252,7 +259,7 @@ def order():
             dirName = searchDirByTime(dirNameDict_firsttime, time, bigJump)
 
         if dirName:
-            move(Tagdict_mp4["File Name"][i], Tagdict_mp4["Directory"][i], os.path.join(inpath, dirName + "_mp4"))
+            move(Tagdict_mp4["File Name"][i], Tagdict_mp4["Directory"][i], os.path.join(inpath, dirName, "mp4"))
 
 
 def _detect3D():

@@ -54,10 +54,19 @@ def _replaceDateID(dateformat, search_str, value):
     return dateformat.replace(search_str * count, ("%0" + str(count) + "d") % value)
 
 def searchDirByTime(dirDict, time, jump):
-    timedelta = dt.timedelta(seconds=jump)
-    for lasttime in list(dirDict.keys()):
-        timedelta_new = time - lasttime
-        timedelta_new_sec = timedelta_new.days * 3600 * 24 + timedelta_new.seconds
-        if timedelta_new_sec < timedelta.seconds:
-            return dirDict[lasttime]
+    for reference_time in list(dirDict.keys()):
+        if time - reference_time < jump:
+            return dirDict[reference_time]
     return None
+
+def printFirstLastOfDirName(dirDict_firsttime: dict, dirDict_lasttime: dict):
+    outDict = OrderedDict()
+    for time, name in dirDict_firsttime.items():
+        outDict[name] = time.strftime("%H:%M")
+    for time, name in dirDict_lasttime.items():
+        outDict.setdefault(name, "")
+        outDict[name] += time.strftime(" - %H:%M \n")
+    ofile = open("timetable.txt", 'a')
+    for name, value in outDict.items():
+        ofile.write(name+"\t"+value)
+    ofile.close()
