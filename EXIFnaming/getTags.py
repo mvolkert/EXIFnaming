@@ -4,19 +4,21 @@ Reads Tags to use them, but not write to them
 """
 
 import datetime as dt
-from collections import OrderedDict
-import shutil
 import os
+import shutil
+from collections import OrderedDict
+
 import numpy as np
 
+import EXIFnaming.helpers.constants as c
+from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, printFirstLastOfDirName, \
+    find_dir_with_closest_time
+from EXIFnaming.helpers.decode import readTags, has_not_keys
+from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
+    copyFilesTo, getSavesDir, isfile
 from EXIFnaming.helpers.misc import tofloat, getPostfix
 from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getMode, getCameraModel, getDate, getRecMode, \
     getSequenceString, checkIntegrity, is_series, is_sun
-import EXIFnaming.helpers.constants as c
-from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
-    copyFilesTo, getSavesDir, isfile
-from EXIFnaming.helpers.decode import readTags, has_not_keys
-from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, searchDirByTime, printFirstLastOfDirName
 
 includeSubdirs = True
 
@@ -254,9 +256,7 @@ def order():
     print('Number of mp4: %d' % leng)
     for i in range(leng):
         time = giveDatetime(Tagdict_mp4["Date/Time Original"][i])
-        dirName = searchDirByTime(dirNameDict_lasttime, time, bigJump)
-        if not dirName:
-            dirName = searchDirByTime(dirNameDict_firsttime, time, bigJump)
+        dirName = find_dir_with_closest_time(dirNameDict_firsttime, dirNameDict_lasttime, time)
 
         if dirName:
             move(Tagdict_mp4["File Name"][i], Tagdict_mp4["Directory"][i], os.path.join(inpath, dirName, "mp4"))

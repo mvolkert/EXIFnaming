@@ -54,11 +54,14 @@ def _replaceDateID(dateformat, search_str, value):
     return dateformat.replace(search_str * count, ("%0" + str(count) + "d") % value)
 
 
-def searchDirByTime(dirDict, time, jump):
-    for reference_time in list(dirDict.keys()):
-        if time - reference_time < jump:
-            return dirDict[reference_time]
-    return None
+def find_dir_with_closest_time(dirDict_firsttime: dict, dirDict_lasttime: dict, time):
+    deltaDict = OrderedDict()
+    for firsttime, name in dirDict_firsttime.items():
+        deltaDict[time - firsttime] = name
+    for lasttime, name in dirDict_lasttime.items():
+        deltaDict[time - lasttime] = name
+    deltatime_min = min(deltaDict.keys())
+    return deltaDict[deltatime_min]
 
 
 def printFirstLastOfDirName(dirDict_firsttime: dict, dirDict_lasttime: dict):
