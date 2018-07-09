@@ -14,7 +14,7 @@ from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getMode, getCame
     getSequenceString, checkIntegrity, is_series, is_sun
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
-    copyFilesTo, concatPathToSave, isfile
+    copyFilesTo, getSavesDir, isfile
 from EXIFnaming.helpers.decode import readTags, has_not_keys
 from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, searchDirByTime
 
@@ -57,7 +57,7 @@ def printinfo(tagGroupNames=(), allGroups=False, Fileext=".JPG"):
                 outstring += "%-30s\t" % val[i]
             outstring += "\n"
 
-        dirname = concatPathToSave(inpath)
+        dirname = getSavesDir()
         writeToFile(os.path.join(dirname, "tags_" + tagGroupName + ".txt"), outstring)
 
 
@@ -165,7 +165,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
             outstring += _write(Tagdict["Directory"][i], filename_Raw, temppostfix,
                                 changeExtension(newname, Fileext_Raw), onlyprint)
 
-    dirname = concatPathToSave(inpath)
+    dirname = getSavesDir()
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
     np.savez_compressed(os.path.join(dirname, "Tags" + Fileext + timestring), Tagdict=Tagdict)
     writeToFile(os.path.join(dirname, "newnames" + Fileext + timestring + ".txt"), outstring)

@@ -4,12 +4,6 @@ import shutil
 
 from EXIFnaming.helpers.misc import askToContinue
 
-def getSavesDir():
-    path = os.path.realpath(__file__)
-    for i in range(4):
-        path=os.path.dirname(path)
-    return os.path.join(path, "saves","")
-
 def moveFiles(filenames, path: str):
     if os.path.isdir(path):
         print("directory already exists: ", path)
@@ -49,8 +43,8 @@ def rename_join(path1: tuple, path2: tuple):
 def isfile(*path):
     return os.path.isfile(os.path.join(*path))
 
-def concatPathToSave(path):
-    path = getSavesDir() + os.path.basename(path)
+def getSavesDir():
+    path = ".EXIFnaming"
     os.makedirs(path, exist_ok=True)
     return path
 

@@ -5,7 +5,7 @@ Does not uses Tags at all
 import datetime as dt
 import os
 import numpy as np
-from EXIFnaming.helpers.fileop import concatPathToSave, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
+from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
     moveSeries, move, removeIfEmtpy, isfile, get_relpath_depth
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
 from EXIFnaming.helpers.date import dateformating
@@ -28,7 +28,7 @@ def renameBack(timestring="", Fileext=".JPG"):
     :return:
     """
     inpath = os.getcwd()
-    dirname = concatPathToSave(inpath)
+    dirname = getSavesDir()
     tagFile = os.path.join(dirname, "Tags" + Fileext + timestring + ".npz")
     if not timestring or os.path.isfile(tagFile):
         tagFiles = [x for x in os.listdir(dirname) if ".npz" in x]
