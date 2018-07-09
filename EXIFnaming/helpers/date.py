@@ -32,7 +32,6 @@ newdate.dateswitch = False
 
 
 def dateformating(time=dt.datetime.now(), dateformat=""):
-
     y = dateformat.count('Y')
     if y > 0: dateformat = dateformat.replace('Y' * y, str(time.year)[-y:])
     if dateformat.count('N') > 0:
@@ -45,19 +44,22 @@ def dateformating(time=dt.datetime.now(), dateformat=""):
     dateformat = _replaceDateID(dateformat, 's', time.second)
     return dateformat
 
+
 dateformating.numberofDates = 0
 
 
 def _replaceDateID(dateformat, search_str, value):
     count = dateformat.count(search_str)
-    if count==0: return dateformat
+    if count == 0: return dateformat
     return dateformat.replace(search_str * count, ("%0" + str(count) + "d") % value)
+
 
 def searchDirByTime(dirDict, time, jump):
     for reference_time in list(dirDict.keys()):
         if time - reference_time < jump:
             return dirDict[reference_time]
     return None
+
 
 def printFirstLastOfDirName(dirDict_firsttime: dict, dirDict_lasttime: dict):
     outDict = OrderedDict()
@@ -68,5 +70,5 @@ def printFirstLastOfDirName(dirDict_firsttime: dict, dirDict_lasttime: dict):
         outDict[name] += time.strftime(" - %H:%M \n")
     ofile = open("timetable.txt", 'a')
     for name, value in outDict.items():
-        ofile.write(name+"\t"+value)
+        ofile.write(name + "\t" + value)
     ofile.close()

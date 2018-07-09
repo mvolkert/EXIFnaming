@@ -153,15 +153,15 @@ def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, 
     if primary: reverseDirs += ["B", "S", "TL", "SM", "primary"]
     if blurry: reverseDirs += ["blurry"]
 
-    deepest =0
+    deepest = 0
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        depth =  get_relpath_depth(dirpath, inpath)
-        deepest = max(deepest,depth)
-    if all_folders and deepest>1:
-        print("A folder structure with a depth of %2d will be flattened"%deepest)
+        depth = get_relpath_depth(dirpath, inpath)
+        deepest = max(deepest, depth)
+    if all_folders and deepest > 1:
+        print("A folder structure with a depth of %2d will be flattened" % deepest)
         askToContinue()
-    elif deepest>3:
-        print("The folder structure has a depth of %2d"%deepest)
+    elif deepest > 3:
+        print("The folder structure has a depth of %2d" % deepest)
         print("chosen directory names:")
         print(reverseDirs)
         askToContinue()
@@ -171,7 +171,7 @@ def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, 
         if dirpath == inpath: continue
         print(dirpath, len(dirnames), len(filenames))
         for filename in filenames:
-            if not ".JPG" in filename and  not ".jpg" in filename: continue
+            if not ".JPG" in filename and not ".jpg" in filename: continue
             move(filename, dirpath, inpath)
         removeIfEmtpy(dirpath)
 

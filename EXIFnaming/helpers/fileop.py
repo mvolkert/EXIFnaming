@@ -4,6 +4,7 @@ import shutil
 
 from EXIFnaming.helpers.misc import askToContinue
 
+
 def moveFiles(filenames, path: str):
     if os.path.isdir(path):
         print("directory already exists: ", path)
@@ -37,28 +38,34 @@ def move(filename, oldpath, newpath):
 def renameInPlace(dirpath, oldFilename, newFilename):
     rename_join((dirpath, oldFilename), (dirpath, newFilename))
 
+
 def rename_join(path1: tuple, path2: tuple):
-    os.rename(os.path.join(*path1),os.path.join(*path2))
+    os.rename(os.path.join(*path1), os.path.join(*path2))
+
 
 def isfile(*path):
     return os.path.isfile(os.path.join(*path))
+
 
 def getSavesDir():
     path = ".EXIFnaming"
     os.makedirs(path, exist_ok=True)
     return path
 
-def writeToFile(path,content):
+
+def writeToFile(path, content):
     ofile = open(path, 'a')
     ofile.write(content)
     ofile.close()
 
+
 def removeIfEmtpy(dirpath: str):
-    if len(os.listdir(dirpath))==1:
+    if len(os.listdir(dirpath)) == 1:
         if isfile(dirpath, "thumbs.db"): os.remove(os.path.join(dirpath, "thumbs.db"))
     if not os.listdir(dirpath): os.rmdir(dirpath)
 
-def renameTemp(DirectoryList: list, FileNameList:list):
+
+def renameTemp(DirectoryList: list, FileNameList: list):
     if not len(DirectoryList) == len(FileNameList):
         print("error in renameTemp: len(DirectoryList)!=len(FileNameList)")
         return ""
@@ -79,7 +86,7 @@ def renameEveryTemp(inpath: str):
     return temppostfix
 
 
-def moveBracketSeries(dirpath: str,filenames: list):
+def moveBracketSeries(dirpath: str, filenames: list):
     counter_old = "000"
     counter2_old = "0"
     BList = []
@@ -100,9 +107,10 @@ def moveBracketSeries(dirpath: str,filenames: list):
             BList = []
     moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
 
-def moveSeries(dirpath: str,filenames: list,series_type="S"):
+
+def moveSeries(dirpath: str, filenames: list, series_type="S"):
     for filename in filenames:
-        match = re.search('_([0-9]+)'+series_type+'([0-9]+)', filename)
+        match = re.search('_([0-9]+)' + series_type + '([0-9]+)', filename)
         if match:
             moveToSubpath(filename, dirpath, series_type)
 
@@ -115,11 +123,11 @@ def copyFilesTo(files: list, path: str):
         shutil.copy2(filename, path)
 
 
-def changeExtension(filename: str,ext: str):
+def changeExtension(filename: str, ext: str):
     return filename[:filename.rfind(".")] + ext
+
 
 def get_relpath_depth(inpath, dirpath):
     relpath = os.path.relpath(dirpath, inpath)
     if relpath == ".": return 0
     return len(relpath.split(os.sep))
-

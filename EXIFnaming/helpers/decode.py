@@ -21,8 +21,9 @@ umlauts_dict = {
 def replace_umlauts(string):
     for x in umlauts_dict:
         if x in string:
-            string=string.replace(x, umlauts_dict[x])
+            string = string.replace(x, umlauts_dict[x])
     return string
+
 
 def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=[]):
     print("process", countFilesIn(inpath, includeSubdirs, Fileext, skipdirs), "Files in ", inpath, "includeSubdirs:",
@@ -62,7 +63,7 @@ def writeTags(inpath, options, includeSubdirs=False, Fileext=".JPG"):
         if n == 0:
             print("  No matching files in ", os.path.relpath(dirpath, inpath))
             continue
-        callExiftool(dirpath,"*" + Fileext, options, True)
+        callExiftool(dirpath, "*" + Fileext, options, True)
         print("%4d tags written in   " % n, os.path.relpath(dirpath, inpath))
     timedelta = dt.datetime.now() - timebegin
     print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
@@ -83,9 +84,9 @@ def has_not_keys(indict, keys):
 
 
 def callExiftool(dirpath, name, options=[], override=True):
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)),"")
+    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
     fullname = os.path.join(dirpath, name)
-    args = [path + "exiftool", fullname] + ["-charset","FileName=Latin2"]+ options
+    args = [path + "exiftool", fullname] + ["-charset", "FileName=Latin2"] + options
     if override and options: args.append("-overwrite_original_in_place")
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)  # , shell=True
     (out, err) = proc.communicate()
@@ -94,7 +95,7 @@ def callExiftool(dirpath, name, options=[], override=True):
 
 
 def sortByDate(indict: OrderedDict):
-    sortkeys=["Date/Time Original"]
+    sortkeys = ["Date/Time Original"]
     if "Sub Sec Time Original" in indict: sortkeys.append("Sub Sec Time Original")
     return sortDict(indict, sortkeys)
 
@@ -169,7 +170,7 @@ def decodeTags(tags):
         if (key, val) in unknownTags: val = unknownTags[(key, val)]
         tagDict[key] = val
     if not tagDict:
-        print("error: no tags extracted from:",tags)
+        print("error: no tags extracted from:", tags)
     elif not date_org_name in tagDict:
         print("error:", date_org_name, "not in", tagDict)
     return tagDict

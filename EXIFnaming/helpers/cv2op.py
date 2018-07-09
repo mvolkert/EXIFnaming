@@ -54,7 +54,7 @@ def compare_images(directory, nameA, nameB):
 
 
 def read_picture(directory, name, xscale=500):
-    fullname= os.path.join(directory, name)
+    fullname = os.path.join(directory, name)
     picture = cv2.imread(fullname)
     if picture is None or not picture.data:
         print("failed to load", fullname)
