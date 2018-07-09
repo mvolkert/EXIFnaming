@@ -13,8 +13,8 @@ __status__ = "Development"
 from EXIFnaming.setTags import adjustDate, addLocation, nameToExif
 from EXIFnaming.getTags import printinfo, rename_PM, rename, order, searchByTagEquality, searchByTagInterval, rotate, \
     exifToName
-from EXIFnaming.picture import detectBlurry, detectSimilar, filterSeries, filterPrimary, renameHDR, renameTempBackAll, \
-    foldersToMain
+from EXIFnaming.picture import detectBlurry, detectSimilar, filterSeries, renameBack, filterPrimary, renameHDR, \
+    renameTempBackAll, foldersToMain
 
 # for reloading
 from IPython import get_ipython
