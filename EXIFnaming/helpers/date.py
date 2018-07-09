@@ -1,6 +1,8 @@
 import datetime as dt
+from collections import OrderedDict
 
-def giveDatetime(datestring="2000:01:01 00:00:00.000"):
+
+def giveDatetime(datestring="2000:01:01 00:00:00.000") -> dt.datetime:
     args = []
     for sub1 in datestring.split():
         for sub2 in sub1.split(":"):
@@ -13,7 +15,7 @@ def giveDatetime(datestring="2000:01:01 00:00:00.000"):
     return time
 
 
-def newdate(time, time_old, use_day=True):
+def newdate(time, time_old, use_day=True) -> bool:
     # adjust datebreak at midnight
     timedelta = time - time_old
     timedelta_seconds = timedelta.days * 3600 * 24 + timedelta.seconds
