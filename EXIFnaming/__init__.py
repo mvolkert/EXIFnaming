@@ -10,14 +10,8 @@ __copyright__ = "Copyright 2017, Marco Volkert"
 __email__ = "marco.volkert24@gmx.de"
 __status__ = "Development"
 
-from EXIFnaming.setTags import adjustDate, addLocation, nameToExif
+from EXIFnaming.setTags import adjustDate, addLocation, nameToExif, geotag
 from EXIFnaming.getTags import printinfo, rename_PM, rename, order, searchByTagEquality, searchByTagInterval, rotate, \
     exifToName
 from EXIFnaming.picture import detectBlurry, detectSimilar, filterSeries, renameBack, filterPrimary, renameHDR, \
     renameTempBackAll, foldersToMain
-
-# for reloading
-from IPython import get_ipython
-
-get_ipython().magic('reload_ext autoreload')
-print('loaded collection of Tag operations')
