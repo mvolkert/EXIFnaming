@@ -57,9 +57,11 @@ def _replaceDateID(dateformat, search_str, value):
 def find_dir_with_closest_time(dirDict_firsttime: dict, dirDict_lasttime: dict, time):
     deltaDict = OrderedDict()
     for firsttime, name in dirDict_firsttime.items():
-        deltaDict[time - firsttime] = name
+        deltaseconds = abs((time - firsttime).total_seconds())
+        deltaDict[deltaseconds] = name
     for lasttime, name in dirDict_lasttime.items():
-        deltaDict[time - lasttime] = name
+        deltaseconds = abs((time - lasttime).total_seconds())
+        deltaDict[deltaseconds] = name
     deltatime_min = min(deltaDict.keys())
     return deltaDict[deltatime_min]
 
