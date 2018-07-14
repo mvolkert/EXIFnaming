@@ -4,12 +4,11 @@ Writes to Tags
 """
 
 import datetime as dt
-import os
 
-from EXIFnaming.helpers.tags import *
 import EXIFnaming.helpers.constants as c
-from EXIFnaming.helpers.decode import readTags, has_not_keys, callExiftool, askToContinue, writeTags, countFilesIn
 from EXIFnaming.helpers.date import giveDatetime, dateformating
+from EXIFnaming.helpers.decode import readTags, has_not_keys, callExiftool, askToContinue, writeTags, countFilesIn
+from EXIFnaming.helpers.tags import *
 
 includeSubdirs = True
 
@@ -90,3 +89,26 @@ def nameToExif():
             callExiftool(dirpath, filename + ext, options, True)
     timedelta = dt.datetime.now() - timebegin
     print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
+
+
+def geotag(timezone=2, offset_min=0, offset_sec=0):
+    """
+    adds gps information to all pictures in all sub directories of current directory
+    the gps information is obtained from gpx files, that are expected to be in a folder called ".gps"
+    """
+    inpath = os.getcwd()
+    gpxDir = inpath + r"\.gps"
+    options = ["-r", "-geotime<${DateTimeOriginal}%+03d:00" % timezone]
+    if not offset_min == 0 or not offset_sec == 0:
+        options.append("-geosync=%+03d:%02d" % (offset_min, offset_sec))
+    for (dirpath, dirnames, filenames) in os.walk(gpxDir):
+        if not gpxDir == dirpath: break
+        for filename in filenames:
+            if not filename.endswith(".gpx"): continue
+            options.append("-geotag")
+            options.append(os.path.join(gpxDir, filename))
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not inpath == dirpath: break
+        for dirname in dirnames:
+            if dirname.startswith("."): continue
+            callExiftool(inpath, dirname, options=options)
