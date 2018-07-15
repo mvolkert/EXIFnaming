@@ -48,8 +48,6 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
     outdict = listsOfDictsToDictOfLists(ListOfDicts)
     if not outdict: return {}
     outdict = sortByDate(outdict)
-    for i in range(len(outdict["Directory"])):
-        outdict["Directory"][i] = outdict["Directory"][i].replace("/", os.sep)
     timedelta = dt.datetime.now() - timebegin
     print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
     return outdict
@@ -168,6 +166,7 @@ def decodeTags(tags):
         val = keyval[1].strip()
         if key in tagDict: continue
         if (key, val) in unknownTags: val = unknownTags[(key, val)]
+        if key == "Directory": val = val.replace("/", os.sep)
         tagDict[key] = val
     if not tagDict:
         print("error: no tags extracted from:", tags)

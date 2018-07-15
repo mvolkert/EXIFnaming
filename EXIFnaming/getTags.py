@@ -13,7 +13,7 @@ import numpy as np
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, printFirstLastOfDirName, \
     find_dir_with_closest_time
-from EXIFnaming.helpers.decode import readTags, has_not_keys
+from EXIFnaming.helpers.decode import readTags, has_not_keys, readTag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
     copyFilesTo, getSavesDir, isfile
 from EXIFnaming.helpers.misc import tofloat, getPostfix
@@ -403,3 +403,23 @@ def exifToName(Fileext=".JPG"):
         if mode: name += "_" + mode
         if title: name += "_" + title
         renameInPlace(Tagdict["Directory"][i], Tagdict["File Name"][i] + temppostfix, name + Fileext)
+
+
+def print_timeinterval():
+    """
+    print the time of the first and last picture in a directory to a file
+    """
+    inpath = os.getcwd()
+    ofile = open("timetable.txt", 'a')
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        fotos = [filename for filename in filenames if filename[-4:] in (".JPG", ".jpg", ".MP4", ".mp4")]
+        if not fotos: continue
+        first = _get_time(dirpath, fotos[0])
+        last = _get_time(dirpath, fotos[-1])
+        ofile.write("%-30s\t%8s - %8s\n"%(os.path.relpath(dirpath), first, last))
+    ofile.close()
+
+def _get_time(dirpath, filename):
+    tags = readTag(dirpath,filename)
+    time = giveDatetime(tags["Date/Time Original"]).time()
+    return str(time)
