@@ -135,7 +135,7 @@ def filterPrimary():
             moveToSubpath(filename, dirpath, "primary")
 
 
-def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, dirs=None):
+def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, dirs=None, one_level = True):
     """
     reverses filtering/sorting into directories
     :param series: reverse filterSeries
@@ -143,6 +143,7 @@ def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, 
     :param blurry: reverse detectBlurry
     :param all_folders: reverse all
     :param dirs: reverse other dirs
+    :param one_level: reverse only one directory up
     """
     inpath = os.getcwd()
     if dirs is None:
@@ -171,8 +172,10 @@ def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, 
         if dirpath == inpath: continue
         print(dirpath, len(dirnames), len(filenames))
         for filename in filenames:
-            if not ".JPG" in filename and not ".jpg" in filename: continue
-            move(filename, dirpath, inpath)
+            if not filename[-4:] in (".JPG", ".jpg", ".MP4", ".mp4"): continue
+            if one_level: destination = os.path.dirname(dirpath)
+            else: destination = inpath
+            move(filename, dirpath, destination)
         removeIfEmtpy(dirpath)
 
 
@@ -226,3 +229,4 @@ def renameTempBackAll():
             if not match: continue
             newFilename = re.sub(matchreg, '', filename)
             renameInPlace(dirpath, filename, newFilename)
+
