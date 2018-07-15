@@ -42,6 +42,7 @@ def dateformating(time=dt.datetime.now(), dateformat=""):
     dateformat = _replaceDateID(dateformat, 'H', time.hour)
     dateformat = _replaceDateID(dateformat, 'm', time.minute)
     dateformat = _replaceDateID(dateformat, 's', time.second)
+    dateformat = _replaceDateID(dateformat, 'S', time.microsecond / 1000)
     return dateformat
 
 

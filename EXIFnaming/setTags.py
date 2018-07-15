@@ -28,11 +28,29 @@ def adjustDate(hours=0, minutes=0, seconds=0, Fileext=".JPG"):
     Tagdict = readTags(inpath, includeSubdirs, Fileext)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
+    mp4_additional_time_tags = ["TrackCreateDate", "TrackModifyDate", "MediaCreateDate", "MediaModifyDate",
+                                "CreateDate", "ModifyDate"]
+    dir_change_printer = Dir_change_printer(Tagdict["Directory"][0])
     for i in range(leng):
         time = giveDatetime(Tagdict["Date/Time Original"][i])
         newtime = time + delta_t
         timestring = dateformating(newtime, "YYYY:MM:DD HH:mm:ss")
-        callExiftool(Tagdict["Directory"][i], Tagdict["File Name"][i], ["-DateTimeOriginal=" + timestring], True)
+        options = ["-DateTimeOriginal=" + timestring]
+        if Fileext in (".MP4", ".mp4"):
+            for time_tag in mp4_additional_time_tags:
+                options.append("-%s=%s" % (time_tag, timestring))
+            # TODO:  To print the tag names instead instead of descriptions, use the -s option when extracting information
+            # subSec_time = giveDatetime(Tagdict["SubSecDateTimeOriginal"][i])
+            # subSec_newtime = subSec_time + delta_t
+            # subSec_timestring = dateformating(subSec_newtime, "YYYY:MM:DD HH:mm:ss.SSS")
+            # print(subSec_timestring)
+            # options.append("-SubSecCreateDate=" + subSec_timestring)
+            # options.append("-SubSecDateTimeOriginal=" + subSec_timestring)
+            # options.append("-SubSecModifyDate=" + subSec_timestring)
+
+        callExiftool(Tagdict["Directory"][i], Tagdict["File Name"][i], options, True)
+        dir_change_printer.update(Tagdict["Directory"][i])
+    dir_change_printer.finish()
 
 
 def addLocation(country="", city="", location=""):
