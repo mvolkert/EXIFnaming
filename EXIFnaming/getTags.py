@@ -16,6 +16,7 @@ from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, printF
 from EXIFnaming.helpers.decode import readTags, has_not_keys, readTag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
     copyFilesTo, getSavesDir, isfile
+from EXIFnaming.helpers.measuring_tools import Clock
 from EXIFnaming.helpers.misc import tofloat, getPostfix
 from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getMode, getCameraModel, getDate, getRecMode, \
     getSequenceString, checkIntegrity, is_series, is_sun
@@ -354,7 +355,7 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
     from PIL import Image
 
     NFiles = 0
-    timebegin = dt.datetime.now()
+    clock = Clock()
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: continue
@@ -381,9 +382,7 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
                 NFiles += 1
                 if not override: name = name[:name.rfind(".")] + "_rot" + name[name.rfind("."):]
                 img_rot.save(name, 'JPEG', quality=99, exif=img.info['exif'])
-
-    timedelta = dt.datetime.now() - timebegin
-    print("rotated %3d files in %2d min, %2d sec" % (NFiles, int(timedelta.seconds / 60), timedelta.seconds % 60))
+    clock.finish()
 
 
 def exifToName(Fileext=".JPG"):
@@ -416,10 +415,11 @@ def print_timeinterval():
         if not fotos: continue
         first = _get_time(dirpath, fotos[0])
         last = _get_time(dirpath, fotos[-1])
-        ofile.write("%-30s\t%8s - %8s\n"%(os.path.relpath(dirpath), first, last))
+        ofile.write("%-55s\t%8s - %8s\n" % (os.path.relpath(dirpath), first, last))
     ofile.close()
 
+
 def _get_time(dirpath, filename):
-    tags = readTag(dirpath,filename)
+    tags = readTag(dirpath, filename)
     time = giveDatetime(tags["Date/Time Original"]).time()
     return str(time)

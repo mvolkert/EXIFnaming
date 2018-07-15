@@ -4,8 +4,10 @@
 collection of Tag tools
 """
 
-import numpy as np
 import os
+
+import numpy as np
+
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.decode import has_not_keys
 

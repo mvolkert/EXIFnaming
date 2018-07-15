@@ -4,11 +4,13 @@ Does not uses Tags at all
 """
 import datetime as dt
 import os
+
 import numpy as np
-from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
-    moveSeries, move, removeIfEmtpy, isfile, get_relpath_depth
+
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
 from EXIFnaming.helpers.date import dateformating
+from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
+    moveSeries, move, removeIfEmtpy, isfile, get_relpath_depth
 from EXIFnaming.helpers.misc import askToContinue
 
 includeSubdirs = True
@@ -27,7 +29,6 @@ def renameBack(timestring="", Fileext=".JPG"):
     :param Fileext: file extension
     :return:
     """
-    inpath = os.getcwd()
     dirname = getSavesDir()
     tagFile = os.path.join(dirname, "Tags" + Fileext + timestring + ".npz")
     if not timestring or os.path.isfile(tagFile):
@@ -135,7 +136,7 @@ def filterPrimary():
             moveToSubpath(filename, dirpath, "primary")
 
 
-def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, dirs=None, one_level = True):
+def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, dirs=None, one_level=True):
     """
     reverses filtering/sorting into directories
     :param series: reverse filterSeries
@@ -173,8 +174,10 @@ def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, 
         print(dirpath, len(dirnames), len(filenames))
         for filename in filenames:
             if not filename[-4:] in (".JPG", ".jpg", ".MP4", ".mp4"): continue
-            if one_level: destination = os.path.dirname(dirpath)
-            else: destination = inpath
+            if one_level:
+                destination = os.path.dirname(dirpath)
+            else:
+                destination = inpath
             move(filename, dirpath, destination)
         removeIfEmtpy(dirpath)
 
@@ -229,4 +232,3 @@ def renameTempBackAll():
             if not match: continue
             newFilename = re.sub(matchreg, '', filename)
             renameInPlace(dirpath, filename, newFilename)
-

@@ -1,11 +1,11 @@
-import sys
-import subprocess
-import os
-from collections import OrderedDict
-import datetime as dt
 import operator
+import os
+import subprocess
+import sys
+from collections import OrderedDict
 
 from EXIFnaming.helpers.constants import unknownTags
+from EXIFnaming.helpers.measuring_tools import Clock
 
 umlauts_dict = {
     '\\xc3\\xa4': 'ä',  # U+00E4	   \xc3\xa4
@@ -30,7 +30,7 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
           includeSubdirs)
     askToContinue()
 
-    timebegin = dt.datetime.now()
+    clock = Clock()
     ListOfDicts = []
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
@@ -48,13 +48,12 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
     outdict = listsOfDictsToDictOfLists(ListOfDicts)
     if not outdict: return {}
     outdict = sortByDate(outdict)
-    timedelta = dt.datetime.now() - timebegin
-    print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
+    clock.finish()
     return outdict
 
 
 def writeTags(inpath, options, includeSubdirs=False, Fileext=".JPG"):
-    timebegin = dt.datetime.now()
+    clock = Clock()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
         n = countFiles(filenames, Fileext)
@@ -63,8 +62,7 @@ def writeTags(inpath, options, includeSubdirs=False, Fileext=".JPG"):
             continue
         callExiftool(dirpath, "*" + Fileext, options, True)
         print("%4d tags written in   " % n, os.path.relpath(dirpath, inpath))
-    timedelta = dt.datetime.now() - timebegin
-    print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
+    clock.finish()
 
 
 def has_not_keys(indict, keys):

@@ -5,9 +5,9 @@ Writes to Tags
 
 import datetime as dt
 
-import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.date import giveDatetime, dateformating
-from EXIFnaming.helpers.decode import readTags, has_not_keys, callExiftool, askToContinue, writeTags, countFilesIn
+from EXIFnaming.helpers.decode import readTags, callExiftool, askToContinue, writeTags, countFilesIn
+from EXIFnaming.helpers.measuring_tools import Clock, Dir_change_printer
 from EXIFnaming.helpers.tags import *
 
 includeSubdirs = True
@@ -55,7 +55,7 @@ def nameToExif():
     extract title, description and mode from name and write them to exif
     """
     inpath = os.getcwd()
-    timebegin = dt.datetime.now()
+    clock = Clock()
     print("process", countFilesIn(inpath, includeSubdirs, ""), "Files in ", inpath, "subdir:", includeSubdirs)
     askToContinue()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -87,8 +87,7 @@ def nameToExif():
             if state: options.append("-State=" + state[:-1])
             if not options: continue
             callExiftool(dirpath, filename + ext, options, True)
-    timedelta = dt.datetime.now() - timebegin
-    print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
+    clock.finish()
 
 
 def geotag(timezone=2, offset_min=0, offset_sec=0):
