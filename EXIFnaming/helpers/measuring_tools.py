@@ -14,13 +14,13 @@ class Dir_change_printer:
 
     def update(self, directory):
         if not self.current_dir == directory:
-            print("updated %04d tags in %s" % (self.counter, self.current_dir))
+            print("updated %4d tags in %s" % (self.counter, self.current_dir))
             self.counter = 0
             self.current_dir = directory
         self.counter += 1
 
     def finish(self):
-        print("updated %04d tags in %s" % (self.counter, self.current_dir))
+        print("updated %4d tags in %s" % (self.counter, self.current_dir))
 
 
 class Clock:
