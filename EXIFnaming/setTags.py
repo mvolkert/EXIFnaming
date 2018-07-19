@@ -28,26 +28,28 @@ def adjustDate(hours=0, minutes=0, seconds=0, Fileext=".JPG"):
     Tagdict = readTags(inpath, includeSubdirs, Fileext)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
-    mp4_additional_time_tags = ["TrackCreateDate", "TrackModifyDate", "MediaCreateDate", "MediaModifyDate",
-                                "CreateDate", "ModifyDate"]
+    time_tags = ["DateTimeOriginal", "CreateDate", "ModifyDate"]
+    time_tags_pm4 = ["TrackCreateDate", "TrackModifyDate", "MediaCreateDate", "MediaModifyDate"]
+    # time_tags_mp4_subsec = ["SubSecCreateDate","SubSecDateTimeOriginal", "SubSecModifyDate"]
     dir_change_printer = Dir_change_printer(Tagdict["Directory"][0])
     for i in range(leng):
         time = giveDatetime(Tagdict["Date/Time Original"][i])
         newtime = time + delta_t
         timestring = dateformating(newtime, "YYYY:MM:DD HH:mm:ss")
-        options = ["-DateTimeOriginal=" + timestring]
+        options = []
+        for time_tag in time_tags:
+            options.append("-%s=%s" % (time_tag, timestring))
         if Fileext in (".MP4", ".mp4"):
-            for time_tag in mp4_additional_time_tags:
+            for time_tag in time_tags_pm4:
                 options.append("-%s=%s" % (time_tag, timestring))
-            # TODO:  To print the tag names instead instead of descriptions, use the -s option when extracting information
-            # subSec_time = giveDatetime(Tagdict["SubSecDateTimeOriginal"][i])
-            # subSec_newtime = subSec_time + delta_t
-            # subSec_timestring = dateformating(subSec_newtime, "YYYY:MM:DD HH:mm:ss.SSS")
-            # print(subSec_timestring)
-            # options.append("-SubSecCreateDate=" + subSec_timestring)
-            # options.append("-SubSecDateTimeOriginal=" + subSec_timestring)
-            # options.append("-SubSecModifyDate=" + subSec_timestring)
+            # not working:
+            # if "Sub Sec Time Original" in Tagdict:
+            #     subsec = Tagdict["Sub Sec Time Original"][i]
+            #     print(subsec)
+            #     for time_tag in time_tags_mp4_subsec:
+            #         options.append("-%s=%s.%s" % (time_tag, timestring, subsec))
 
+        print(options)
         callExiftool(Tagdict["Directory"][i], Tagdict["File Name"][i], options, True)
         dir_change_printer.update(Tagdict["Directory"][i])
     dir_change_printer.finish()
@@ -108,16 +110,18 @@ def nameToExif():
     clock.finish()
 
 
-def geotag(timezone=2, offset_min=0, offset_sec=0):
+def geotag(timezone=2, offset=""):
     """
     adds gps information to all pictures in all sub directories of current directory
     the gps information is obtained from gpx files, that are expected to be in a folder called ".gps"
+    :param timezone: number of hours offset
+    :param offset: offset in minutes and seconds, has to be in format +/-mm:ss e.g. -03:02
     """
     inpath = os.getcwd()
     gpxDir = inpath + r"\.gps"
     options = ["-r", "-geotime<${DateTimeOriginal}%+03d:00" % timezone]
-    if not offset_min == 0 or not offset_sec == 0:
-        options.append("-geosync=%+03d:%02d" % (offset_min, offset_sec))
+    if offset:
+        options.append("-geosync=" + offset)
     for (dirpath, dirnames, filenames) in os.walk(gpxDir):
         if not gpxDir == dirpath: break
         for filename in filenames:
