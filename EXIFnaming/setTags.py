@@ -142,4 +142,5 @@ def geotag(timezone=2, offset=""):
         if not inpath == dirpath: break
         for dirname in dirnames:
             if dirname.startswith("."): continue
+            print(dirname)
             callExiftool(inpath, dirname, options=options)
