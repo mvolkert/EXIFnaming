@@ -10,7 +10,7 @@ import numpy as np
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
-    moveSeries, move, removeIfEmtpy, isfile, get_relpath_depth
+    moveSeries, move, removeIfEmtpy, isfile, get_relpath_depth, move_video
 from EXIFnaming.helpers.misc import askToContinue
 
 includeSubdirs = True
@@ -105,6 +105,7 @@ def filterSeries():
         moveSeries(dirpath, filenames, "S")
         moveSeries(dirpath, filenames, "SM")
         moveSeries(dirpath, filenames, "TL")
+        move_video(dirpath, filenames, ".MP4")
         for filename in filenames:
             if not ".JPG" in filename: continue
             moveToSubpath(filename, dirpath, "single")

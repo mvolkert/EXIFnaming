@@ -114,6 +114,11 @@ def moveSeries(dirpath: str, filenames: list, series_type="S"):
         if match:
             moveToSubpath(filename, dirpath, series_type)
 
+def move_video(dirpath: str, filenames: list, filext=".MP4"):
+    for filename in filenames:
+        if filext in filename:
+            moveToSubpath(filename, dirpath, "mp4")
+
 
 def copyFilesTo(files: list, path: str):
     print(len(files), "matches are to be copied to", path)
