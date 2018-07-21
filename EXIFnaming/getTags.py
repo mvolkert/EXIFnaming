@@ -385,17 +385,18 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
     clock.finish()
 
 
-def exif_to_name(Fileext=".JPG"):
+def exif_to_name(fileexts=[".JPG", ".MP4"]):
     """
-    reverse nameToExif()
+    reverse exif_to_name()
     """
     inpath = os.getcwd()
-    Tagdict = readTags(inpath, includeSubdirs, Fileext)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Label"]): return
-    temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
-    leng = len(list(Tagdict.values())[0])
-    for i in range(leng):
-        renameInPlace(Tagdict["Directory"][i], Tagdict["File Name"][i] + temppostfix, Tagdict["Label"][i] + Fileext)
+    for fileext in fileexts:
+        Tagdict = readTags(inpath, includeSubdirs, fileext)
+        if has_not_keys(Tagdict, keys=["Directory", "File Name", "Label"]): return
+        temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
+        leng = len(list(Tagdict.values())[0])
+        for i in range(leng):
+            renameInPlace(Tagdict["Directory"][i], Tagdict["File Name"][i] + temppostfix, Tagdict["Label"][i] + fileext)
 
 
 def print_timeinterval():
@@ -409,7 +410,7 @@ def print_timeinterval():
         if not fotos: continue
         first = _get_time(dirpath, fotos[0])
         last = _get_time(dirpath, fotos[-1])
-        ofile.write("%-55s\t%8s - %8s\n" % (os.path.relpath(dirpath), first, last))
+        ofile.write("%-55s, %8s, %8s\n" % (os.path.relpath(dirpath), first, last))
     ofile.close()
 
 
@@ -417,3 +418,33 @@ def _get_time(dirpath, filename):
     tags = readTag(dirpath, filename)
     time = giveDatetime(tags["Date/Time Original"]).time()
     return str(time)
+
+
+def order_with_timefile(timefile="timetable.txt", fileexts=[".JPG", ".MP4"]):
+    inpath = os.getcwd()
+    dirNameDict_firsttime, dirNameDict_lasttime = _read_time_file(timefile)
+    for fileext in fileexts:
+        Tagdict = readTags(inpath, includeSubdirs, Fileext=fileext)
+        if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
+        leng = len(list(Tagdict.values())[0])
+        print('Number of jpg: %d' % leng)
+        for i in range(leng):
+            time = giveDatetime(Tagdict["Date/Time Original"][i])
+            dirName = find_dir_with_closest_time(dirNameDict_firsttime, dirNameDict_lasttime, time)
+
+            if dirName:
+                move(Tagdict["File Name"][i], Tagdict["Directory"][i], os.path.join(inpath, dirName))
+
+
+def _read_time_file(filename="timetable.txt"):
+    file = open(filename, 'r')
+    dirNameDict_firsttime = OrderedDict()
+    dirNameDict_lasttime = OrderedDict()
+    for line in file:
+        dir_name, start, end = [entry.strip(' ') for entry in line.split(',')]
+        start = giveDatetime(start)
+        end = giveDatetime(end)
+        dirNameDict_firsttime[start] = dir_name
+        dirNameDict_lasttime[end] = dir_name
+    file.close()
+    return dirNameDict_firsttime, dirNameDict_lasttime
