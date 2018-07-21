@@ -136,7 +136,8 @@ def filterPrimary():
             moveToSubpath(filename, dirpath, "primary")
 
 
-def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, dirs=None, one_level=True):
+def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, dirs=None, one_level=True,
+                  not_inpath=True):
     """
     reverses filtering/sorting into directories
     :param series: reverse filterSeries
@@ -145,6 +146,7 @@ def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, 
     :param all_folders: reverse all
     :param dirs: reverse other dirs
     :param one_level: reverse only one directory up
+    :param not_inpath: leave all directories in inpath as they are, only change subdirectories
     """
     inpath = os.getcwd()
     if dirs is None:
@@ -174,6 +176,7 @@ def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, 
         print(dirpath, len(dirnames), len(filenames))
         for filename in filenames:
             if not filename[-4:] in (".JPG", ".jpg", ".MP4", ".mp4"): continue
+            if not_inpath and os.path.dirname(dirpath) == inpath: continue
             if one_level:
                 destination = os.path.dirname(dirpath)
             else:
