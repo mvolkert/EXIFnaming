@@ -48,8 +48,6 @@ def adjustDate(hours=0, minutes=0, seconds=0, Fileext=".JPG"):
             #     print(subsec)
             #     for time_tag in time_tags_mp4_subsec:
             #         options.append("-%s=%s.%s" % (time_tag, timestring, subsec))
-
-        print(options)
         callExiftool(Tagdict["Directory"][i], Tagdict["File Name"][i], options, True)
         dir_change_printer.update(Tagdict["Directory"][i])
     dir_change_printer.finish()
