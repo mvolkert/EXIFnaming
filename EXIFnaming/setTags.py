@@ -70,7 +70,7 @@ def addLocation(country="", city="", location=""):
     writeTags(inpath, options, includeSubdirs, ".JPG")
 
 
-def nameToExif():
+def name_to_exif(artist = "Marco Volkert", additional_tags=[]):
     """
     extract title, description and mode from name and write them to exif
     """
@@ -85,29 +85,39 @@ def nameToExif():
             filename, ext = filename.rsplit(".", 1)
             ext = "." + ext
             if ext not in [".JPG", ".jpg", ".MP4", ".mp4"]: continue
-            filename_splited = filename.split('_')
-            if len(filename_splited) == 0: continue
-            id = ''
-            title = ''
-            state = ''
-            found = False
-            for subname in filename_splited:
-                if found:
-                    if subname in c.SceneToTag:
-                        if c.SceneToTag[subname]: state += c.SceneToTag[subname] + "_"
-                    else:
-                        title += subname + "_"
-                else:
-                    id += subname + "_"
-                    if (np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1])) or \
-                            subname[0] == "M" or "HDR" in subname: found = True
-            options = []
-            if id: options.append("-ImageDescription=" + id[:-1])
-            if title: options.append("-Title=" + title[:-1])
-            if state: options.append("-State=" + state[:-1])
-            if not options: continue
+            image_id, image_tags = _split_name(filename)
+            image_tags += additional_tags
+            options = ["-Title=" + filename, "-Label=" + filename]
+            if image_id: options.append("-Identifier=" + image_id)
+            for image_tag in image_tags:
+                options.append("-Keywords=" + image_tag)
+            if artist: options.append("-Artist=" + artist)
             callExiftool(dirpath, filename + ext, options, True)
     clock.finish()
+
+
+def _split_name(filename: str):
+    def is_lastpart_of_id(subname: str) -> bool:
+        starts_and_ends_with_digit = (np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1]))
+        return starts_and_ends_with_digit or subname[0] == "M" or "HDR" in subname
+
+    filename_splited = filename.split('_')
+    if len(filename_splited) == 0: return
+    image_id = ""
+    image_tags = []
+    counter_complete = False
+    for subname in filename_splited:
+        if counter_complete:
+            image_tags.append(subname)
+            if subname.isupper():
+                image_id += subname + "_"
+                image_tag = scene_to_tag(subname)
+                if image_tag: image_tags.append(image_tag)
+        else:
+            image_id += subname + "_"
+            if is_lastpart_of_id(subname): counter_complete = True
+    image_id = image_id[:-1]
+    return image_id, image_tags
 
 
 def geotag(timezone=2, offset=""):

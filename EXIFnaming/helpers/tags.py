@@ -150,3 +150,9 @@ def checkIntegrity(Tagdict, Fileext=".JPG"):
     else:
         print("unknown file extension")
         return
+
+def scene_to_tag(scene : str) -> str:
+    scene = scene.strip('123456789')
+    if scene in c.SceneToTag:
+        return c.SceneToTag[scene]
+    return ""

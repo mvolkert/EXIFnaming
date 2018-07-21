@@ -84,15 +84,10 @@ unknownTags[("Scene Mode","Unknown (54)") ]="HS"
 
 SceneToTag=OrderedDict()
 SceneToTag['PANO']="Panorama"
-SceneToTag['NIGHT5']="night"
-SceneToTag['SUN1']="sunset"
-SceneToTag['SUN2']="sunset"
+SceneToTag['NIGHT']="night"
+SceneToTag['SUN']="sun"
 SceneToTag['HDR']="HDR"
 SceneToTag['HDRT']="HDR"
-SceneToTag['4KB']=""
-SceneToTag['4K']=""
-SceneToTag['FHD']=""
-SceneToTag['HS']=""
 
 CameraModelShort=OrderedDict()
 CameraModelShort['DMC-TZ7']='TZ7'

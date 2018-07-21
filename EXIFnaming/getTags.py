@@ -385,23 +385,17 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
     clock.finish()
 
 
-def exifToName(Fileext=".JPG"):
+def exif_to_name(Fileext=".JPG"):
     """
     reverse nameToExif()
     """
     inpath = os.getcwd()
     Tagdict = readTags(inpath, includeSubdirs, Fileext)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", "Image Description", "Title",
-                                   "State"]): return
+    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Label"]): return
     temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
     leng = len(list(Tagdict.values())[0])
     for i in range(leng):
-        name = Tagdict["Image Description"][i]
-        mode = Tagdict["State"][i]
-        title = Tagdict["Title"][i]
-        if mode: name += "_" + mode
-        if title: name += "_" + title
-        renameInPlace(Tagdict["Directory"][i], Tagdict["File Name"][i] + temppostfix, name + Fileext)
+        renameInPlace(Tagdict["Directory"][i], Tagdict["File Name"][i] + temppostfix, Tagdict["Label"][i] + Fileext)
 
 
 def print_timeinterval():
