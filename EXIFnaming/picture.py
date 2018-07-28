@@ -10,7 +10,7 @@ import numpy as np
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
-    moveSeries, move, removeIfEmtpy, isfile, get_relpath_depth, move_video
+    moveSeries, move, removeIfEmtpy, isfile, get_relpath_depth, move_media
 from EXIFnaming.helpers.misc import askToContinue
 
 includeSubdirs = True
@@ -94,7 +94,7 @@ def filterSeries():
     put each kind of series in its own directory
     """
     inpath = os.getcwd()
-    skipdirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single", "HDR", ".git", "tags"]
+    skipdirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single", "HDR", "mp4", ".git", "tags"]
 
     print(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -105,10 +105,9 @@ def filterSeries():
         moveSeries(dirpath, filenames, "S")
         moveSeries(dirpath, filenames, "SM")
         moveSeries(dirpath, filenames, "TL")
-        move_video(dirpath, filenames, ".MP4")
-        for filename in filenames:
-            if not ".JPG" in filename: continue
-            moveToSubpath(filename, dirpath, "single")
+        move_media(dirpath, filenames, ".MP4", "mp4")
+        move_media(dirpath, filenames, "HDRT", "HDR")
+        move_media(dirpath, filenames, ".JPG", "single")
 
 
 def filterPrimary():
@@ -195,7 +194,7 @@ def renameHDR(mode="HDRT", ext=".jpg", folder="HDR"):
     """
     import re
 
-    matchreg = r"^([-\w]+)_([0-9]+)B1([-\w\s'&]*)_2\3"
+    matchreg = r"^([-\w]+)_([0-9]+)B1([-\w\s'&.]*)_2\3"
     matchreg2 = r"^([-a-zA-Z0-9]+)[-a-zA-Z_]*_([0-9]+)([-\w\s'&]*)_([0-9]+)\3"
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
