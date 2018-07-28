@@ -360,6 +360,7 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: continue
         if not folder == "" and not folder == os.path.basename(dirpath): continue
+        if len(filenames) == 0: continue
         print(dirpath)
         Tagdict = readTags(dirpath, includeSubdirs, ".jpg")
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Rotation"]): return
