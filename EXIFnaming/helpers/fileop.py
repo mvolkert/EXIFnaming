@@ -120,9 +120,9 @@ def move_media(dirpath: str, filenames: list, name_search=".MP4", dest="mp4"):
             moveToSubpath(filename, dirpath, dest)
 
 
-def copyFilesTo(files: list, path: str):
+def copyFilesTo(files: list, path: str, prompt = True):
     print(len(files), "matches are to be copied to", path)
-    askToContinue()
+    if prompt: askToContinue()
     os.makedirs(path, exist_ok=True)
     for filename in files:
         shutil.copy2(filename, path)

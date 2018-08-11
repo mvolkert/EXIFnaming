@@ -10,7 +10,7 @@ import numpy as np
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
-    moveSeries, move, removeIfEmtpy, isfile, get_relpath_depth, move_media
+    moveSeries, move, removeIfEmtpy, isfile, get_relpath_depth, move_media, copyFilesTo
 from EXIFnaming.helpers.misc import askToContinue
 
 includeSubdirs = True
