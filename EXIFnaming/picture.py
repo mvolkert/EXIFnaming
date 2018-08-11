@@ -94,7 +94,7 @@ def filterSeries():
     put each kind of series in its own directory
     """
     inpath = os.getcwd()
-    skipdirs = ["B" + str(i) for i in range(1, 8)] + ["S", "single", "HDR", "mp4", ".git", "tags"]
+    skipdirs = ["B" + str(i) for i in range(1, 8)] + ["S", "SM", "TL", "mp4", "HDR", "single", ".git", "tags"]
 
     print(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
