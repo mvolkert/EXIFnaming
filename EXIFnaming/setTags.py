@@ -53,6 +53,32 @@ def adjustDate(hours=0, minutes=0, seconds=0, Fileext=".JPG"):
     dir_change_printer.finish()
 
 
+def fake_date(start='2000:01:01'):
+    '''
+    each file in a directory is one second later
+    each dir is one day later
+    :param start:
+    :return:
+    '''
+    inpath = os.getcwd()
+    start += ' 00:00:00.000'
+    start_time = giveDatetime(start)
+    dir_counter = -1
+    extensions = ['.jpg', '.JPG']
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not includeSubdirs and not inpath == dirpath: break
+        filenames = [filename for filename in filenames if filename[-4:] in extensions]
+        if not filenames: continue
+        print(dirpath)
+        dir_counter += 1
+        time = start_time + dt.timedelta(days=dir_counter)
+        for filename in filenames:
+            time += dt.timedelta(seconds=1)
+            time_string = dateformating(time, "YYYY:MM:DD HH:mm:ss")
+            options = ["-DateTimeOriginal=" + time_string]
+            callExiftool(dirpath, filename, options, True)
+
+
 def addLocation(country="", city="", location=""):
     """
     :param country: example:"Germany"
