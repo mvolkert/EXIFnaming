@@ -136,6 +136,18 @@ def filterPrimary():
             moveToSubpath(filename, dirpath, "primary")
 
 
+def copy_subdirectories(dest: str, dir_names: []):
+    """
+    copy sub folders of specified names to dest without directory structure
+    """
+    inpath = os.getcwd()
+    print(inpath)
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not includeSubdirs and not inpath == dirpath: continue
+        if not os.path.basename(dirpath) in dir_names: continue
+        copyFilesTo(filenames, dest, False)
+
+
 def foldersToMain(all_folders=False, series=False, primary=False, blurry=False, dirs=None, one_level=True,
                   not_inpath=True):
     """
