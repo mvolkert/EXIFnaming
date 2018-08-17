@@ -2,9 +2,7 @@
 """
 measuring tools
 """
-
 import datetime as dt
-
 
 class DirChangePrinter:
 

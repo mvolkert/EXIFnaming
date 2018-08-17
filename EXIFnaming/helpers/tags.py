@@ -5,67 +5,66 @@ collection of Tag tools
 """
 
 import os
-
 import numpy as np
 
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.decode import has_not_keys
 
 
-def is_4KBurst(Tagdict, i):
+def is_4KBurst(Tagdict, i: int):
     return Tagdict["Image Quality"][i] == "4k Movie" and Tagdict["Video Frame Rate"][i] == "29.97"
 
 
-def is_4KFilm(Tagdict, i):
+def is_4KFilm(Tagdict, i: int):
     return Tagdict["Image Quality"][i] == "4k Movie"
 
 
-def is_HighSpeed(Tagdict, i):
+def is_HighSpeed(Tagdict, i: int):
     return Tagdict["Image Quality"][i] == "Full HD Movie" and Tagdict["Advanced Scene Mode"][i] == "HS"
 
 
-def is_FullHD(Tagdict, i):
+def is_FullHD(Tagdict, i: int):
     return Tagdict["Image Quality"][i] == "Full HD Movie" and Tagdict["Advanced Scene Mode"][i] == "Off"
 
 
-def is_series(Tagdict, i):
+def is_series(Tagdict, i: int):
     return Tagdict["Burst Mode"][i] == "On"
 
 
-def is_Bracket(Tagdict, i):
+def is_Bracket(Tagdict, i: int):
     return Tagdict["Bracket Settings"][i] and not Tagdict["Bracket Settings"][i] == "No Bracket"
 
 
-def is_stopmotion(Tagdict, i):
+def is_stopmotion(Tagdict, i: int):
     return Tagdict["Timer Recording"][i] == "Stop-motion Animation"
 
 
-def is_timelapse(Tagdict, i):
+def is_timelapse(Tagdict, i: int):
     return Tagdict["Timer Recording"][i] == "Time Lapse"
 
 
-def is_4K(Tagdict, i):
+def is_4K(Tagdict, i: int):
     return Tagdict["Image Quality"][i] == '8.2'
 
 
-def is_creative(Tagdict, i):
+def is_creative(Tagdict, i: int):
     return Tagdict["Scene Mode"][i] == "Creative Control" or Tagdict["Scene Mode"][i] == "Digital Filter"
 
 
-def is_scene(Tagdict, i):
+def is_scene(Tagdict, i: int):
     return Tagdict["Scene Mode"][i] and not Tagdict["Scene Mode"][i] == "Off" and Tagdict["Advanced Scene Mode"][
         i] in c.SceneShort
 
 
-def is_HDR(Tagdict, i):
+def is_HDR(Tagdict, i: int):
     return Tagdict["HDR"][i] and not Tagdict["HDR"][i] == "Off"
 
 
-def is_sun(Tagdict, i):
+def is_sun(Tagdict, i: int):
     return Tagdict["Scene Mode"][i] == "Sun1" or Tagdict["Scene Mode"][i] == "Sun2"
 
 
-def getRecMode(Tagdict, i):
+def get_recMode(Tagdict, i: int):
     if is_4KBurst(Tagdict, i):
         return "_4KB"
     elif is_4KFilm(Tagdict, i):
@@ -78,7 +77,7 @@ def getRecMode(Tagdict, i):
         return ""
 
 
-def getSequenceString(SequenceNumber, Tagdict, i):
+def get_sequence_string(SequenceNumber: int, Tagdict, i: int) -> str:
     if is_Bracket(Tagdict, i): return "B%d" % SequenceNumber
     if is_series(Tagdict, i):  return "S%02d" % SequenceNumber
     if is_stopmotion(Tagdict, i): return "SM%03d" % SequenceNumber
@@ -87,7 +86,7 @@ def getSequenceString(SequenceNumber, Tagdict, i):
     return ""
 
 
-def getMode(Tagdict, i):
+def getMode(Tagdict, i: int):
     if is_scene(Tagdict, i):
         return "_" + c.SceneShort[Tagdict["Advanced Scene Mode"][i]]
     elif is_creative(Tagdict, i):
@@ -97,7 +96,7 @@ def getMode(Tagdict, i):
     return ""
 
 
-def getDate(Tagdict, i):
+def getDate(Tagdict, i: int):
     dateTimeString = Tagdict["Date/Time Original"][i]
     if "Sub Sec Time Original" in Tagdict:
         subsec = Tagdict["Sub Sec Time Original"][i]
@@ -105,7 +104,7 @@ def getDate(Tagdict, i):
     return dateTimeString
 
 
-def getSequenceNumber(Tagdict, i):
+def getSequenceNumber(Tagdict, i: int):
     """
     sequence starts with 1; 0 means no sequence
     """
@@ -114,7 +113,7 @@ def getSequenceNumber(Tagdict, i):
     return 0
 
 
-def getCameraModel(Tagdict, i):
+def getCameraModel(Tagdict, i: int):
     if not 'Camera Model Name' in Tagdict: return ""
     model = Tagdict['Camera Model Name'][i]
     if model in c.CameraModelShort: model = c.CameraModelShort[model]
@@ -122,14 +121,14 @@ def getCameraModel(Tagdict, i):
     return model
 
 
-def getPath(Tagdict, i):
+def getPath(Tagdict, i: int):
     if not all([x in Tagdict for x in ["Directory", "File Name"]]):
         print("Directory or File Name is not in Tagdict")
         return ""
     return os.path.join(Tagdict["Directory"][i], Tagdict["File Name"][i])
 
 
-def checkIntegrity(Tagdict, Fileext=".JPG"):
+def checkIntegrity(Tagdict, fileext=".JPG"):
     """
     :return: None if not primary keys, false if not advanced keys
     """
@@ -143,9 +142,9 @@ def checkIntegrity(Tagdict, Fileext=".JPG"):
     if not Tagdict: return
     if has_not_keys(Tagdict, keys=keysPrim): return
 
-    if any(Fileext == ext for ext in ['.jpg', '.JPG']):
+    if any(fileext == ext for ext in ['.jpg', '.JPG']):
         return has_not_keys(Tagdict, keys=keysJPG)
-    elif any(Fileext == ext for ext in ['.mp4', '.MP4']):
+    elif any(fileext == ext for ext in ['.mp4', '.MP4']):
         return has_not_keys(Tagdict, keys=keysMP4)
     else:
         print("unknown file extension")

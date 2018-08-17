@@ -6,14 +6,7 @@ import os
 
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
 from EXIFnaming.helpers.fileop import moveToSubpath, isfile
-
-includeSubdirs = True
-
-
-def setIncludeSubdirs(toInclude=True):
-    global includeSubdirs
-    includeSubdirs = toInclude
-    print("modifySubdirs:", includeSubdirs)
+from EXIFnaming import includeSubdirs
 
 
 def detectBlurry():

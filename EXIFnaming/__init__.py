@@ -10,8 +10,17 @@ __copyright__ = "Copyright 2017, Marco Volkert"
 __email__ = "marco.volkert24@gmx.de"
 __status__ = "Development"
 
-from EXIFnaming.readexif import printinfo, rename_PM, rename, order, searchByTagEquality, searchByTagInterval, rotate, \
+from EXIFnaming.readexif import print_info, rename_pm, rename, order, searchby_exiftag_equality, searchby_exiftag_interval, rotate, \
     exif_to_name, print_timeinterval
-from EXIFnaming.picture import detectBlurry, detectSimilar, filterSeries, renameBack, filterPrimary, renameHDR, \
-    renameTempBackAll, foldersToMain, copy_subdirectories
-from EXIFnaming.setexif import adjustDate, addLocation, geotag, name_to_exif, fake_date
+from EXIFnaming.nameop import filter_series, rename_back, filter_primary, rename_HDR, \
+    rename_temp_back, folders_to_main, copy_subdirectories
+from EXIFnaming.picture import detectBlurry, detectSimilar
+from EXIFnaming.setexif import shift_time, add_location, geotag, name_to_exif, fake_date
+
+includeSubdirs = True
+
+
+def set_includeSubdirs(toInclude=True):
+    global includeSubdirs
+    includeSubdirs = toInclude
+    print("modifySubdirs:", includeSubdirs)

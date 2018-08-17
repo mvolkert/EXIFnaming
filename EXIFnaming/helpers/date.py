@@ -31,31 +31,31 @@ def newdate(time, time_old, use_day=True) -> bool:
 newdate.dateswitch = False
 
 
-def dateformating(time=dt.datetime.now(), dateformat=""):
+def dateformating(time=dt.datetime.now(), dateformat="") -> str:
     y = dateformat.count('Y')
     if y > 0: dateformat = dateformat.replace('Y' * y, str(time.year)[-y:])
     if dateformat.count('N') > 0:
         dateformating.numberofDates += 1
-        dateformat = _replaceDateID(dateformat, 'N', dateformating.numberofDates)
-    dateformat = _replaceDateID(dateformat, 'M', time.month)
-    dateformat = _replaceDateID(dateformat, 'D', time.day)
-    dateformat = _replaceDateID(dateformat, 'H', time.hour)
-    dateformat = _replaceDateID(dateformat, 'm', time.minute)
-    dateformat = _replaceDateID(dateformat, 's', time.second)
-    dateformat = _replaceDateID(dateformat, 'S', time.microsecond / 1000)
+        dateformat = _replace_date_ID(dateformat, 'N', dateformating.numberofDates)
+    dateformat = _replace_date_ID(dateformat, 'M', time.month)
+    dateformat = _replace_date_ID(dateformat, 'D', time.day)
+    dateformat = _replace_date_ID(dateformat, 'H', time.hour)
+    dateformat = _replace_date_ID(dateformat, 'm', time.minute)
+    dateformat = _replace_date_ID(dateformat, 's', time.second)
+    dateformat = _replace_date_ID(dateformat, 'S', time.microsecond / 1000)
     return dateformat
 
 
 dateformating.numberofDates = 0
 
 
-def _replaceDateID(dateformat, search_str, value):
+def _replace_date_ID(dateformat, search_str, value) -> str:
     count = dateformat.count(search_str)
     if count == 0: return dateformat
     return dateformat.replace(search_str * count, ("%0" + str(count) + "d") % value)
 
 
-def find_dir_with_closest_time(dirDict_firsttime: dict, dirDict_lasttime: dict, time):
+def find_dir_with_closest_time(dirDict_firsttime: dict, dirDict_lasttime: dict, time) -> str:
     deltaDict = OrderedDict()
     for firsttime, name in dirDict_firsttime.items():
         deltaseconds = abs((time - firsttime).total_seconds())
@@ -67,7 +67,7 @@ def find_dir_with_closest_time(dirDict_firsttime: dict, dirDict_lasttime: dict, 
     return deltaDict[deltatime_min]
 
 
-def printFirstLastOfDirName(dirDict_firsttime: dict, dirDict_lasttime: dict):
+def print_firstlast_of_dirname(dirDict_firsttime: dict, dirDict_lasttime: dict):
     outDict = OrderedDict()
     for time, name in dirDict_firsttime.items():
         outDict[name] = time.strftime("%H:%M")

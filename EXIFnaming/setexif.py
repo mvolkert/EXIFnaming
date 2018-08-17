@@ -6,26 +6,19 @@ Writes to Tags
 import datetime as dt
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
-from EXIFnaming.helpers.decode import readTags, callExiftool, askToContinue, writeTags, countFilesIn
+from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.tags import *
-
-includeSubdirs = True
-
-
-def setIncludeSubdirs(toInclude=True):
-    global includeSubdirs
-    includeSubdirs = toInclude
-    print("modifySubdirs:", includeSubdirs)
+from EXIFnaming import includeSubdirs
 
 
-def adjustDate(hours=0, minutes=0, seconds=0, fileext=".JPG"):
+def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):
     """
     for example to adjust time zone by one: hours=-1
     """
     inpath = os.getcwd()
     delta_t = dt.timedelta(hours=hours, minutes=minutes, seconds=seconds)
-    Tagdict = readTags(inpath, includeSubdirs, fileext)
+    Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     time_tags = ["DateTimeOriginal", "CreateDate", "ModifyDate"]
@@ -48,7 +41,7 @@ def adjustDate(hours=0, minutes=0, seconds=0, fileext=".JPG"):
             #     print(subsec)
             #     for time_tag in time_tags_mp4_subsec:
             #         options.append("-%s=%s.%s" % (time_tag, timestring, subsec))
-        callExiftool(Tagdict["Directory"][i], Tagdict["File Name"][i], options, True)
+        call_exiftool(Tagdict["Directory"][i], Tagdict["File Name"][i], options, True)
         dir_change_printer.update(Tagdict["Directory"][i])
     dir_change_printer.finish()
 
@@ -75,10 +68,10 @@ def fake_date(start='2000:01:01'):
             time += dt.timedelta(seconds=1)
             time_string = dateformating(time, "YYYY:MM:DD HH:mm:ss")
             options = ["-DateTimeOriginal=" + time_string]
-            callExiftool(dirpath, filename, options, True)
+            call_exiftool(dirpath, filename, options, True)
 
 
-def addLocation(country="", city="", location=""):
+def add_location(country="", city="", location=""):
     """
     :param country: example:"Germany"
     :param city: example:"Nueremberg"
@@ -90,7 +83,7 @@ def addLocation(country="", city="", location=""):
     if city: options.append("-City=" + city)
     if location: options.append("-Location=" + location)
     if not options: return
-    writeTags(inpath, options, includeSubdirs, ".JPG")
+    write_exiftags(inpath, options, includeSubdirs, ".JPG")
 
 
 def name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None):
@@ -99,7 +92,7 @@ def name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None):
     """
     inpath = os.getcwd()
     clock = Clock()
-    print("process", countFilesIn(inpath, includeSubdirs, ""), "Files in ", inpath, "subdir:", includeSubdirs)
+    print("process", count_files_in(inpath, includeSubdirs, ""), "Files in ", inpath, "subdir:", includeSubdirs)
     askToContinue()
     file_extensions = ["JPG", "jpg", "MP4", "mp4"]
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -118,7 +111,7 @@ def name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None):
             for image_tag in image_tags:
                 options.append("-Keywords=" + image_tag)
             if artist: options.append("-Artist=" + artist)
-            callExiftool(dirpath, filename, options, True)
+            call_exiftool(dirpath, filename, options, True)
     clock.finish()
 
 
@@ -179,4 +172,4 @@ def geotag(timezone=2, offset=""):
         for dirname in dirnames:
             if dirname.startswith("."): continue
             print(dirname)
-            callExiftool(inpath, dirname, options=options)
+            call_exiftool(inpath, dirname, options=options)

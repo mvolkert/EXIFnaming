@@ -5,41 +5,31 @@ Reads Tags to use them, but not write to them
 
 import datetime as dt
 import os
-import shutil
 from collections import OrderedDict
-
 import numpy as np
 
 import EXIFnaming.helpers.constants as c
-from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, printFirstLastOfDirName, \
+from EXIFnaming import includeSubdirs
+from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_firstlast_of_dirname, \
     find_dir_with_closest_time
-from EXIFnaming.helpers.decode import readTags, has_not_keys, readTag
+from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
     copyFilesTo, getSavesDir, isfile
 from EXIFnaming.helpers.measuring_tools import Clock
 from EXIFnaming.helpers.misc import tofloat, getPostfix
-from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getMode, getCameraModel, getDate, getRecMode, \
-    getSequenceString, checkIntegrity, is_series, is_sun
-
-includeSubdirs = True
+from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getMode, getCameraModel, getDate, get_recMode, \
+    get_sequence_string, checkIntegrity
 
 
-def setIncludeSubdirs(toInclude=True):
-    global includeSubdirs
-    includeSubdirs = toInclude
-    print("modifySubdirs:", includeSubdirs)
-
-
-def printinfo(tagGroupNames=(), allGroups=False, fileext=".JPG"):
+def print_info(tagGroupNames=(), allGroups=False, fileext=".JPG"):
     """
     write tag info of tagGroupNames to a file in saves dir
     :param tagGroupNames: selectable groups (look into constants)
     :param allGroups: take all tagGroupNames
     :param fileext: file extension
-    :return:
     """
     inpath = os.getcwd()
-    outdict = readTags(inpath, includeSubdirs, fileext)
+    outdict = read_exiftags(inpath, includeSubdirs, fileext)
     if allGroups: tagGroupNames = c.TagNames.keys()
     for tagGroupName in c.TagNames:
         if not tagGroupNames == [] and not tagGroupName in tagGroupNames: continue
@@ -64,7 +54,7 @@ def printinfo(tagGroupNames=(), allGroups=False, fileext=".JPG"):
         writeToFile(os.path.join(dirname, "tags_" + tagGroupName + ".txt"), outstring)
 
 
-def rename_PM(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, postfix_stay=True, name=""):
+def rename_pm(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, postfix_stay=True, name=""):
     """
     rename for JPG and MP4
     """
@@ -84,10 +74,9 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     :param fileext: file extension
     :param fileext_Raw: file extension for raw image that is to get same name as the normal one
     :param name: optional name between date and filenumber, seldom used
-    :return:
     """
     inpath = os.getcwd()
-    Tagdict = readTags(inpath, includeSubdirs, fileext)
+    Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
 
     # check integrity
     easymode = checkIntegrity(Tagdict, fileext)
@@ -106,7 +95,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     Tagdict["File Name new"] = []
     time_old = giveDatetime()
     counter = startindex - 1
-    digits = _countFilesForEachDate(Tagdict, startindex, dateformat)
+    digits = _count_files_for_each_date(Tagdict, startindex, dateformat)
     number_of_files = len(list(Tagdict.values())[0])
     NamePrefix = ""
 
@@ -131,7 +120,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
                 # SequenceNumber
                 SequenceNumber = getSequenceNumber(Tagdict, i)
                 if SequenceNumber < 2 and not time == time_old: counter += 1
-                if not "HDR" in filename: sequenceString = getSequenceString(SequenceNumber, Tagdict, i)
+                if not "HDR" in filename: sequenceString = get_sequence_string(SequenceNumber, Tagdict, i)
 
             counterString = ("_%0" + digits + "d") % counter
 
@@ -139,7 +128,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
             counter += 1
             counterString = "_M" + "%02d" % counter
             if not easymode:
-                newpostfix += getRecMode(Tagdict, i)
+                newpostfix += get_recMode(Tagdict, i)
 
         if not easymode:
             # Name Scene Modes
@@ -180,7 +169,7 @@ def _write(directory, filename, temppostfix, newname, onlyprint):
     return "%-50s\t %-50s\n" % (filename, newname)
 
 
-def _countFilesForEachDate(Tagdict, startindex, dateformat):
+def _count_files_for_each_date(Tagdict, startindex, dateformat):
     leng = len(list(Tagdict.values())[0])
     counter = startindex - 1
     time_old = giveDatetime()
@@ -202,7 +191,7 @@ def _countFilesForEachDate(Tagdict, startindex, dateformat):
 def order():
     inpath = os.getcwd()
 
-    Tagdict = readTags(inpath, includeSubdirs)
+    Tagdict = read_exiftags(inpath, includeSubdirs)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     lowJump = dt.timedelta(minutes=20)
     bigJump = dt.timedelta(minutes=60)
@@ -250,9 +239,9 @@ def order():
     moveFiles(filenames, os.path.join(inpath, dirName))
     moveFiles(filenames_S, os.path.join(inpath, dirName, "S"))
 
-    printFirstLastOfDirName(dirNameDict_firsttime, dirNameDict_lasttime)
+    print_firstlast_of_dirname(dirNameDict_firsttime, dirNameDict_lasttime)
 
-    Tagdict_mp4 = readTags(inpath, includeSubdirs, fileext=".MP4")
+    Tagdict_mp4 = read_exiftags(inpath, includeSubdirs, fileext=".MP4")
     if has_not_keys(Tagdict_mp4, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict_mp4.values())[0])
     print('Number of mp4: %d' % leng)
@@ -263,63 +252,15 @@ def order():
         if dirName:
             move(Tagdict_mp4["File Name"][i], Tagdict_mp4["Directory"][i], os.path.join(inpath, dirName, "mp4"))
 
-
-def _detect3D():
+def searchby_exiftag_equality(tag_name: str, value: str, fileext=".JPG"):
     """
-    not yet fully implemented
-    """
-    inpath = os.getcwd()
-    Tagdict = readTags(inpath, includeSubdirs)
-    if has_not_keys(Tagdict,
-                    keys=["Directory", "File Name", "Date/Time Original", "Burst Mode", "Sequence Number"]): return
-    time_old = giveDatetime()
-    filenames = []
-    dir3D = "3D"
-    for i in range(len(list(Tagdict.values())[0])):
-        newDir = os.path.join(Tagdict["Directory"][i], dir3D)
-        os.makedirs(newDir, exist_ok=True)
-        SequenceNumber = getSequenceNumber(Tagdict, i)
-        if is_series(Tagdict, i) or SequenceNumber > 1: continue
-        time = giveDatetime(getDate(Tagdict, i))
-        timedelta = time - time_old
-        timedelta_sec = timedelta.days * 3600 * 24 + timedelta.seconds
-        time_old = time
-        if timedelta_sec < 10 or (SequenceNumber == 1 and timedelta_sec < 15) or filenames == []:
-            filenames.append(getPath(Tagdict, i))
-        elif len(filenames) > 1:
-            for filename in filenames:
-                if os.path.isfile(filename.replace(Tagdict["Directory"][i], newDir)): continue
-                shutil.copy2(filename, newDir)
-            filenames = []
-            # shutil.copy2("filename","destdir")
-    # exclude is_series and SequenceNumber>1
-    # more than one picture within 10s
-
-
-def _detectSunset():
-    """
-    not yet fully implemented
+    searches for files where the value of the exiftag equals the input value
+    :param tag_name: exiftag key
+    :param value: exiftag value
+    :param fileext: file extension
     """
     inpath = os.getcwd()
-    Tagdict = readTags(inpath, includeSubdirs)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Scene Mode"]): return
-    for i in range(len(list(Tagdict.values())[0])):
-        newDir = os.path.join(Tagdict["Directory"][i], "Sunset")
-        os.makedirs(newDir, exist_ok=True)
-        time = giveDatetime(getDate(Tagdict, i))
-        if 23 < time.hour or time.hour < 17: continue
-        if not is_sun(Tagdict, i): continue
-        filename = getPath(Tagdict, i)
-        if os.path.isfile(filename.replace(Tagdict["Directory"][i], newDir)): continue
-        shutil.copy2(filename, newDir)
-        # evening and Sun1 or Sun2 are used
-
-
-def searchByTagEquality(tag_name: str, value: str, fileext=".JPG"):
-    """
-    """
-    inpath = os.getcwd()
-    Tagdict = readTags(inpath, includeSubdirs, fileext)
+    Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", tag_name]): return
     leng = len(list(Tagdict.values())[0])
     files = []
@@ -329,11 +270,16 @@ def searchByTagEquality(tag_name: str, value: str, fileext=".JPG"):
     copyFilesTo(files, os.path.join(inpath, "matches"))
 
 
-def searchByTagInterval(tag_name: str, min_value: float, max_value: float, fileext=".JPG"):
+def searchby_exiftag_interval(tag_name: str, min_value: float, max_value: float, fileext=".JPG"):
     """
+    searches for files where the value of the exiftag is in the specified interval
+    :param tag_name: exiftag key
+    :param min_value: interval start
+    :param max_value: interval end
+    :param fileext: file extension
     """
     inpath = os.getcwd()
-    Tagdict = readTags(inpath, includeSubdirs, fileext)
+    Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", tag_name]): return
     leng = len(list(Tagdict.values())[0])
     files = []
@@ -344,12 +290,12 @@ def searchByTagInterval(tag_name: str, min_value: float, max_value: float, filee
     copyFilesTo(files, os.path.join(inpath, "matches"))
 
 
-def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
+def rotate(subname="HDRT", folder="HDR", sign=1, override=True):
     """
     rotate back according to tag information (Rotate 90 CW or Rotate 270 CW)
-    :param mode: name for HDR-Mode written to file
+    :param subname: only files that contain this name are rotated, empty string: no restriction
     :param sign: direction of rotation
-    :param folder: only files in folders of this name are renamed
+    :param folder: only files in directories of this name are rotated, empty string: no restriction
     :param override: override file with rotated one
     """
 
@@ -363,12 +309,12 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
         if not folder == "" and not folder == os.path.basename(dirpath): continue
         if len(filenames) == 0: continue
         print(dirpath)
-        Tagdict = readTags(dirpath, includeSubdirs, ".jpg")
+        Tagdict = read_exiftags(dirpath, includeSubdirs, ".jpg")
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Rotation"]): return
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):
             # Load the original image:
-            if not mode in Tagdict["File Name"][i]: continue
+            if not subname in Tagdict["File Name"][i]: continue
             if Tagdict["Rotation"][i] == "Horizontal (normal)":
                 continue
             else:
@@ -393,7 +339,7 @@ def exif_to_name(fileexts=(".JPG", ".MP4")):
     """
     inpath = os.getcwd()
     for fileext in fileexts:
-        Tagdict = readTags(inpath, includeSubdirs, fileext)
+        Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Label"]): return
         temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
         leng = len(list(Tagdict.values())[0])
@@ -417,7 +363,7 @@ def print_timeinterval():
 
 
 def _get_time(dirpath, filename):
-    tags = readTag(dirpath, filename)
+    tags = read_exiftag(dirpath, filename)
     time = giveDatetime(tags["Date/Time Original"]).time()
     return str(time)
 
@@ -426,7 +372,7 @@ def order_with_timefile(timefile="timetable.txt", fileexts=(".JPG", ".MP4")):
     inpath = os.getcwd()
     dirNameDict_firsttime, dirNameDict_lasttime = _read_time_file(timefile)
     for fileext in fileexts:
-        Tagdict = readTags(inpath, includeSubdirs, fileext=fileext)
+        Tagdict = read_exiftags(inpath, includeSubdirs, fileext=fileext)
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
         leng = len(list(Tagdict.values())[0])
         print('Number of jpg: %d' % leng)
