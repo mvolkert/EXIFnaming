@@ -9,7 +9,7 @@ from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.tags import *
-from EXIFnaming import includeSubdirs
+from EXIFnaming.helpers.misc import includeSubdirs
 
 
 def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):

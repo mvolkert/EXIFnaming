@@ -6,9 +6,9 @@ Just ideas
 import os
 import shutil
 
-from EXIFnaming import includeSubdirs
 from EXIFnaming.helpers.date import giveDatetime
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys
+from EXIFnaming.helpers.misc import includeSubdirs
 from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getDate, is_series, is_sun
 
 

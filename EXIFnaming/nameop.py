@@ -5,13 +5,13 @@ Does not uses Tags at all
 import datetime as dt
 import os
 import re
+
 import numpy as np
 
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
     moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo
-from EXIFnaming.helpers.misc import askToContinue
-from EXIFnaming import includeSubdirs
+from EXIFnaming.helpers.misc import includeSubdirs, askToContinue
 
 
 def filter_series():
@@ -170,6 +170,7 @@ def rename_temp_back():
             if not match: continue
             newFilename = re.sub(matchreg, '', filename)
             renameInPlace(dirpath, filename, newFilename)
+
 
 def rename_back(timestring="", fileext=".JPG"):
     """

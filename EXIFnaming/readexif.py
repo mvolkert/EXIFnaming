@@ -6,17 +6,17 @@ Reads Tags to use them, but not write to them
 import datetime as dt
 import os
 from collections import OrderedDict
+
 import numpy as np
 
 import EXIFnaming.helpers.constants as c
-from EXIFnaming import includeSubdirs
 from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_firstlast_of_dirname, \
     find_dir_with_closest_time
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
     copyFilesTo, getSavesDir, isfile
-from EXIFnaming.helpers.measuring_tools import Clock
-from EXIFnaming.helpers.misc import tofloat, getPostfix
+from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
+from EXIFnaming.helpers.misc import includeSubdirs, tofloat, getPostfix
 from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getMode, getCameraModel, getDate, get_recMode, \
     get_sequence_string, checkIntegrity
 
@@ -209,7 +209,6 @@ def order():
     print('Number of JPG: %d' % leng)
     for i in range(leng):
         time = giveDatetime(Tagdict["Date/Time Original"][i])
-        timedelta = time - time_old
 
         if i > 0 and (
                 timedelta > bigJump or
@@ -251,6 +250,7 @@ def order():
 
         if dirName:
             move(Tagdict_mp4["File Name"][i], Tagdict_mp4["Directory"][i], os.path.join(inpath, dirName, "mp4"))
+
 
 def searchby_exiftag_equality(tag_name: str, value: str, fileext=".JPG"):
     """
