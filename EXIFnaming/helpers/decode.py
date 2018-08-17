@@ -25,8 +25,8 @@ def replace_umlauts(string):
     return string
 
 
-def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=[]):
-    print("process", countFilesIn(inpath, includeSubdirs, Fileext, skipdirs), "Files in ", inpath, "includeSubdirs:",
+def readTags(inpath=os.getcwd(), includeSubdirs=False, fileext=".JPG", skipdirs=()):
+    print("process", countFilesIn(inpath, includeSubdirs, fileext, skipdirs), "Files in ", inpath, "includeSubdirs:",
           includeSubdirs)
     askToContinue()
 
@@ -35,10 +35,10 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
         if os.path.basename(dirpath) in skipdirs: continue
-        if countFiles(filenames, Fileext) == 0:
+        if countFiles(filenames, fileext) == 0:
             print("  No matching files in ", os.path.relpath(dirpath, inpath))
             continue
-        out = callExiftool(dirpath, "*" + Fileext, [], False)
+        out = callExiftool(dirpath, "*" + fileext, [], False)
         out = out[out.find("ExifTool Version Number"):]
         out_split = out.split("========")
         print("%4d tags extracted in " % len(out_split), os.path.relpath(dirpath, inpath))
@@ -52,15 +52,15 @@ def readTags(inpath=os.getcwd(), includeSubdirs=False, Fileext=".JPG", skipdirs=
     return outdict
 
 
-def writeTags(inpath, options, includeSubdirs=False, Fileext=".JPG"):
+def writeTags(inpath, options, includeSubdirs=False, fileext=".JPG"):
     clock = Clock()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
-        n = countFiles(filenames, Fileext)
+        n = countFiles(filenames, fileext)
         if n == 0:
             print("  No matching files in ", os.path.relpath(dirpath, inpath))
             continue
-        callExiftool(dirpath, "*" + Fileext, options, True)
+        callExiftool(dirpath, "*" + fileext, options, True)
         print("%4d tags written in   " % n, os.path.relpath(dirpath, inpath))
     clock.finish()
 
@@ -79,7 +79,7 @@ def has_not_keys(indict, keys):
     return False
 
 
-def callExiftool(dirpath, name, options=[], override=True):
+def callExiftool(dirpath: str, name: str, options=(), override=True) -> str:
     path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
     fullname = os.path.join(dirpath, name)
     args = [path + "exiftool", fullname] + ["-charset", "FileName=Latin2"] + options
@@ -109,9 +109,9 @@ def sortDict(indict: OrderedDict, keys: list):
     for i in range(len(list(indict.values())[0])):
         vals = []
         for key in indictkeys:
-            try:
+            if key in indict:
                 vals.append(indict[key][i])
-            except:
+            else:
                 print("sortDict_badkey", key)
         lists.append(vals)
 
@@ -126,20 +126,20 @@ def sortDict(indict: OrderedDict, keys: list):
     return outdict
 
 
-def countFilesIn(inpath, includeSubdirs=False, Fileext="", skipdirs=[]):
+def countFilesIn(inpath, includeSubdirs=False, fileext="", skipdirs=()):
     NFiles = 0
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
         if os.path.basename(dirpath) in skipdirs: continue
         for filename in filenames:
-            if Fileext and not Fileext.lower() == filename.lower()[filename.rfind("."):]: continue
+            if fileext and not fileext.lower() == filename.lower()[filename.rfind("."):]: continue
 
             NFiles += 1
     return NFiles
 
 
-def countFiles(filenames, Fileext=".JPG"):
-    return len([filename for filename in filenames if Fileext.lower() in filename.lower()])
+def countFiles(filenames, fileext=".JPG"):
+    return len([filename for filename in filenames if fileext.lower() in filename.lower()])
 
 
 def askToContinue():

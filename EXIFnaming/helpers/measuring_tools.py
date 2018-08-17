@@ -6,7 +6,7 @@ measuring tools
 import datetime as dt
 
 
-class Dir_change_printer:
+class DirChangePrinter:
 
     def __init__(self, directory):
         self.counter = 0

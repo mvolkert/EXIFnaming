@@ -7,7 +7,7 @@ import datetime as dt
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import readTags, callExiftool, askToContinue, writeTags, countFilesIn
-from EXIFnaming.helpers.measuring_tools import Clock, Dir_change_printer
+from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.tags import *
 
 includeSubdirs = True
@@ -19,19 +19,19 @@ def setIncludeSubdirs(toInclude=True):
     print("modifySubdirs:", includeSubdirs)
 
 
-def adjustDate(hours=0, minutes=0, seconds=0, Fileext=".JPG"):
+def adjustDate(hours=0, minutes=0, seconds=0, fileext=".JPG"):
     """
     for example to adjust time zone by one: hours=-1
     """
     inpath = os.getcwd()
     delta_t = dt.timedelta(hours=hours, minutes=minutes, seconds=seconds)
-    Tagdict = readTags(inpath, includeSubdirs, Fileext)
+    Tagdict = readTags(inpath, includeSubdirs, fileext)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     time_tags = ["DateTimeOriginal", "CreateDate", "ModifyDate"]
     time_tags_pm4 = ["TrackCreateDate", "TrackModifyDate", "MediaCreateDate", "MediaModifyDate"]
     # time_tags_mp4_subsec = ["SubSecCreateDate","SubSecDateTimeOriginal", "SubSecModifyDate"]
-    dir_change_printer = Dir_change_printer(Tagdict["Directory"][0])
+    dir_change_printer = DirChangePrinter(Tagdict["Directory"][0])
     for i in range(leng):
         time = giveDatetime(Tagdict["Date/Time Original"][i])
         newtime = time + delta_t
@@ -39,7 +39,7 @@ def adjustDate(hours=0, minutes=0, seconds=0, Fileext=".JPG"):
         options = []
         for time_tag in time_tags:
             options.append("-%s=%s" % (time_tag, timestring))
-        if Fileext in (".MP4", ".mp4"):
+        if fileext in (".MP4", ".mp4"):
             for time_tag in time_tags_pm4:
                 options.append("-%s=%s" % (time_tag, timestring))
             # not working:
@@ -54,12 +54,11 @@ def adjustDate(hours=0, minutes=0, seconds=0, Fileext=".JPG"):
 
 
 def fake_date(start='2000:01:01'):
-    '''
+    """
     each file in a directory is one second later
     each dir is one day later
-    :param start:
-    :return:
-    '''
+    :param start: the date on which to start generate fake dates
+    """
     inpath = os.getcwd()
     start += ' 00:00:00.000'
     start_time = giveDatetime(start)
@@ -94,7 +93,7 @@ def addLocation(country="", city="", location=""):
     writeTags(inpath, options, includeSubdirs, ".JPG")
 
 
-def name_to_exif(artist="Marco Volkert", additional_tags=[], startdir=None):
+def name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None):
     """
     extract title, description and mode from name and write them to exif
     """
@@ -124,9 +123,9 @@ def name_to_exif(artist="Marco Volkert", additional_tags=[], startdir=None):
 
 
 def _split_name(filename: str):
-    def is_lastpart_of_id(subname: str) -> bool:
-        starts_and_ends_with_digit = (np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1]))
-        return starts_and_ends_with_digit or subname[0] == "M" or "HDR" in subname
+    def is_lastpart_of_id(name) -> bool:
+        starts_and_ends_with_digit = (np.chararray.isdigit(name[0]) and np.chararray.isdigit(name[-1]))
+        return starts_and_ends_with_digit or name[0] == "M" or "HDR" in name
 
     filename_splited = filename.split('_')
     if len(filename_splited) == 0: return

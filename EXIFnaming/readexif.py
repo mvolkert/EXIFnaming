@@ -30,16 +30,16 @@ def setIncludeSubdirs(toInclude=True):
     print("modifySubdirs:", includeSubdirs)
 
 
-def printinfo(tagGroupNames=(), allGroups=False, Fileext=".JPG"):
+def printinfo(tagGroupNames=(), allGroups=False, fileext=".JPG"):
     """
     write tag info of tagGroupNames to a file in saves dir
     :param tagGroupNames: selectable groups (look into constants)
     :param allGroups: take all tagGroupNames
-    :param Fileext: file extension
+    :param fileext: file extension
     :return:
     """
     inpath = os.getcwd()
-    outdict = readTags(inpath, includeSubdirs, Fileext)
+    outdict = readTags(inpath, includeSubdirs, fileext)
     if allGroups: tagGroupNames = c.TagNames.keys()
     for tagGroupName in c.TagNames:
         if not tagGroupNames == [] and not tagGroupName in tagGroupNames: continue
@@ -73,7 +73,7 @@ def rename_PM(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, po
 
 
 def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
-           postfix_stay=True, Fileext=".JPG", Fileext_Raw=".Raw", name=""):
+           postfix_stay=True, fileext=".JPG", fileext_Raw=".Raw", name=""):
     """
     Rename into Format: [Prefix][dateformat](_[name])_[Filenumber][SeriesType][SeriesSubNumber]_[FotoMode]
     :param Prefix:
@@ -81,16 +81,16 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     :param startindex: minimal counter
     :param onlyprint: do not rename; only output file of proposed renaming into saves directory
     :param postfix_stay: if you put a postfix after FotoMode with an other program and call this function again, the postfix will be preserved
-    :param Fileext: file extension
-    :param Fileext_Raw: file extension for raw image that is to get same name as the normal one
+    :param fileext: file extension
+    :param fileext_Raw: file extension for raw image that is to get same name as the normal one
     :param name: optional name between date and filenumber, seldom used
     :return:
     """
     inpath = os.getcwd()
-    Tagdict = readTags(inpath, includeSubdirs, Fileext)
+    Tagdict = readTags(inpath, includeSubdirs, fileext)
 
     # check integrity
-    easymode = checkIntegrity(Tagdict, Fileext)
+    easymode = checkIntegrity(Tagdict, fileext)
     if easymode is None: return
 
     # rename temporary
@@ -108,6 +108,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     counter = startindex - 1
     digits = _countFilesForEachDate(Tagdict, startindex, dateformat)
     number_of_files = len(list(Tagdict.values())[0])
+    NamePrefix = ""
 
     for i in range(number_of_files):
         time = giveDatetime(getDate(Tagdict, i))
@@ -123,7 +124,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
         sequenceString = ""
         newpostfix = ""
 
-        if any(Fileext == ext for ext in ['.jpg', '.JPG']):
+        if any(fileext == ext for ext in ['.jpg', '.JPG']):
             if easymode:
                 counter += 1
             else:
@@ -134,7 +135,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
 
             counterString = ("_%0" + digits + "d") % counter
 
-        elif any(Fileext == ext for ext in ['.mp4', '.MP4']):
+        elif any(fileext == ext for ext in ['.mp4', '.MP4']):
             counter += 1
             counterString = "_M" + "%02d" % counter
             if not easymode:
@@ -163,15 +164,15 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
         newname += filename[filename.rfind("."):]
         Tagdict["File Name new"].append(newname)
         outstring += _write(Tagdict["Directory"][i], filename, temppostfix, newname, onlyprint)
-        filename_Raw = changeExtension(filename, Fileext_Raw)
-        if not Fileext_Raw == "" and isfile(Tagdict["Directory"][i], filename_Raw):
+        filename_Raw = changeExtension(filename, fileext_Raw)
+        if not fileext_Raw == "" and isfile(Tagdict["Directory"][i], filename_Raw):
             outstring += _write(Tagdict["Directory"][i], filename_Raw, temppostfix,
-                                changeExtension(newname, Fileext_Raw), onlyprint)
+                                changeExtension(newname, fileext_Raw), onlyprint)
 
     dirname = getSavesDir()
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
-    np.savez_compressed(os.path.join(dirname, "Tags" + Fileext + timestring), Tagdict=Tagdict)
-    writeToFile(os.path.join(dirname, "newnames" + Fileext + timestring + ".txt"), outstring)
+    np.savez_compressed(os.path.join(dirname, "Tags" + fileext + timestring), Tagdict=Tagdict)
+    writeToFile(os.path.join(dirname, "newnames" + fileext + timestring + ".txt"), outstring)
 
 
 def _write(directory, filename, temppostfix, newname, onlyprint):
@@ -251,7 +252,7 @@ def order():
 
     printFirstLastOfDirName(dirNameDict_firsttime, dirNameDict_lasttime)
 
-    Tagdict_mp4 = readTags(inpath, includeSubdirs, Fileext=".MP4")
+    Tagdict_mp4 = readTags(inpath, includeSubdirs, fileext=".MP4")
     if has_not_keys(Tagdict_mp4, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict_mp4.values())[0])
     print('Number of mp4: %d' % leng)
@@ -314,31 +315,31 @@ def _detectSunset():
         # evening and Sun1 or Sun2 are used
 
 
-def searchByTagEquality(TagName, Value, Fileext=".JPG"):
+def searchByTagEquality(tag_name: str, value: str, fileext=".JPG"):
     """
     """
     inpath = os.getcwd()
-    Tagdict = readTags(inpath, includeSubdirs, Fileext)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", TagName]): return
+    Tagdict = readTags(inpath, includeSubdirs, fileext)
+    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", tag_name]): return
     leng = len(list(Tagdict.values())[0])
     files = []
     for i in range(leng):
-        if not Tagdict[TagName][i] == Value: continue
+        if not Tagdict[tag_name][i] == value: continue
         files.append(getPath(Tagdict, i))
     copyFilesTo(files, os.path.join(inpath, "matches"))
 
 
-def searchByTagInterval(TagName, min, max, Fileext=".JPG"):
+def searchByTagInterval(tag_name: str, min_value: float, max_value: float, fileext=".JPG"):
     """
     """
     inpath = os.getcwd()
-    Tagdict = readTags(inpath, includeSubdirs, Fileext)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", TagName]): return
+    Tagdict = readTags(inpath, includeSubdirs, fileext)
+    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", tag_name]): return
     leng = len(list(Tagdict.values())[0])
     files = []
     for i in range(leng):
-        value = tofloat(Tagdict[TagName][i])
-        if not (value and min < value < max): continue
+        value = tofloat(Tagdict[tag_name][i])
+        if not (value and min_value < value < max_value): continue
         files.append(getPath(Tagdict, i))
     copyFilesTo(files, os.path.join(inpath, "matches"))
 
@@ -386,7 +387,7 @@ def rotate(mode="HDRT", sign=1, folder="HDR", override=True):
     clock.finish()
 
 
-def exif_to_name(fileexts=[".JPG", ".MP4"]):
+def exif_to_name(fileexts=(".JPG", ".MP4")):
     """
     reverse exif_to_name()
     """
@@ -421,11 +422,11 @@ def _get_time(dirpath, filename):
     return str(time)
 
 
-def order_with_timefile(timefile="timetable.txt", fileexts=[".JPG", ".MP4"]):
+def order_with_timefile(timefile="timetable.txt", fileexts=(".JPG", ".MP4")):
     inpath = os.getcwd()
     dirNameDict_firsttime, dirNameDict_lasttime = _read_time_file(timefile)
     for fileext in fileexts:
-        Tagdict = readTags(inpath, includeSubdirs, Fileext=fileext)
+        Tagdict = readTags(inpath, includeSubdirs, fileext=fileext)
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
         leng = len(list(Tagdict.values())[0])
         print('Number of jpg: %d' % leng)
