@@ -4,6 +4,9 @@ measuring tools
 """
 import datetime as dt
 
+from EXIFnaming.helpers.date import giveDatetime, newdate
+
+
 class DirChangePrinter:
 
     def __init__(self, directory):
@@ -29,3 +32,24 @@ class Clock:
     def finish(self):
         timedelta = dt.datetime.now() - self.timebegin
         print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
+
+
+class TimeJumpDetector:
+    _lowJump = dt.timedelta(minutes=20)
+    _bigJump = dt.timedelta(minutes=60)
+    _is_first = True
+
+    def __init__(self):
+        self.time = giveDatetime()
+        self.time_old = giveDatetime()
+        self.timedelta = self.time - self.time_old
+
+    def isJump(self, time, file_number: int) -> bool:
+        self.time_old = self.time
+        self.time = time
+        self.timedelta = self.time - self.time_old
+        is_time_jump = self.timedelta > self._bigJump or (self.timedelta > self._lowJump and file_number > 100)
+        is_new_date = newdate(self.time, self.time_old)
+        return_val = not self.is_first and (is_time_jump or is_new_date)
+        self._is_first = False
+        return return_val

@@ -193,8 +193,7 @@ def order():
 
     Tagdict = read_exiftags(inpath, includeSubdirs)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
-    lowJump = dt.timedelta(minutes=20)
-    bigJump = dt.timedelta(minutes=60)
+    timeJumpDetector = TimeJumpDetector()
     time_old = giveDatetime()
     dircounter = 1
     filenames = []
@@ -210,10 +209,7 @@ def order():
     for i in range(leng):
         time = giveDatetime(Tagdict["Date/Time Original"][i])
 
-        if i > 0 and (
-                timedelta > bigJump or
-                (timedelta > lowJump and len(filenames) + len(filenames_S) > 100) or
-                newdate(time, time_old)):
+        if timeJumpDetector.isJump(time, len(filenames) + len(filenames_S)):
             dirNameDict_lasttime[time_old] = dirName
             moveFiles(filenames, os.path.join(inpath, dirName))
             moveFiles(filenames_S, os.path.join(inpath, dirName, "S"))
