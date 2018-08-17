@@ -101,12 +101,12 @@ def filterSeries():
         if not includeSubdirs and not inpath == dirpath: continue
         if os.path.basename(dirpath) in skipdirs: continue
         print(dirpath, len(dirnames), len(filenames))
-        moveBracketSeries(dirpath, filenames)
-        moveSeries(dirpath, filenames, "S")
-        moveSeries(dirpath, filenames, "SM")
-        moveSeries(dirpath, filenames, "TL")
-        move_media(dirpath, filenames, ".MP4", "mp4")
-        move_media(dirpath, filenames, "HDRT", "HDR")
+        filenames = moveBracketSeries(dirpath, filenames)
+        filenames = moveSeries(dirpath, filenames, "S")
+        filenames = moveSeries(dirpath, filenames, "SM")
+        filenames = moveSeries(dirpath, filenames, "TL")
+        filenames = move_media(dirpath, filenames, ".MP4", "mp4")
+        filenames = move_media(dirpath, filenames, "HDRT", "HDR")
         move_media(dirpath, filenames, ".JPG", "single")
 
 

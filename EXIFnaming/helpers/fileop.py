@@ -86,10 +86,11 @@ def renameEveryTemp(inpath: str):
     return temppostfix
 
 
-def moveBracketSeries(dirpath: str, filenames: list):
+def moveBracketSeries(dirpath: str, filenames: list) -> list:
     counter_old = "000"
     counter2_old = "0"
     BList = []
+    other_filenames = []
     for filename in filenames:
         # example: filename="MS17-4_552B2.JPG"
         if not ".JPG" in filename: continue
@@ -105,19 +106,29 @@ def moveBracketSeries(dirpath: str, filenames: list):
         else:
             moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
             BList = []
+            other_filenames.append(filename)
     moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
+    return other_filenames
 
 
-def moveSeries(dirpath: str, filenames: list, series_type="S"):
+def moveSeries(dirpath: str, filenames: list, series_type="S") -> list:
+    other_filenames = []
     for filename in filenames:
         match = re.search('_([0-9]+)' + series_type + '([0-9]+)', filename)
         if match:
             moveToSubpath(filename, dirpath, series_type)
+        else:
+            other_filenames.append(filename)
+    return other_filenames
 
-def move_media(dirpath: str, filenames: list, name_search=".MP4", dest="mp4"):
+def move_media(dirpath: str, filenames: list, name_search=".MP4", dest="mp4") -> list:
+    other_filenames = []
     for filename in filenames:
         if name_search in filename:
             moveToSubpath(filename, dirpath, dest)
+        else:
+            other_filenames.append(filename)
+    return other_filenames
 
 
 def copyFilesTo(files: list, path: str, prompt = True):
