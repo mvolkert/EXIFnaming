@@ -66,7 +66,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
            postfix_stay=True, fileext=".JPG", fileext_Raw=".Raw", name=""):
     """
     Rename into Format: [Prefix][dateformat](_[name])_[Filenumber][SeriesType][SeriesSubNumber]_[FotoMode]
-    :param Prefix:
+    :param Prefix: prefix has to fulfil regex [-a-zA-Z]*
     :param dateformat: Y:Year,M:Month,D:Day,N:DayCounter; Number of occurrences determine number of digits
     :param startindex: minimal counter
     :param onlyprint: do not rename; only output file of proposed renaming into saves directory
