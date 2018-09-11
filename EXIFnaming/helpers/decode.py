@@ -26,7 +26,7 @@ def replace_umlauts(string):
 
 
 def read_exiftags(inpath=os.getcwd(), includeSubdirs=False, fileext=".JPG", skipdirs=()):
-    print("process", count_files_in(inpath, includeSubdirs, fileext, skipdirs), "Files in ", inpath, "includeSubdirs:",
+    print("process", count_files_in(inpath, includeSubdirs, fileext, skipdirs), fileext, "Files in ", inpath, "includeSubdirs:",
           includeSubdirs)
     askToContinue()
 
@@ -34,6 +34,7 @@ def read_exiftags(inpath=os.getcwd(), includeSubdirs=False, fileext=".JPG", skip
     ListOfDicts = []
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
+        if os.path.basename(dirpath).startswith('.'): continue
         if os.path.basename(dirpath) in skipdirs: continue
         if count_files(filenames, fileext) == 0:
             print("  No matching files in ", os.path.relpath(dirpath, inpath))
