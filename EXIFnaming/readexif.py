@@ -197,7 +197,6 @@ def order():
     time_old = giveDatetime()
     dircounter = 1
     filenames = []
-    filenames_S = []
     leng = len(list(Tagdict.values())[0])
     dirNameDict_firsttime = OrderedDict()
     dirNameDict_lasttime = OrderedDict()
@@ -209,13 +208,11 @@ def order():
     for i in range(leng):
         time = giveDatetime(Tagdict["Date/Time Original"][i])
 
-        if timeJumpDetector.isJump(time, len(filenames) + len(filenames_S)):
+        if timeJumpDetector.isJump(time, len(filenames)):
             dirNameDict_lasttime[time_old] = dirName
             moveFiles(filenames, os.path.join(inpath, dirName))
-            moveFiles(filenames_S, os.path.join(inpath, dirName, "S"))
 
             filenames = []
-            filenames_S = []
             if newdate(time, time_old):
                 daystring = dateformating(time, "YYMMDD_")
                 dircounter = 1
@@ -223,16 +220,11 @@ def order():
                 dircounter += 1
             dirName = daystring + "%02d" % dircounter
             dirNameDict_firsttime[time] = dirName
-        if Tagdict["Burst Mode"][i] == "On":
-            filenames_S.append((Tagdict["Directory"][i], Tagdict["File Name"][i]))
-        else:
-            filenames.append((Tagdict["Directory"][i], Tagdict["File Name"][i]))
-
+        filenames.append((Tagdict["Directory"][i], Tagdict["File Name"][i]))
         time_old = time
 
     dirNameDict_lasttime[time_old] = dirName
     moveFiles(filenames, os.path.join(inpath, dirName))
-    moveFiles(filenames_S, os.path.join(inpath, dirName, "S"))
 
     print_firstlast_of_dirname(dirNameDict_firsttime, dirNameDict_lasttime)
 
