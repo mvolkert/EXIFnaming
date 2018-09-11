@@ -50,6 +50,6 @@ class TimeJumpDetector:
         self.timedelta = self.time - self.time_old
         is_time_jump = self.timedelta > self._bigJump or (self.timedelta > self._lowJump and file_number > 100)
         is_new_date = newdate(self.time, self.time_old)
-        return_val = not self.is_first and (is_time_jump or is_new_date)
+        return_val = not self._is_first and (is_time_jump or is_new_date)
         self._is_first = False
         return return_val
