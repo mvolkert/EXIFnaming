@@ -25,10 +25,10 @@ def replace_umlauts(string):
     return string
 
 
-def read_exiftags(inpath=os.getcwd(), includeSubdirs=False, fileext=".JPG", skipdirs=()):
+def read_exiftags(inpath=os.getcwd(), includeSubdirs=False, fileext=".JPG", skipdirs=(), ask = True):
     print("process", count_files_in(inpath, includeSubdirs, fileext, skipdirs), fileext, "Files in ", inpath, "includeSubdirs:",
           includeSubdirs)
-    askToContinue()
+    if ask: askToContinue()
 
     clock = Clock()
     ListOfDicts = []
@@ -46,7 +46,7 @@ def read_exiftags(inpath=os.getcwd(), includeSubdirs=False, fileext=".JPG", skip
         for tags in out_split:
             ListOfDicts.append(decode_exiftags(tags))
 
-    outdict = listsOfDicts_to_dictOfLists(ListOfDicts)
+    outdict = listsOfDicts_to_dictOfLists(ListOfDicts, ask)
     if not outdict: return {}
     outdict = sort_dict_by_date(outdict)
     clock.finish()
@@ -178,10 +178,11 @@ def decode_exiftags(tags: str):
     return tagDict
 
 
-def listsOfDicts_to_dictOfLists(listOfDicts: list) -> OrderedDict:
+def listsOfDicts_to_dictOfLists(listOfDicts: list, ask = True) -> OrderedDict:
     """
 
     :type listOfDicts: list
+    :parm ask whether to ask for continue when keys not occur
     """
     essential = ["File Name", "Directory", "Date/Time Original"]
     if not listOfDicts or not listOfDicts[0] or not listOfDicts[0].keys(): return OrderedDict()
@@ -212,6 +213,6 @@ def listsOfDicts_to_dictOfLists(listOfDicts: list) -> OrderedDict:
         print(
             "Following keys did not occur in every file. Number of not occurrences is listed in following dictionary:",
             badkeys)
-        askToContinue()
+        if ask: askToContinue()
 
     return DictOfLists

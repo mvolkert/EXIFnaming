@@ -6,7 +6,7 @@ Reads Tags to use them, but not write to them
 import datetime as dt
 import os
 from collections import OrderedDict
-
+import re
 import numpy as np
 
 import EXIFnaming.helpers.constants as c
@@ -278,13 +278,14 @@ def searchby_exiftag_interval(tag_name: str, min_value: float, max_value: float,
     copyFilesTo(files, os.path.join(inpath, "matches"))
 
 
-def rotate(subname="HDRT", folder="HDR", sign=1, override=True):
+def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask = True):
     """
     rotate back according to tag information (Rotate 90 CW or Rotate 270 CW)
     :param subname: only files that contain this name are rotated, empty string: no restriction
     :param sign: direction of rotation
-    :param folder: only files in directories of this name are rotated, empty string: no restriction
+    :param folder: only files in directories that match this regex are rotated, empty string: no restriction
     :param override: override file with rotated one
+    :param ask: if should ask for user confirmation
     """
 
     from PIL import Image
@@ -294,10 +295,10 @@ def rotate(subname="HDRT", folder="HDR", sign=1, override=True):
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: continue
-        if not folder == "" and not folder == os.path.basename(dirpath): continue
+        if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
         if len(filenames) == 0: continue
         print(dirpath)
-        Tagdict = read_exiftags(dirpath, includeSubdirs, ".jpg")
+        Tagdict = read_exiftags(dirpath, includeSubdirs, ".jpg", ask = ask)
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Rotation"]): return
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):
