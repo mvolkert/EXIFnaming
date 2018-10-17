@@ -83,7 +83,7 @@ def has_not_keys(indict: dict, keys: list):
 def call_exiftool(dirpath: str, name: str, options=(), override=True) -> str:
     path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
     fullname = os.path.join(dirpath, name)
-    args = [path + "exiftool", fullname] + ["-charset", "FileName=Latin2"] + options
+    args = [path + "exiftool", fullname, "-charset", "latin", "-charset", "FileName=Latin"] + options
     if override and options: args.append("-overwrite_original_in_place")
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)  # , shell=True
     (out, err) = proc.communicate()
