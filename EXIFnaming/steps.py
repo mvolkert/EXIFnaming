@@ -26,7 +26,7 @@ def step3_filter():
 
 def step4_sanitzeHDR(subname="HDRT", folder="HDR"):
     rotate(subname=subname, folder=folder, sign=1, override=True)
-    rename_HDR(mode=subname, ext=".jpg", folder=folder)
+    rename_HDR(mode=subname, folder=folder)
 
 def step5_write_exif():
     name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None)
