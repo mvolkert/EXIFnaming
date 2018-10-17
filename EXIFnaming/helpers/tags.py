@@ -108,6 +108,7 @@ def getSequenceNumber(Tagdict, i: int):
     """
     sequence starts with 1; 0 means no sequence
     """
+    if not "Sequence Number" in Tagdict: return 0
     sequence_str = Tagdict["Sequence Number"][i]
     if np.chararray.isdigit(sequence_str): return int(sequence_str)
     return 0
