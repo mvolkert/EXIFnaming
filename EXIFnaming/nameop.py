@@ -130,8 +130,7 @@ def rename_HDR(mode="HDRT", folder="HDR"):
     :param mode: name for HDR-Mode written to file
     :param folder: only files in folders of this name are renamed
     """
-    matchreg = r"^([-\w]+)_([0-9]+)B1(.*)_2\3"
-    matchreg2 = r"^([-a-zA-Z0-9]+)[-a-zA-Z_]*_([0-9]+)(.*)_([0-9]+)\3"
+    matchreg = r"^([-\w]+_[0-9]+)B1(.*)_2\2"
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: continue
@@ -140,22 +139,30 @@ def rename_HDR(mode="HDRT", folder="HDR"):
         for filename in filenames:
             if mode in filename: continue
             match = re.search(matchreg, filename)
-            if not match:
-                print("use reg2:", filename)
-                match = re.search(matchreg2, filename)
             if match:
                 _rename_match(dirpath, filename, mode, match)
             else:
                 print("no match:", filename)
 
+def _rename_match(dirpath: str, filename: str, mode: str, match: Optional[Match[str]]):
+    extension = filename[filename.rfind("."):]
+    filename_new_part1 = match.group(1) + "_" + mode
+    filename_new_part2 = match.group(2) + extension
+    filename_new = filename_new_part1 + filename_new_part2
+    i = 2
+    while os.path.isfile(os.path.join(dirpath, filename_new)):
+        filename_new = filename_new_part1 + "%d" % i + filename_new_part2
+        i += 1
+    renameInPlace(dirpath, filename, filename_new)
+
 
 def rename_to_front(mode="PANO", folder=""):
     """
-    move last underscore entry to front after counter
+    move the underscore entry matching the mode to the front after counter
     :param mode: name of underscore entry
     :param folder: only files in folders of this name are renamed
     """
-    panoOut = r"^([-\w]+)_([0-9]+[A-Z0-9]*)(.*)_" + mode + "$"
+    panoOut = r"^([-\w]+_[0-9]+[A-Z0-9]*)_(.*)_(%s[-0-9]*)(.*)"%mode
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: continue
@@ -164,21 +171,15 @@ def rename_to_front(mode="PANO", folder=""):
         for filename in filenames:
             match = re.search(panoOut, filename)
             if match:
-                _rename_match(dirpath, filename, mode, match)
+                filename_new = match.group(1) + "_" + match.group(3)+ "_" + match.group(2) + match.group(4)
+                if os.path.isfile(os.path.join(dirpath, filename_new)):
+                    print("file already exists:", filename_new)
+                else:
+                    renameInPlace(dirpath, filename, filename_new)
             else:
                 print("no match:", filename)
 
 
-def _rename_match(dirpath: str, filename: str, mode: str, match: Optional[Match[str]]):
-    extension = filename[filename.rfind("."):]
-    filename_new_part1 = match.group(1) + "_" + match.group(2) + "_" + mode
-    filename_new_part2 = match.group(3) + extension
-    filename_new = filename_new_part1 + filename_new_part2
-    i = 2
-    while os.path.isfile(os.path.join(dirpath, filename_new)):
-        filename_new = filename_new_part1 + "%d" % i + filename_new_part2
-        i += 1
-    renameInPlace(dirpath, filename, filename_new)
 
 
 def rename_temp_back():
