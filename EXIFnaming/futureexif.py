@@ -10,7 +10,7 @@ from EXIFnaming.helpers.date import giveDatetime
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys
 from EXIFnaming.helpers.misc import includeSubdirs
 from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getDate, is_series, is_sun
-
+from PIL import Image
 
 def _detect_3D():
     """
@@ -61,3 +61,17 @@ def _detect_sunset():
         if os.path.isfile(filename.replace(Tagdict["Directory"][i], newDir)): continue
         shutil.copy2(filename, newDir)
         # evening and Sun1 or Sun2 are used
+
+def _convert_to_jpg():
+    """
+    not yet usable
+    how to get exif info from other file kinds ?
+    """
+    inpath = os.getcwd()
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        for filename in filenames:
+            name, ext = filename.rsplit(".", 1)
+            img = Image.open(os.path.join(dirpath, filename))
+            outfile = os.path.join(dirpath, name + ".jpg")
+            print(img.tag)
+            img.save(outfile, 'JPEG', quality=99)
