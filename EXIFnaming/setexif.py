@@ -173,3 +173,14 @@ def geotag(timezone=2, offset=""):
             if dirname.startswith("."): continue
             print(dirname)
             call_exiftool(inpath, dirname, options=options)
+
+
+def geotag_single(lat: float, lon: float):
+    """
+        adds gps information to all pictures in all sub directories of current directory
+        :param lat: GPSLatitude
+        :param lon: GPSLongitude
+        """
+    inpath = os.getcwd()
+    options = ["-GPSLatitudeRef=%f"%lat, "-GPSLatitude=%f"%lat, "-GPSLongitudeRef=%f"%lon, "-GPSLongitude=%f"%lon]
+    call_exiftool(inpath, "*", options=options)
