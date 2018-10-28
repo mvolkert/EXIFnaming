@@ -15,6 +15,13 @@ umlauts_dict = {
     '\\xc3\\x96': 'Ö',  # U+00D6	   \xc3\x96
     '\\xc3\\x9c': 'Ü',  # U+00DC	   \xc3\x9c
     '\\xc3\\x9f': 'ß',  # U+00DF	   \xc3\x9f
+    "\\xe4": 'ä',
+    "\\xf6": 'ö',
+    "\\xfc": 'ü',
+    "\\xc4": 'Ä',
+    "\\xd6": 'Ö',
+    "\\xdc": 'Ü',
+    "\\xdf": 'ß',
 }
 
 
@@ -25,8 +32,9 @@ def replace_umlauts(string):
     return string
 
 
-def read_exiftags(inpath=os.getcwd(), includeSubdirs=False, fileext=".JPG", skipdirs=(), ask = True):
-    print("process", count_files_in(inpath, includeSubdirs, fileext, skipdirs), fileext, "Files in ", inpath, "includeSubdirs:",
+def read_exiftags(inpath=os.getcwd(), includeSubdirs=False, fileext=".JPG", skipdirs=(), ask=True):
+    print("process", count_files_in(inpath, includeSubdirs, fileext, skipdirs), fileext, "Files in ", inpath,
+          "includeSubdirs:",
           includeSubdirs)
     if ask: askToContinue()
 
@@ -178,7 +186,7 @@ def decode_exiftags(tags: str):
     return tagDict
 
 
-def listsOfDicts_to_dictOfLists(listOfDicts: list, ask = True) -> OrderedDict:
+def listsOfDicts_to_dictOfLists(listOfDicts: list, ask=True) -> OrderedDict:
     """
 
     :type listOfDicts: list
