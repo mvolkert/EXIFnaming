@@ -110,6 +110,7 @@ def name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None):
             if image_id: options.append("-Identifier=" + image_id)
             for image_tag in image_tags:
                 options.append("-Keywords=" + image_tag)
+                options.append("-Subject=" + image_tag)
             if artist: options.append("-Artist=" + artist)
             call_exiftool(dirpath, filename, options, True)
     clock.finish()
