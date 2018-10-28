@@ -86,6 +86,26 @@ def add_location(country="", city="", location=""):
     write_exiftags(inpath, options, includeSubdirs, ".JPG")
 
 
+def location_to_keywords():
+    inpath = os.getcwd()
+    Tagdict = read_exiftags(inpath, ask=False)
+    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
+    leng = len(list(Tagdict.values())[0])
+    for i in range(leng):
+        dirpath = Tagdict["Directory"][i]
+        filename = Tagdict["File Name"][i]
+        image_tags = Tagdict["Keywords"][i].split(', ')
+        tagnames = ["Country", "City", "Location"]
+        for tagname in tagnames:
+            if tagname in Tagdict and Tagdict[tagname][i]:
+                image_tags.append(Tagdict[tagname][i])
+        options = []
+        for image_tag in image_tags:
+            options.append("-Keywords=" + image_tag)
+            options.append("-Subject=" + image_tag)
+        call_exiftool(dirpath, filename, options, True)
+
+
 def name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None):
     """
     extract title, description and mode from name and write them to exif
