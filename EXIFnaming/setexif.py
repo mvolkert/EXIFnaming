@@ -4,13 +4,14 @@ Writes to Tags
 """
 import csv
 import datetime as dt
-import re
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
-from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in
+from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
+    write_exiftag
 from EXIFnaming.helpers.fileop import filterFiles
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.settings import includeSubdirs, file_types
+from EXIFnaming.helpers.tag_wrappers import FileMetaData
 from EXIFnaming.helpers.tags import *
 
 
@@ -61,7 +62,7 @@ def fake_date(start='2000:01:01'):
         for filename in filenames:
             time += dt.timedelta(seconds=1)
             time_string = dateformating(time, "YYYY:MM:DD HH:mm:ss")
-            write_exiftags({"DateTimeOriginal": time_string}, dirpath, filename)
+            write_exiftag({"DateTimeOriginal": time_string}, dirpath, filename)
 
 
 def add_location(country="", city="", location=""):
@@ -89,7 +90,7 @@ def location_to_keywords():
         for tagname in tagnames:
             if tagname in Tagdict:
                 outTagDict[tagname] = Tagdict[tagname][i]
-        write_exiftags(outTagDict, dirpath, filename)
+        write_exiftag(outTagDict, dirpath, filename)
 
 
 def name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None):
@@ -116,7 +117,7 @@ def name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None):
             outTagDict["Keywords"] = image_tags
             outTagDict["Subject"] = image_tags
             if artist: outTagDict["Artist"] = artist
-            write_exiftags(outTagDict, dirpath, filename)
+            write_exiftag(outTagDict, dirpath, filename)
     clock.finish()
 
 
@@ -190,3 +191,20 @@ def geotag_single(lat: float, lon: float):
     options = ["-GPSLatitudeRef=%f" % lat, "-GPSLatitude=%f" % lat, "-GPSLongitudeRef=%f" % lon,
                "-GPSLongitude=%f" % lon]
     call_exiftool(inpath, "*", options=options)
+
+
+def read_main_csv(csvfilename: str):
+    inpath = os.getcwd()
+    fileMetaDataList = [FileMetaData(dirpath, filename) for (dirpath, dirnames, filenames) in os.walk(inpath) for filename in filterFiles(filenames, file_types)]
+
+    csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
+    with open(csvfilename) as csvfile:
+        spamreader = csv.DictReader(csvfile, dialect='semicolon')
+        for row in spamreader:
+            print(row)
+            for fileMetaData in fileMetaDataList:
+                fileMetaData.update(row)
+
+    for fileMetaData in fileMetaDataList:
+        print(fileMetaData.toTagDict())
+        write_exiftag(fileMetaData.toTagDict(), fileMetaData.directory, fileMetaData.filename)

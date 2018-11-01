@@ -42,7 +42,7 @@ def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
     return outdict
 
 
-def write_exiftags(tagDict: dict, inpath=os.getcwd(), filename="*", options=()):
+def write_exiftags(tagDict: dict, inpath=os.getcwd(), options=()):
     clock = Clock()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
@@ -51,9 +51,14 @@ def write_exiftags(tagDict: dict, inpath=os.getcwd(), filename="*", options=()):
             print("  No matching files in ", os.path.relpath(dirpath, inpath))
             continue
         all_options = list(options) + tag_dict_to_options(tagDict)
-        call_exiftool(dirpath, filename, all_options, True)
+        call_exiftool(dirpath, "*", all_options, True)
         print("%4d tags written in   " % n, os.path.relpath(dirpath, inpath))
     clock.finish()
+
+
+def write_exiftag(tagDict: dict, inpath=os.getcwd(), filename="", options=()):
+    all_options = list(options) + tag_dict_to_options(tagDict)
+    call_exiftool(inpath, filename, all_options, True)
 
 
 def tag_dict_to_options(data: dict):
@@ -128,6 +133,7 @@ def sort_dict(indict: OrderedDict, keys: list):
         for i, val in enumerate(vals):
             outdict[indictkeys[i]].append(val)
     return outdict
+
 
 def askToContinue():
     response = input("Do you want to continue ?")
