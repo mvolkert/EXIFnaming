@@ -3,6 +3,7 @@ import re
 import shutil
 
 from EXIFnaming.helpers.misc import askToContinue
+from EXIFnaming.helpers.settings import includeSubdirs
 
 
 def moveFiles(filenames, path: str):
@@ -147,3 +148,29 @@ def get_relpath_depth(inpath, dirpath):
     relpath = os.path.relpath(dirpath, inpath)
     if relpath == ".": return 0
     return len(relpath.split(os.sep))
+
+
+def count_files_in(inpath: str, file_extensions: tuple, skipdirs=()):
+    NFiles = 0
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not includeSubdirs and not inpath == dirpath: break
+        if os.path.basename(dirpath) in skipdirs: continue
+        NFiles += count_files(filenames, file_extensions)
+    return NFiles
+
+
+def count_files(filenames: [], file_extensions: tuple):
+    return len(filterFiles(filenames,file_extensions))
+
+def filterFiles(filenames: [], file_extensions: tuple):
+    return [filename for filename in filenames if not file_extensions or file_has_ext(filename, file_extensions)]
+
+def file_has_ext(filename: str, file_extensions: tuple, ignore_case=True) -> bool:
+    for fileext in file_extensions:
+        if ignore_case:
+            fileext = fileext.lower()
+            filename = filename.lower()
+        if fileext == filename[filename.rfind("."):]:
+            return True
+    return False
+

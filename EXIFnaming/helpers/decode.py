@@ -5,12 +5,17 @@ import sys
 from collections import OrderedDict
 
 from EXIFnaming.helpers.constants import unknownTags
+from EXIFnaming.helpers.fileop import count_files, count_files_in
 from EXIFnaming.helpers.measuring_tools import Clock
-from EXIFnaming.helpers.settings import includeSubdirs, encoding_format
+from EXIFnaming.helpers.settings import includeSubdirs, encoding_format, file_types
 
 
 def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
-    print("process", count_files_in(inpath, fileext, skipdirs), fileext, "Files in ", inpath,
+    if fileext:
+        selected_file_types = (fileext,)
+    else:
+        selected_file_types = file_types
+    print("process", count_files_in(inpath, selected_file_types, skipdirs), fileext, "Files in ", inpath,
           "includeSubdirs:", includeSubdirs)
     if ask: askToContinue()
 
@@ -20,7 +25,7 @@ def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
         if not includeSubdirs and not inpath == dirpath: break
         if os.path.basename(dirpath).startswith('.'): continue
         if os.path.basename(dirpath) in skipdirs: continue
-        if count_files(filenames, fileext) == 0:
+        if count_files(filenames, selected_file_types) == 0:
             print("  No matching files in ", os.path.relpath(dirpath, inpath))
             continue
         out = call_exiftool(dirpath, "*" + fileext, [], False)
@@ -37,17 +42,30 @@ def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
     return outdict
 
 
-def write_exiftags(inpath, options, fileext=".JPG"):
+def write_exiftags(tagDict: dict, inpath=os.getcwd(), filename="*", options=()):
     clock = Clock()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
-        n = count_files(filenames, fileext)
+        n = count_files(filenames, file_types)
         if n == 0:
             print("  No matching files in ", os.path.relpath(dirpath, inpath))
             continue
-        call_exiftool(dirpath, "*" + fileext, options, True)
+        all_options = list(options) + tag_dict_to_options(tagDict)
+        call_exiftool(dirpath, filename, all_options, True)
         print("%4d tags written in   " % n, os.path.relpath(dirpath, inpath))
     clock.finish()
+
+
+def tag_dict_to_options(data: dict):
+    options = []
+    for key in data:
+        if not data[key]: continue
+        if type(data[key]) == list:
+            for value in data[key]:
+                options.append("-%s=%s" % (key, value))
+        else:
+            options.append("-%s=%s" % (key, data[key]))
+    return options
 
 
 def has_not_keys(indict: dict, keys: list):
@@ -67,7 +85,8 @@ def has_not_keys(indict: dict, keys: list):
 def call_exiftool(dirpath: str, name: str, options=(), override=True) -> str:
     path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
     fullname = os.path.join(dirpath, name)
-    args = [path + "exiftool", fullname, "-charset", encoding_format, "-charset", "FileName=" + encoding_format] + options
+    encoding_args = ["-charset", encoding_format, "-charset", "FileName=" + encoding_format]
+    args = [path + "exiftool", fullname] + encoding_args + options
     if override and options: args.append("-overwrite_original_in_place")
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)  # , shell=True
     (out, err) = proc.communicate()
@@ -109,27 +128,6 @@ def sort_dict(indict: OrderedDict, keys: list):
         for i, val in enumerate(vals):
             outdict[indictkeys[i]].append(val)
     return outdict
-
-
-def count_files_in(inpath: str, fileext="", skipdirs=()):
-    NFiles = 0
-    for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: break
-        if os.path.basename(dirpath) in skipdirs: continue
-        NFiles += count_files(filenames, fileext)
-    return NFiles
-
-
-def count_files(filenames: [], fileext=".JPG"):
-    return len([filename for filename in filenames if not fileext or file_has_ext(filename, fileext)])
-
-
-def file_has_ext(filename: str, fileext: str, ignore_case=True) -> bool:
-    if ignore_case:
-        fileext = fileext.lower()
-        filename = filename.lower()
-    return fileext == filename[filename.rfind("."):]
-
 
 def askToContinue():
     response = input("Do you want to continue ?")

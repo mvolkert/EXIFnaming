@@ -14,10 +14,10 @@ from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_
     find_dir_with_closest_time
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
-    copyFilesTo, getSavesDir, isfile
+    copyFilesTo, getSavesDir, isfile, filterFiles
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat, getPostfix
-from EXIFnaming.helpers.settings import includeSubdirs
+from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
 from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getMode, getCameraModel, getDate, get_recMode, \
     get_sequence_string, checkIntegrity
 
@@ -114,7 +114,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
         sequenceString = ""
         newpostfix = ""
 
-        if any(fileext == ext for ext in ['.jpg', '.JPG']):
+        if fileext in image_types:
             if easymode:
                 counter += 1
             else:
@@ -125,7 +125,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
 
             counterString = ("_%0" + digits + "d") % counter
 
-        elif any(fileext == ext for ext in ['.mp4', '.MP4']):
+        elif fileext in video_types:
             counter += 1
             counterString = "_M" + "%02d" % counter
             if not easymode:
@@ -323,12 +323,12 @@ def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask = True):
     clock.finish()
 
 
-def exif_to_name(fileexts=(".JPG", ".MP4")):
+def exif_to_name():
     """
     reverse exif_to_name()
     """
     inpath = os.getcwd()
-    for fileext in fileexts:
+    for fileext in file_types:
         Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Label"]): return
         temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
@@ -344,7 +344,7 @@ def print_timeinterval():
     inpath = os.getcwd()
     ofile = open("timetable.txt", 'a')
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        fotos = [filename for filename in filenames if filename[-4:] in (".JPG", ".jpg", ".MP4", ".mp4")]
+        fotos = filterFiles(filenames, image_types)
         if not fotos: continue
         first = _get_time(dirpath, fotos[0])
         last = _get_time(dirpath, fotos[-1])
@@ -362,7 +362,7 @@ def order_with_timefile(timefile="timetable.txt", fileexts=(".JPG", ".MP4")):
     inpath = os.getcwd()
     dirNameDict_firsttime, dirNameDict_lasttime = _read_time_file(timefile)
     for fileext in fileexts:
-        Tagdict = read_exiftags(inpath, includeSubdirs, fileext=fileext)
+        Tagdict = read_exiftags(inpath, fileext=fileext)
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
         leng = len(list(Tagdict.values())[0])
         print('Number of jpg: %d' % leng)

@@ -18,3 +18,4 @@ from EXIFnaming.nameop import filter_series, rename_back, filter_primary, rename
 from EXIFnaming.picture import detectBlurry, detectSimilar
 from EXIFnaming.setexif import shift_time, add_location, geotag, name_to_exif, fake_date
 from EXIFnaming.helpers import settings
+from EXIFnaming.helpers.decode import read_exiftags, write_exiftags

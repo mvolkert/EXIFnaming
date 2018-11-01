@@ -8,8 +8,9 @@ import re
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in
+from EXIFnaming.helpers.fileop import filterFiles
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
-from EXIFnaming.helpers.settings import includeSubdirs
+from EXIFnaming.helpers.settings import includeSubdirs, file_types
 from EXIFnaming.helpers.tags import *
 
 
@@ -23,26 +24,19 @@ def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     time_tags = ["DateTimeOriginal", "CreateDate", "ModifyDate"]
-    time_tags_pm4 = ["TrackCreateDate", "TrackModifyDate", "MediaCreateDate", "MediaModifyDate"]
-    # time_tags_mp4_subsec = ["SubSecCreateDate","SubSecDateTimeOriginal", "SubSecModifyDate"]
+    time_tags_mp4 = ["TrackCreateDate", "TrackModifyDate", "MediaCreateDate", "MediaModifyDate"]
     dir_change_printer = DirChangePrinter(Tagdict["Directory"][0])
     for i in range(leng):
         time = giveDatetime(Tagdict["Date/Time Original"][i])
         newtime = time + delta_t
         timestring = dateformating(newtime, "YYYY:MM:DD HH:mm:ss")
-        options = []
+        outTagDict = {}
         for time_tag in time_tags:
-            options.append("-%s=%s" % (time_tag, timestring))
+            outTagDict[time_tag] = timestring
         if fileext in (".MP4", ".mp4"):
-            for time_tag in time_tags_pm4:
-                options.append("-%s=%s" % (time_tag, timestring))
-            # not working:
-            # if "Sub Sec Time Original" in Tagdict:
-            #     subsec = Tagdict["Sub Sec Time Original"][i]
-            #     print(subsec)
-            #     for time_tag in time_tags_mp4_subsec:
-            #         options.append("-%s=%s.%s" % (time_tag, timestring, subsec))
-        call_exiftool(Tagdict["Directory"][i], Tagdict["File Name"][i], options, True)
+            for time_tag in time_tags_mp4:
+                outTagDict[time_tag] = timestring
+        write_exiftags(outTagDict, Tagdict["Directory"][i], Tagdict["File Name"][i])
         dir_change_printer.update(Tagdict["Directory"][i])
     dir_change_printer.finish()
 
@@ -57,10 +51,9 @@ def fake_date(start='2000:01:01'):
     start += ' 00:00:00.000'
     start_time = giveDatetime(start)
     dir_counter = -1
-    extensions = ['.jpg', '.JPG']
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
-        filenames = [filename for filename in filenames if filename[-4:] in extensions]
+        filenames = filterFiles(filenames, file_types)
         if not filenames: continue
         print(dirpath)
         dir_counter += 1
@@ -68,8 +61,7 @@ def fake_date(start='2000:01:01'):
         for filename in filenames:
             time += dt.timedelta(seconds=1)
             time_string = dateformating(time, "YYYY:MM:DD HH:mm:ss")
-            options = ["-DateTimeOriginal=" + time_string]
-            call_exiftool(dirpath, filename, options, True)
+            write_exiftags({"DateTimeOriginal": time_string}, dirpath, filename)
 
 
 def add_location(country="", city="", location=""):
@@ -78,17 +70,13 @@ def add_location(country="", city="", location=""):
     :param city: example:"Nueremberg"
     :param location: additional location info
     """
-    inpath = os.getcwd()
-    options = []
-    if country: options.append("-Country=" + country)
-    if city: options.append("-City=" + city)
-    if location: options.append("-Location=" + location)
-    if not options: return
-    write_exiftags(inpath, options, ".JPG")
+    write_exiftags({"Country": country, "City": city, "Location": location})
 
 
 def location_to_keywords():
     inpath = os.getcwd()
+    print("process", count_files_in(inpath, file_types, ""), "Files in ", inpath, "subdir:", includeSubdirs)
+    askToContinue()
     Tagdict = read_exiftags(inpath, ask=False)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
@@ -96,15 +84,12 @@ def location_to_keywords():
         dirpath = Tagdict["Directory"][i]
         filename = Tagdict["File Name"][i]
         image_tags = Tagdict["Keywords"][i].split(', ')
+        outTagDict = {'Keywords': image_tags, 'Subject': image_tags}
         tagnames = ["Country", "City", "Location"]
         for tagname in tagnames:
-            if tagname in Tagdict and Tagdict[tagname][i]:
-                image_tags.append(Tagdict[tagname][i])
-        options = []
-        for image_tag in image_tags:
-            options.append("-Keywords=" + image_tag)
-            options.append("-Subject=" + image_tag)
-        call_exiftool(dirpath, filename, options, True)
+            if tagname in Tagdict:
+                outTagDict[tagname] = Tagdict[tagname][i]
+        write_exiftags(outTagDict, dirpath, filename)
 
 
 def name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None):
@@ -113,27 +98,25 @@ def name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None):
     """
     inpath = os.getcwd()
     clock = Clock()
-    print("process", count_files_in(inpath, includeSubdirs, ""), "Files in ", inpath, "subdir:", includeSubdirs)
+    print("process", count_files_in(inpath, file_types, ""), "Files in ", inpath, "subdir:", includeSubdirs)
     askToContinue()
-    file_extensions = ["JPG", "jpg", "MP4", "mp4"]
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
+        filenames = filterFiles(filenames, file_types)
         print(dirpath)
         for filename in filenames:
             name, ext = filename.rsplit(".", 1)
-            if ext not in file_extensions: continue
             if startdir:
                 image_id, image_tags = _fullname_to_tag(dirpath, name, startdir)
             else:
                 image_id, image_tags = _split_name(name)
             image_tags += additional_tags
-            options = ["-Title=" + name, "-Label=" + name]
-            if image_id: options.append("-Identifier=" + image_id)
-            for image_tag in image_tags:
-                options.append("-Keywords=" + image_tag)
-                options.append("-Subject=" + image_tag)
-            if artist: options.append("-Artist=" + artist)
-            call_exiftool(dirpath, filename, options, True)
+            outTagDict = {'Title': name, 'Label': name}
+            if image_id: outTagDict["Identifier"] = image_id
+            outTagDict["Keywords"] = image_tags
+            outTagDict["Subject"] = image_tags
+            if artist: outTagDict["Artist"] = artist
+            write_exiftags(outTagDict, dirpath, filename)
     clock.finish()
 
 
