@@ -1,13 +1,6 @@
 import sys
 import numpy as np
 
-includeSubdirs = True
-
-def set_includeSubdirs(toInclude=True):
-    global includeSubdirs
-    includeSubdirs = toInclude
-    print("modifySubdirs:", includeSubdirs)
-
 def askToContinue():
     response = input("Do you want to continue ?")
     print(response)

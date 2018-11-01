@@ -17,4 +17,4 @@ from EXIFnaming.nameop import filter_series, rename_back, filter_primary, rename
     rename_temp_back, folders_to_main, copy_subdirectories
 from EXIFnaming.picture import detectBlurry, detectSimilar
 from EXIFnaming.setexif import shift_time, add_location, geotag, name_to_exif, fake_date
-from EXIFnaming.helpers.misc import set_includeSubdirs
+from EXIFnaming.helpers import settings

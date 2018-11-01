@@ -16,7 +16,8 @@ from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
     copyFilesTo, getSavesDir, isfile
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
-from EXIFnaming.helpers.misc import includeSubdirs, tofloat, getPostfix
+from EXIFnaming.helpers.misc import tofloat, getPostfix
+from EXIFnaming.helpers.settings import includeSubdirs
 from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getMode, getCameraModel, getDate, get_recMode, \
     get_sequence_string, checkIntegrity
 
@@ -29,7 +30,7 @@ def print_info(tagGroupNames=(), allGroups=False, fileext=".JPG"):
     :param fileext: file extension
     """
     inpath = os.getcwd()
-    outdict = read_exiftags(inpath, includeSubdirs, fileext)
+    outdict = read_exiftags(inpath, fileext)
     if allGroups: tagGroupNames = c.TagNames.keys()
     for tagGroupName in c.TagNames:
         if not tagGroupNames == [] and not tagGroupName in tagGroupNames: continue
@@ -76,7 +77,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     :param name: optional name between date and filenumber, seldom used
     """
     inpath = os.getcwd()
-    Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
+    Tagdict = read_exiftags(inpath, fileext)
 
     # check integrity
     easymode = checkIntegrity(Tagdict, fileext)
@@ -191,7 +192,7 @@ def _count_files_for_each_date(Tagdict, startindex, dateformat):
 def order():
     inpath = os.getcwd()
 
-    Tagdict = read_exiftags(inpath, includeSubdirs)
+    Tagdict = read_exiftags(inpath)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     timeJumpDetector = TimeJumpDetector()
     time_old = giveDatetime()
@@ -228,7 +229,7 @@ def order():
 
     print_firstlast_of_dirname(dirNameDict_firsttime, dirNameDict_lasttime)
 
-    Tagdict_mp4 = read_exiftags(inpath, includeSubdirs, fileext=".MP4")
+    Tagdict_mp4 = read_exiftags(inpath, fileext=".MP4")
     if has_not_keys(Tagdict_mp4, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict_mp4.values())[0])
     print('Number of mp4: %d' % leng)
@@ -248,7 +249,7 @@ def searchby_exiftag_equality(tag_name: str, value: str, fileext=".JPG"):
     :param fileext: file extension
     """
     inpath = os.getcwd()
-    Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
+    Tagdict = read_exiftags(inpath, fileext)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", tag_name]): return
     leng = len(list(Tagdict.values())[0])
     files = []
@@ -267,7 +268,7 @@ def searchby_exiftag_interval(tag_name: str, min_value: float, max_value: float,
     :param fileext: file extension
     """
     inpath = os.getcwd()
-    Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
+    Tagdict = read_exiftags(inpath, fileext)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", tag_name]): return
     leng = len(list(Tagdict.values())[0])
     files = []
@@ -298,7 +299,7 @@ def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask = True):
         if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
         if len(filenames) == 0: continue
         print(dirpath)
-        Tagdict = read_exiftags(dirpath, includeSubdirs, ".jpg", ask = ask)
+        Tagdict = read_exiftags(dirpath, ".jpg", ask = ask)
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Rotation"]): return
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):

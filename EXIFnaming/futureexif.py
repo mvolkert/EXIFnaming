@@ -8,7 +8,6 @@ import shutil
 
 from EXIFnaming.helpers.date import giveDatetime
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys
-from EXIFnaming.helpers.misc import includeSubdirs
 from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getDate, is_series, is_sun
 from PIL import Image
 
@@ -17,7 +16,7 @@ def _detect_3D():
     not yet fully implemented
     """
     inpath = os.getcwd()
-    Tagdict = read_exiftags(inpath, includeSubdirs)
+    Tagdict = read_exiftags(inpath)
     if has_not_keys(Tagdict,
                     keys=["Directory", "File Name", "Date/Time Original", "Burst Mode", "Sequence Number"]): return
     time_old = giveDatetime()
@@ -49,7 +48,7 @@ def _detect_sunset():
     not yet fully implemented
     """
     inpath = os.getcwd()
-    Tagdict = read_exiftags(inpath, includeSubdirs)
+    Tagdict = read_exiftags(inpath)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Scene Mode"]): return
     for i in range(len(list(Tagdict.values())[0])):
         newDir = os.path.join(Tagdict["Directory"][i], "Sunset")

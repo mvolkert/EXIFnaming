@@ -2,14 +2,15 @@
 """
 Writes to Tags
 """
-
+import csv
 import datetime as dt
+import re
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
+from EXIFnaming.helpers.settings import includeSubdirs
 from EXIFnaming.helpers.tags import *
-from EXIFnaming.helpers.misc import includeSubdirs
 
 
 def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):
@@ -18,7 +19,7 @@ def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):
     """
     inpath = os.getcwd()
     delta_t = dt.timedelta(hours=hours, minutes=minutes, seconds=seconds)
-    Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
+    Tagdict = read_exiftags(inpath, fileext)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     time_tags = ["DateTimeOriginal", "CreateDate", "ModifyDate"]
@@ -83,7 +84,7 @@ def add_location(country="", city="", location=""):
     if city: options.append("-City=" + city)
     if location: options.append("-Location=" + location)
     if not options: return
-    write_exiftags(inpath, options, includeSubdirs, ".JPG")
+    write_exiftags(inpath, options, ".JPG")
 
 
 def location_to_keywords():
@@ -203,5 +204,6 @@ def geotag_single(lat: float, lon: float):
         :param lon: GPSLongitude
         """
     inpath = os.getcwd()
-    options = ["-GPSLatitudeRef=%f"%lat, "-GPSLatitude=%f"%lat, "-GPSLongitudeRef=%f"%lon, "-GPSLongitude=%f"%lon]
+    options = ["-GPSLatitudeRef=%f" % lat, "-GPSLatitude=%f" % lat, "-GPSLongitudeRef=%f" % lon,
+               "-GPSLongitude=%f" % lon]
     call_exiftool(inpath, "*", options=options)

@@ -6,36 +6,12 @@ from collections import OrderedDict
 
 from EXIFnaming.helpers.constants import unknownTags
 from EXIFnaming.helpers.measuring_tools import Clock
-
-umlauts_dict = {
-    '\\xc3\\xa4': 'ä',  # U+00E4	   \xc3\xa4
-    '\\xc3\\xb6': 'ö',  # U+00F6	   \xc3\xb6
-    '\\xc3\\xbc': 'ü',  # U+00FC	   \xc3\xbc
-    '\\xc3\\x84': 'Ä',  # U+00C4	   \xc3\x84
-    '\\xc3\\x96': 'Ö',  # U+00D6	   \xc3\x96
-    '\\xc3\\x9c': 'Ü',  # U+00DC	   \xc3\x9c
-    '\\xc3\\x9f': 'ß',  # U+00DF	   \xc3\x9f
-    "\\xe4": 'ä',
-    "\\xf6": 'ö',
-    "\\xfc": 'ü',
-    "\\xc4": 'Ä',
-    "\\xd6": 'Ö',
-    "\\xdc": 'Ü',
-    "\\xdf": 'ß',
-}
+from EXIFnaming.helpers.settings import includeSubdirs, encoding_format
 
 
-def replace_umlauts(string):
-    for x in umlauts_dict:
-        if x in string:
-            string = string.replace(x, umlauts_dict[x])
-    return string
-
-
-def read_exiftags(inpath=os.getcwd(), includeSubdirs=False, fileext=".JPG", skipdirs=(), ask=True):
-    print("process", count_files_in(inpath, includeSubdirs, fileext, skipdirs), fileext, "Files in ", inpath,
-          "includeSubdirs:",
-          includeSubdirs)
+def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
+    print("process", count_files_in(inpath, fileext, skipdirs), fileext, "Files in ", inpath,
+          "includeSubdirs:", includeSubdirs)
     if ask: askToContinue()
 
     clock = Clock()
@@ -61,7 +37,7 @@ def read_exiftags(inpath=os.getcwd(), includeSubdirs=False, fileext=".JPG", skip
     return outdict
 
 
-def write_exiftags(inpath, options, includeSubdirs=False, fileext=".JPG"):
+def write_exiftags(inpath, options, fileext=".JPG"):
     clock = Clock()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
@@ -91,11 +67,11 @@ def has_not_keys(indict: dict, keys: list):
 def call_exiftool(dirpath: str, name: str, options=(), override=True) -> str:
     path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
     fullname = os.path.join(dirpath, name)
-    args = [path + "exiftool", fullname, "-charset", "latin", "-charset", "FileName=Latin"] + options
+    args = [path + "exiftool", fullname, "-charset", encoding_format, "-charset", "FileName=" + encoding_format] + options
     if override and options: args.append("-overwrite_original_in_place")
     proc = subprocess.Popen(args, stdout=subprocess.PIPE)  # , shell=True
     (out, err) = proc.communicate()
-    out = replace_umlauts(str(out))
+    out = out.decode(encoding_format)
     return out
 
 
@@ -135,7 +111,7 @@ def sort_dict(indict: OrderedDict, keys: list):
     return outdict
 
 
-def count_files_in(inpath: str, includeSubdirs=False, fileext="", skipdirs=()):
+def count_files_in(inpath: str, fileext="", skipdirs=()):
     NFiles = 0
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
@@ -170,7 +146,7 @@ def read_exiftag(dirpath: str, filename: str):
 def decode_exiftags(tags: str):
     date_org_name = "Date/Time Original"
     tagDict = OrderedDict()
-    for tag in tags.split("\\r\\n"):
+    for tag in tags.split("\r\n"):
         keyval = tag.split(": ")
         if not len(keyval) == 2: continue
         key = keyval[0].strip()
