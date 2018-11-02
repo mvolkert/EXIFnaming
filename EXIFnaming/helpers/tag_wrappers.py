@@ -6,36 +6,39 @@ from EXIFnaming.helpers.settings import hdr_program, panorama_program
 
 
 class Location:
-    def __init__(self, country="", region="", city="", location=""):
-        self.country = country
-        self.region = region
-        self.city = city
-        self.location = location
+    location_keys = ['Country', 'State', 'City', 'Location']
+    tag_names = {'Country': ['Country', 'LocationCreatedCountryName'],
+                 'State': ['State', 'LocationCreatedProvinceState'],
+                 'City': ['City', 'LocationCreatedCity'],
+                 'Location': ['Location', 'LocationCreatedSublocation']}
 
-    def update(self, data: {}):
+    def __init__(self, data=None):
+        self.location = OrderedDict()
+        if data: self.update(data)
 
-        def good_key(key: str):
-            return key in data and data[key]
+    def update(self, data: dict):
 
-        if good_key('country'): self.country = data['country']
-        if good_key('region'):  self.region = data['region']
-        if good_key('city'): self.city = data['city']
-        if good_key('location'): self.location = data['location']
+        for key in Location.location_keys:
+            if key in data and data[key]:
+                self.location[key] = data[key]
 
     def toTagDict(self) -> dict:
-        loc_tags = [self.country, self.city, self.location]
-        return {'Country': self.country, 'State': self.country, 'City': self.city, 'Location': self.location,
-                'Keywords': loc_tags, 'Subject': loc_tags,
-                'LocationCreatedCountryName': self.country, 'LocationCreatedProvinceState': self.region,
-                'LocationCreatedCity': self.city, 'LocationCreatedSublocation': self.location}
+        tag_dict = {}
+        if self.location.keys():
+            loc_tags = []
+            for key in self.location:
+                loc_tags.append(self.location[key])
+                for tag_name in Location.tag_names[key]:
+                    tag_dict[tag_name] = self.location[key]
+            tag_dict['Keywords'] = loc_tags
+            tag_dict['Subject'] = list(loc_tags)
+        return tag_dict
 
     def __str__(self):
         out = ""
-        if self.country: out += self.country
-        if self.region: out += ", " + self.region
-        if self.city: out += ", " + self.city
-        if self.location: out += ", " + self.location
-        return out
+        for key in self.location:
+            out += self.location[key] + ", "
+        return out.strip(", ")
 
 
 class FileMetaData:
@@ -123,7 +126,7 @@ class FileMetaData:
         if not self.title:
             self.title = functools.reduce(lambda title, tag: title + ", " + tag, self.tags, "").strip(", ")
 
-        description_formated = format_as_tree(self.description)
+        description_formated = format_as_tree(self.description_tree)
         if description_formated:
             self.descriptions.append(description_formated)
         full_description = functools.reduce(lambda description, entry: description + "\n\n" + entry, self.descriptions,
