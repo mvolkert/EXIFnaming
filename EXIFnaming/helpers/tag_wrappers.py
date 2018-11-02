@@ -138,18 +138,19 @@ class FileMetaData:
                    'ImageDescription': full_description, 'XPComment': full_description,
                    'Identifier': self.filename, 'Rating': self.rating}
 
-        loc_Dict = self.location.toTagDict()
-        for key in loc_Dict:
-            if key in tagDict:
-                tagDict[key] += loc_Dict[key]
-            else:
-                tagDict[key] = loc_Dict[key]
+        add_dict(tagDict, self.location.toTagDict())
         return tagDict
 
     def __str__(self):
         return "FileMetaData(" + self.title + " " + str(self.tags) + " " + str(self.descriptions) + " " + str(
             self.location) + ")"
 
+def add_dict(dict1: dict, dict2: dict):
+    for key in dict2:
+        if key in dict1:
+            dict1[key] += dict2[key]
+        else:
+            dict1[key] = dict2[key]
 
 def format_as_tree(data: dict) -> str:
     def indent(string: str) -> str:
