@@ -67,7 +67,8 @@ def tag_dict_to_options(data: dict):
         if not data[key]: continue
         if type(data[key]) == list:
             for value in data[key]:
-                options.append("-%s=%s" % (key, value))
+                if value:
+                    options.append("-%s=%s" % (key, value))
         else:
             options.append("-%s=%s" % (key, data[key]))
     return options
