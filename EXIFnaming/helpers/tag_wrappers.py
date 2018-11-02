@@ -13,10 +13,14 @@ class Location:
         self.location = location
 
     def update(self, data: {}):
-        if data['country']: self.country = data['country']
-        if data['region']: self.region = data['region']
-        if data['city']: self.city = data['city']
-        if data['location']: self.location = data['location']
+
+        def good_key(key: str):
+            return key in data and data[key]
+
+        if good_key('country'): self.country = data['country']
+        if good_key('region'):  self.region = data['region']
+        if good_key('city'): self.city = data['city']
+        if good_key('location'): self.location = data['location']
 
     def toTagDict(self) -> dict:
         loc_tags = [self.country, self.city, self.location]
@@ -44,6 +48,7 @@ class FileMetaData:
         self.descriptions = []
         self.description = OrderedDict()
         self.location = Location()
+        self.rating = None
         regex = r"^([-\w]+)_([0-9]+)[A-Z0-9]*"
         match = re.search(regex, filename)
         if match:
@@ -56,6 +61,9 @@ class FileMetaData:
         def not_match_entry(key: str, func):
             return key in data and data[key] and not func(data[key])
 
+        def good_key(key: str):
+            return key in data and data[key]
+
         if not_match_entry('directory', lambda value: value in self.directory):
             return
         if not_match_entry('main_name', lambda value: value == self.main_name):
@@ -65,9 +73,10 @@ class FileMetaData:
         if not_match_entry('last', lambda value: self.counter <= int(value)):
             return
 
-        self.title = data['title']
-        self.tags += data['tags'].split(', ')
-        self.descriptions.append(data['description'])
+        if good_key('title'): self.title = data['title']
+        if good_key('tags'): self.tags += [tag for tag in data['tags'].split(', ') if tag]
+        if good_key('rating'): self.rating = data['rating']
+        if good_key('description'): self.descriptions.append(data['description'])
         self.location.update(data)
         set_path(self.description, ["Location"], str(self.location))
 
@@ -79,7 +88,10 @@ class FileMetaData:
             for key in keys:
                 set_path(self.description, path + [key], data[key])
 
-        def filter_key(key_part: str):
+        def good_key(key: str):
+            return key in data and data[key]
+
+        def filter_keys(key_part: str):
             return [key for key in data if key_part in key and data[key]]
 
         if not_match_entry('directory', lambda value: value in self.directory):
@@ -87,11 +99,12 @@ class FileMetaData:
         if not_match_entry('filename_part', lambda value: value in self.filename):
             return
 
-        self.tags += [tag for tag in data['tags'].split(', ') if tag]
-        hdr_keys = filter_key("HDR")
-        tm_keys = filter_key("TM")
-        pano_keys = filter_key("PANO")
-        known_keys = ['directory', 'filename_part', 'tags'] + hdr_keys + tm_keys + pano_keys
+        if good_key('tags'): self.tags += [tag for tag in data['tags'].split(', ') if tag]
+        if good_key('rating'): self.rating = data['rating']
+        hdr_keys = filter_keys("HDR")
+        tm_keys = filter_keys("TM")
+        pano_keys = filter_keys("PANO")
+        known_keys = ['directory', 'filename_part', 'tags', 'rating'] + hdr_keys + tm_keys + pano_keys
         other_keys = [key for key in data if not key in known_keys and data[key]]
         if hdr_keys:
             set_path(self.description, ["Processing", "HDR", "program"], hdr_program)
@@ -117,7 +130,7 @@ class FileMetaData:
                                             "").strip("\n\n")
         tagDict = {'Label': self.filename, 'title': self.title, 'Keywords': self.tags, 'Subject': self.tags,
                    'ImageDescription': full_description, 'XPComment': full_description,
-                   'Identifier': self.filename}
+                   'Identifier': self.filename, 'Rating': self.rating}
         loc_Dict = self.location.toTagDict()
         for key in loc_Dict:
             if key in tagDict:
