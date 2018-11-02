@@ -133,11 +133,11 @@ def _split_name(filename: str):
     counter_complete = False
     for subname in filename_splited:
         if counter_complete:
-            image_tags.append(subname)
             if subname.isupper():
                 image_id += subname + "_"
-                image_tag = scene_to_tag(subname)
-                if image_tag: image_tags.append(image_tag)
+                image_tags.extend(scene_to_tag(subname))
+            else:
+                image_tags.append(subname)
         else:
             image_id += subname + "_"
             if is_lastpart_of_id(subname): counter_complete = True

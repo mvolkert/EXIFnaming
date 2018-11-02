@@ -151,8 +151,13 @@ def checkIntegrity(Tagdict, fileext=".JPG"):
         print("unknown file extension")
         return
 
-def scene_to_tag(scene : str) -> str:
-    scene = scene.strip('123456789')
-    if scene in c.SceneToTag:
-        return c.SceneToTag[scene]
-    return ""
+def scene_to_tag(scene : str) -> list:
+    scene_striped = scene.strip('123456789')
+    out = []
+    if scene_striped in ["HDR", "HDRT", "PANO"]:
+        out.append(scene_striped)
+    else:
+        out.append(scene)
+    if scene_striped in c.SceneToTag:
+        out.append(c.SceneToTag[scene_striped])
+    return out
