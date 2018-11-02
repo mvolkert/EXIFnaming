@@ -131,7 +131,7 @@ def rename_HDR(mode="HDRT", folder=r"HDR\w*"):
     :param mode: name for HDR-Mode written to file
     :param folder: only files in folders of this name are renamed
     """
-    matchreg = r"^([-\w]+_[0-9]+)B1(.*)_2\2"
+    matchreg = r"^([-\w]+_[0-9]+)B\d(.*)_\d\2"
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: continue
