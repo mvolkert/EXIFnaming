@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+from EXIFnaming.helpers.settings import standard_kamera
+
 TagNames=OrderedDict()
 
 TagNames['AF']=["AF Area Mode","AF Assist Lamp","Focus Mode","Macro Mode","Metering Mode"]
@@ -92,4 +94,4 @@ SceneToTag['HDRT']="HDR"
 CameraModelShort=OrderedDict()
 CameraModelShort['DMC-TZ7']='TZ7'
 CameraModelShort['SM-G900F']='S5'
-CameraModelShort['DMC-TZ101']=''
+CameraModelShort[standard_kamera]=''

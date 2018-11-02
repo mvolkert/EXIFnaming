@@ -6,3 +6,4 @@ file_types = image_types + video_types
 hdr_program = "franzis HDR projects"
 panorama_program = "Hugin"
 photographer = "Marco Volkert"
+standard_kamera = "DMC-TZ101"
