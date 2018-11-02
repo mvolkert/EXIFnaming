@@ -11,7 +11,7 @@ from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinu
 from EXIFnaming.helpers.fileop import filterFiles
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.settings import includeSubdirs, file_types, photographer
-from EXIFnaming.helpers.tag_wrappers import FileMetaData
+from EXIFnaming.helpers.tag_wrappers import FileMetaData, Location, add_dict
 from EXIFnaming.helpers.tags import *
 
 
@@ -85,11 +85,9 @@ def location_to_keywords():
         dirpath = Tagdict["Directory"][i]
         filename = Tagdict["File Name"][i]
         image_tags = Tagdict["Keywords"][i].split(', ')
-        outTagDict = {'Keywords': image_tags, 'Subject': image_tags}
-        tagnames = ["Country", "City", "Location"]
-        for tagname in tagnames:
-            if tagname in Tagdict:
-                outTagDict[tagname] = Tagdict[tagname][i]
+        outTagDict = {'Keywords': image_tags, 'Subject': list(image_tags)}
+        location = Location(Tagdict, i)
+        add_dict(outTagDict, location.to_tag_dict())
         write_exiftag(outTagDict, dirpath, filename)
 
 
@@ -214,6 +212,6 @@ def read_csv(main_csv: str, processing_csv =""):
                     fileMetaData.update_processing(row)
 
     for fileMetaData in fileMetaDataList:
-        write_exiftag(fileMetaData.toTagDict(), fileMetaData.directory, fileMetaData.filename)
+        write_exiftag(fileMetaData.to_tag_dict(), fileMetaData.directory, fileMetaData.filename)
 
     clock.finish()

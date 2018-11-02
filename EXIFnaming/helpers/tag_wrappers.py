@@ -2,7 +2,7 @@ import functools
 import re
 from collections import OrderedDict
 
-from EXIFnaming.helpers.settings import hdr_program, panorama_program
+from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer
 
 
 class Location:
@@ -12,9 +12,13 @@ class Location:
                  'City': ['City', 'LocationCreatedCity'],
                  'Location': ['Location', 'LocationCreatedSublocation']}
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, i = -1):
         self.location = OrderedDict()
-        if data: self.update(data)
+        if data:
+            if i > -1:
+                self.update_via_tag_array(data, i)
+            else:
+                self.update(data)
 
     def update(self, data: dict):
 
@@ -22,7 +26,13 @@ class Location:
             if key in data and data[key]:
                 self.location[key] = data[key]
 
-    def toTagDict(self) -> dict:
+    def update_via_tag_array(self, data: dict, i: int):
+
+        for key in Location.location_keys:
+            if key in data and data[key][i]:
+                self.location[key] = data[key][i]
+
+    def to_tag_dict(self) -> dict:
         tag_dict = {}
         if self.location.keys():
             loc_tags = []
@@ -124,7 +134,7 @@ class FileMetaData:
             return False
         return True
 
-    def toTagDict(self) -> dict:
+    def to_tag_dict(self) -> dict:
         if not self.title:
             self.title = functools.reduce(lambda title, tag: title + ", " + tag, self.tags, "").strip(", ")
 
@@ -136,9 +146,9 @@ class FileMetaData:
 
         tagDict = {'Label': self.filename, 'title': self.title, 'Keywords': self.tags, 'Subject': list(self.tags),
                    'ImageDescription': full_description, 'XPComment': full_description,
-                   'Identifier': self.filename, 'Rating': self.rating}
+                   'Identifier': self.filename, 'Rating': self.rating, 'Artist': photographer}
 
-        add_dict(tagDict, self.location.toTagDict())
+        add_dict(tagDict, self.location.to_tag_dict())
         return tagDict
 
     def __str__(self):
