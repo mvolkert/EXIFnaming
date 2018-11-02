@@ -10,7 +10,7 @@ from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinu
     write_exiftag
 from EXIFnaming.helpers.fileop import filterFiles
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
-from EXIFnaming.helpers.settings import includeSubdirs, file_types
+from EXIFnaming.helpers.settings import includeSubdirs, file_types, photographer
 from EXIFnaming.helpers.tag_wrappers import FileMetaData
 from EXIFnaming.helpers.tags import *
 
@@ -93,7 +93,7 @@ def location_to_keywords():
         write_exiftag(outTagDict, dirpath, filename)
 
 
-def name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None):
+def name_to_exif(artist=photographer, additional_tags=(), startdir=None):
     """
     extract title, description and mode from name and write them to exif
     """
@@ -193,18 +193,22 @@ def geotag_single(lat: float, lon: float):
     call_exiftool(inpath, "*", options=options)
 
 
-def read_main_csv(csvfilename: str):
+def read_main_csv(main_csv: str, postprocessing_csv: str):
     inpath = os.getcwd()
-    fileMetaDataList = [FileMetaData(dirpath, filename) for (dirpath, dirnames, filenames) in os.walk(inpath) for filename in filterFiles(filenames, file_types)]
+    fileMetaDataList = [FileMetaData(dirpath, filename) for (dirpath, dirnames, filenames) in os.walk(inpath) for
+                        filename in filterFiles(filenames, file_types)]
 
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
-    with open(csvfilename) as csvfile:
+    with open(main_csv) as csvfile:
         spamreader = csv.DictReader(csvfile, dialect='semicolon')
         for row in spamreader:
-            print(row)
             for fileMetaData in fileMetaDataList:
                 fileMetaData.update(row)
+    with open(postprocessing_csv) as csvfile:
+        spamreader = csv.DictReader(csvfile, dialect='semicolon')
+        for row in spamreader:
+            for fileMetaData in fileMetaDataList:
+                fileMetaData.update_processing(row)
 
     for fileMetaData in fileMetaDataList:
-        print(fileMetaData.toTagDict())
         write_exiftag(fileMetaData.toTagDict(), fileMetaData.directory, fileMetaData.filename)
