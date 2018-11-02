@@ -1,8 +1,12 @@
 import functools
+import os
 import re
 from collections import OrderedDict
 
+import numpy as np
+
 from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer
+from EXIFnaming.helpers.tags import scene_to_tag
 
 
 class Location:
@@ -12,7 +16,7 @@ class Location:
                  'City': ['City', 'LocationCreatedCity'],
                  'Location': ['Location', 'LocationCreatedSublocation']}
 
-    def __init__(self, data=None, i = -1):
+    def __init__(self, data=None, i=-1):
         self.location = OrderedDict()
         if data:
             if i > -1:
@@ -52,12 +56,12 @@ class Location:
 
 
 class FileMetaData:
-
     regex = re.compile(r"^([-\w]+)_([0-9]+)[A-Z0-9]*")
 
     def __init__(self, directory, filename):
         self.directory = directory
-        self.filename = filename
+        self.filename = filename[:filename.rfind(".")]
+        self.id = self.filename
         self.title = ""
         self.tags = []
         self.descriptions = []
@@ -70,6 +74,12 @@ class FileMetaData:
             self.counter = int(match.group(2))
         else:
             print(filename, 'does not match regex')
+
+    def import_filename(self):
+        self.id, self.tags = filename_to_tag(self.filename)
+
+    def import_fullname(self, startdir: str):
+        self.id, self.tags = fullname_to_tag(self.directory, self.filename, startdir)
 
     def update(self, data: dict):
         def good_key(key: str):
@@ -146,7 +156,7 @@ class FileMetaData:
 
         tagDict = {'Label': self.filename, 'title': self.title, 'Keywords': self.tags, 'Subject': list(self.tags),
                    'ImageDescription': full_description, 'XPComment': full_description,
-                   'Identifier': self.filename, 'Rating': self.rating, 'Artist': photographer}
+                   'Identifier': self.id, 'Rating': self.rating, 'Artist': photographer}
 
         add_dict(tagDict, self.location.to_tag_dict())
         return tagDict
@@ -155,12 +165,14 @@ class FileMetaData:
         return "FileMetaData(" + self.title + " " + str(self.tags) + " " + str(self.descriptions) + " " + str(
             self.location) + ")"
 
+
 def add_dict(dict1: dict, dict2: dict):
     for key in dict2:
         if key in dict1:
             dict1[key] += dict2[key]
         else:
             dict1[key] = dict2[key]
+
 
 def format_as_tree(data: dict) -> str:
     def indent(string: str) -> str:
@@ -192,3 +204,36 @@ def set_path(data: dict, path, value=None):
         sub_data[path[-1]] = value
     elif not path[-1] in sub_data:
         sub_data[path[-1]] = OrderedDict()
+
+
+def filename_to_tag(filename: str):
+    def starts_and_ends_with_digit(string) -> bool:
+        return np.chararray.isdigit(string[0]) and np.chararray.isdigit(string[-1])
+
+    filename_splited = filename.split('_')
+    if len(filename_splited) == 0: return
+    image_id = ""
+    image_tags = []
+    counter_complete = False
+    for subname in filename_splited:
+        if counter_complete:
+            if subname.isupper():
+                image_id += subname + "_"
+                image_tags.extend(scene_to_tag(subname))
+            else:
+                image_tags.append(subname)
+        else:
+            image_id += subname + "_"
+            if starts_and_ends_with_digit(subname): counter_complete = True
+    image_id = image_id[:-1]
+    return image_id, image_tags
+
+
+def fullname_to_tag(dirpath: str, filename: str, startdir=""):
+    relpath = os.path.relpath(dirpath, startdir)
+    if relpath == ".": relpath = ""
+    dirpath_split = relpath.split(os.sep)
+    filename_prim = filename.split("_")[0]
+    image_id = filename
+    image_tags = dirpath_split + [filename_prim]
+    return image_id, image_tags

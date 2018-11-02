@@ -11,7 +11,7 @@ from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinu
 from EXIFnaming.helpers.fileop import filterFiles
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.settings import includeSubdirs, file_types, photographer
-from EXIFnaming.helpers.tag_wrappers import FileMetaData, Location, add_dict
+from EXIFnaming.helpers.tag_wrappers import FileMetaData, Location, add_dict, fullname_to_tag, filename_to_tag
 from EXIFnaming.helpers.tags import *
 
 
@@ -91,7 +91,7 @@ def location_to_keywords():
         write_exiftag(outTagDict, dirpath, filename)
 
 
-def name_to_exif(artist=photographer, additional_tags=(), startdir=None):
+def name_to_exif(additional_tags=(), startdir=None):
     """
     extract title, description and mode from name and write them to exif
     """
@@ -104,53 +104,14 @@ def name_to_exif(artist=photographer, additional_tags=(), startdir=None):
         filenames = filterFiles(filenames, file_types)
         print(dirpath)
         for filename in filenames:
-            name, ext = filename.rsplit(".", 1)
+            meta_data = FileMetaData(dirpath, filename)
             if startdir:
-                image_id, image_tags = _fullname_to_tag(dirpath, name, startdir)
+                meta_data.import_fullname(startdir)
             else:
-                image_id, image_tags = _split_name(name)
-            image_tags += additional_tags
-            outTagDict = {'Title': name, 'Label': name}
-            if image_id: outTagDict["Identifier"] = image_id
-            outTagDict["Keywords"] = image_tags
-            outTagDict["Subject"] = image_tags
-            if artist: outTagDict["Artist"] = artist
-            write_exiftag(outTagDict, dirpath, filename)
+                meta_data.import_filename()
+            meta_data.update({'tags': additional_tags})
+            write_exiftag(meta_data.to_tag_dict(), dirpath, filename)
     clock.finish()
-
-
-def _split_name(filename: str):
-    def is_lastpart_of_id(name) -> bool:
-        starts_and_ends_with_digit = (np.chararray.isdigit(name[0]) and np.chararray.isdigit(name[-1]))
-        return starts_and_ends_with_digit or name[0] == "M" or "HDR" in name
-
-    filename_splited = filename.split('_')
-    if len(filename_splited) == 0: return
-    image_id = ""
-    image_tags = []
-    counter_complete = False
-    for subname in filename_splited:
-        if counter_complete:
-            if subname.isupper():
-                image_id += subname + "_"
-                image_tags.extend(scene_to_tag(subname))
-            else:
-                image_tags.append(subname)
-        else:
-            image_id += subname + "_"
-            if is_lastpart_of_id(subname): counter_complete = True
-    image_id = image_id[:-1]
-    return image_id, image_tags
-
-
-def _fullname_to_tag(dirpath: str, filename: str, startdir=""):
-    relpath = os.path.relpath(dirpath, startdir)
-    if relpath == ".": relpath = ""
-    dirpath_split = relpath.split(os.sep)
-    filename_prim = filename.split("_")[0]
-    image_id = filename
-    image_tags = dirpath_split + [filename_prim]
-    return image_id, image_tags
 
 
 def geotag(timezone=2, offset=""):
