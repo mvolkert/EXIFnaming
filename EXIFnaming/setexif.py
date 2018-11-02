@@ -193,8 +193,9 @@ def geotag_single(lat: float, lon: float):
     call_exiftool(inpath, "*", options=options)
 
 
-def read_main_csv(main_csv: str, postprocessing_csv: str):
+def read_csv(main_csv: str, processing_csv =""):
     inpath = os.getcwd()
+    clock = Clock()
     fileMetaDataList = [FileMetaData(dirpath, filename) for (dirpath, dirnames, filenames) in os.walk(inpath) for
                         filename in filterFiles(filenames, file_types)]
 
@@ -204,11 +205,15 @@ def read_main_csv(main_csv: str, postprocessing_csv: str):
         for row in spamreader:
             for fileMetaData in fileMetaDataList:
                 fileMetaData.update(row)
-    with open(postprocessing_csv) as csvfile:
-        spamreader = csv.DictReader(csvfile, dialect='semicolon')
-        for row in spamreader:
-            for fileMetaData in fileMetaDataList:
-                fileMetaData.update_processing(row)
+
+    if processing_csv:
+        with open(processing_csv) as csvfile:
+            spamreader = csv.DictReader(csvfile, dialect='semicolon')
+            for row in spamreader:
+                for fileMetaData in fileMetaDataList:
+                    fileMetaData.update_processing(row)
 
     for fileMetaData in fileMetaDataList:
         write_exiftag(fileMetaData.toTagDict(), fileMetaData.directory, fileMetaData.filename)
+
+    clock.finish()
