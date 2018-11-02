@@ -43,37 +43,29 @@ class Location:
 
 class FileMetaData:
 
+    regex = re.compile(r"^([-\w]+)_([0-9]+)[A-Z0-9]*")
+
     def __init__(self, directory, filename):
         self.directory = directory
         self.filename = filename
         self.title = ""
         self.tags = []
         self.descriptions = []
-        self.description = OrderedDict()
+        self.description_tree = OrderedDict()
         self.location = Location()
         self.rating = None
-        regex = r"^([-\w]+)_([0-9]+)[A-Z0-9]*"
-        match = re.search(regex, filename)
+        match = FileMetaData.regex.search(filename)
         if match:
             self.main_name = match.group(1)
             self.counter = int(match.group(2))
         else:
-            print(filename, 'does not match ', regex)
+            print(filename, 'does not match regex')
 
     def update(self, data: dict):
-        def not_match_entry(key: str, func):
-            return key in data and data[key] and not func(data[key])
-
         def good_key(key: str):
             return key in data and data[key]
 
-        if not_match_entry('directory', lambda value: value in self.directory):
-            return
-        if not_match_entry('main_name', lambda value: value == self.main_name):
-            return
-        if not_match_entry('first', lambda value: int(value) <= self.counter):
-            return
-        if not_match_entry('last', lambda value: self.counter <= int(value)):
+        if not self._passes_restrictions(data):
             return
 
         if good_key('title'): self.title = data['title']
@@ -81,15 +73,12 @@ class FileMetaData:
         if good_key('rating'): self.rating = data['rating']
         if good_key('description'): self.descriptions.append(data['description'])
         self.location.update(data)
-        set_path(self.description, ["Location"], str(self.location))
+        set_path(self.description_tree, ["Location"], str(self.location))
 
     def update_processing(self, data: dict):
-        def not_match_entry(key: str, func):
-            return key in data and data[key] and not func(data[key])
-
         def set_keys(path: [], keys: list):
             for key in keys:
-                set_path(self.description, path + [key], data[key])
+                set_path(self.description_tree, path + [key], data[key])
 
         def good_key(key: str):
             return key in data and data[key]
@@ -97,9 +86,7 @@ class FileMetaData:
         def filter_keys(key_part: str):
             return [key for key in data if key_part in key and data[key]]
 
-        if not_match_entry('directory', lambda value: value in self.directory):
-            return
-        if not_match_entry('filename_part', lambda value: value in self.filename):
+        if not self._passes_restrictions(data):
             return
 
         if good_key('tags'): self.tags += [tag for tag in data['tags'].split(', ') if tag]
@@ -110,17 +97,32 @@ class FileMetaData:
         known_keys = ['directory', 'filename_part', 'tags', 'rating'] + hdr_keys + tm_keys + pano_keys
         other_keys = [key for key in data if not key in known_keys and data[key]]
         if hdr_keys:
-            set_path(self.description, ["Processing", "HDR", "program"], hdr_program)
+            set_path(self.description_tree, ["Processing", "HDR", "program"], hdr_program)
             set_keys(["Processing", "HDR", "HDR-setting"], hdr_keys)
         if tm_keys:
-            set_path(self.description, ["Processing", "HDR", "program"], hdr_program)
+            set_path(self.description_tree, ["Processing", "HDR", "program"], hdr_program)
             set_keys(["Processing", "HDR", "HDR-Tonemapping"], tm_keys)
         if pano_keys:
-            set_path(self.description, ["Processing", "Panorama", "program"], panorama_program)
+            set_path(self.description_tree, ["Processing", "Panorama", "program"], panorama_program)
             set_keys(["Processing", "Panorama"], pano_keys)
         if other_keys:
-            print(other_keys)
             set_keys(["Processing", "misc"], other_keys)
+
+    def _passes_restrictions(self, data):
+        def not_match_entry(key: str, func):
+            return key in data and data[key] and not func(data[key])
+
+        if not_match_entry('directory', lambda value: value in self.directory):
+            return False
+        if not_match_entry('name_main', lambda value: value == self.main_name):
+            return False
+        if not_match_entry('first', lambda value: int(value) <= self.counter):
+            return False
+        if not_match_entry('last', lambda value: self.counter <= int(value)):
+            return False
+        if not_match_entry('name_part', lambda value: value in self.filename):
+            return False
+        return True
 
     def toTagDict(self) -> dict:
         if not self.title:
@@ -131,9 +133,11 @@ class FileMetaData:
             self.descriptions.append(description_formated)
         full_description = functools.reduce(lambda description, entry: description + "\n\n" + entry, self.descriptions,
                                             "").strip("\n\n")
-        tagDict = {'Label': self.filename, 'title': self.title, 'Keywords': self.tags, 'Subject': self.tags,
+
+        tagDict = {'Label': self.filename, 'title': self.title, 'Keywords': self.tags, 'Subject': list(self.tags),
                    'ImageDescription': full_description, 'XPComment': full_description,
                    'Identifier': self.filename, 'Rating': self.rating}
+
         loc_Dict = self.location.toTagDict()
         for key in loc_Dict:
             if key in tagDict:
