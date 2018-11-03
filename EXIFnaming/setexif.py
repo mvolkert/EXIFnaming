@@ -152,30 +152,26 @@ def geotag_single(lat: float, lon: float):
     call_exiftool(inpath, "*", options=options)
 
 
-def read_csv(main_csv: str, processing_csv =""):
+def read_csv(main_csv: str, processing_csv=""):
     inpath = os.getcwd()
     clock = Clock()
-    fileMetaDataList = [FileMetaData(dirpath, filename) for (dirpath, dirnames, filenames) in os.walk(inpath) for
-                        filename in filterFiles(filenames, file_types)]
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        print(dirpath)
+        for filename in filterFiles(filenames, file_types):
+            meta_data = FileMetaData(dirpath, filename)
 
-    for meta_data in fileMetaDataList:
-        meta_data.import_filename()
+            csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
+            with open(main_csv) as csvfile:
+                spamreader = csv.DictReader(csvfile, dialect='semicolon')
+                for row in spamreader:
+                    meta_data.update(row)
 
-    csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
-    with open(main_csv) as csvfile:
-        spamreader = csv.DictReader(csvfile, dialect='semicolon')
-        for row in spamreader:
-            for fileMetaData in fileMetaDataList:
-                fileMetaData.update(row)
+            if processing_csv:
+                with open(processing_csv) as csvfile:
+                    spamreader = csv.DictReader(csvfile, dialect='semicolon')
+                    for row in spamreader:
+                        meta_data.update_processing(row)
 
-    if processing_csv:
-        with open(processing_csv) as csvfile:
-            spamreader = csv.DictReader(csvfile, dialect='semicolon')
-            for row in spamreader:
-                for fileMetaData in fileMetaDataList:
-                    fileMetaData.update_processing(row)
-
-    for fileMetaData in fileMetaDataList:
-        write_exiftag(fileMetaData.to_tag_dict(), fileMetaData.directory, fileMetaData.filename)
+            write_exiftag(meta_data.to_tag_dict(), meta_data.directory, meta_data.filename)
 
     clock.finish()
