@@ -57,13 +57,17 @@ class Location:
 
 class FileMetaData:
     regex = re.compile(r"^([-\w]+)_([0-9]+)[A-Z0-9]*")
+    restriction_keys = ['directory', 'name_main', 'first', 'last', 'name_part']
+    tag_setting_keys = ['title', 'tags', 'rating', 'description']
 
     def __init__(self, directory, filename):
         self.directory = directory
-        self.filename = filename[:filename.rfind(".")]
+        self.filename = filename
+        self.name = filename[:filename.rfind(".")]
         self.id = self.filename
         self.title = ""
         self.tags = []
+        self.tags_p = []
         self.descriptions = []
         self.description_tree = OrderedDict()
         self.location = Location()
@@ -76,10 +80,10 @@ class FileMetaData:
             print(filename, 'does not match regex')
 
     def import_filename(self):
-        self.id, self.tags = filename_to_tag(self.filename)
+        self.id, self.tags, self.tags_p = filename_to_tag(self.name)
 
     def import_fullname(self, startdir: str):
-        self.id, self.tags = fullname_to_tag(self.directory, self.filename, startdir)
+        self.id, self.tags = fullname_to_tag(self.directory, self.name, startdir)
 
     def update(self, data: dict):
         def good_key(key: str):
@@ -109,12 +113,12 @@ class FileMetaData:
         if not self._passes_restrictions(data):
             return
 
-        if good_key('tags'): self.tags += [tag for tag in data['tags'].split(', ') if tag]
+        if good_key('tags'): self.tags_p += [tag for tag in data['tags'].split(', ') if tag]
         if good_key('rating'): self.rating = data['rating']
         hdr_keys = filter_keys("HDR")
         tm_keys = filter_keys("TM")
         pano_keys = filter_keys("PANO")
-        known_keys = ['directory', 'filename_part', 'tags', 'rating'] + hdr_keys + tm_keys + pano_keys
+        known_keys = FileMetaData.restriction_keys + FileMetaData.tag_setting_keys + hdr_keys + tm_keys + pano_keys
         other_keys = [key for key in data if not key in known_keys and data[key]]
         if hdr_keys:
             set_path(self.description_tree, ["Processing", "HDR", "program"], hdr_program)
@@ -146,7 +150,8 @@ class FileMetaData:
 
     def to_tag_dict(self) -> dict:
         if not self.title:
-            self.title = functools.reduce(lambda title, tag: title + ", " + tag, self.tags, "").strip(", ")
+            self.title = functools.reduce(lambda title, tag: title + ", " + tag, self.tags + self.tags_p, "").strip(
+                ", ")
 
         description_formated = format_as_tree(self.description_tree)
         if description_formated:
@@ -154,7 +159,8 @@ class FileMetaData:
         full_description = functools.reduce(lambda description, entry: description + "\n\n" + entry, self.descriptions,
                                             "").strip("\n\n")
 
-        tagDict = {'Label': self.filename, 'title': self.title, 'Keywords': self.tags, 'Subject': list(self.tags),
+        tagDict = {'Label': self.name, 'title': self.title,
+                   'Keywords': self.tags + self.tags_p, 'Subject': list(self.tags + self.tags_p),
                    'ImageDescription': full_description, 'XPComment': full_description,
                    'Identifier': self.id, 'Rating': self.rating, 'Artist': photographer}
 
@@ -214,19 +220,20 @@ def filename_to_tag(filename: str):
     if len(filename_splited) == 0: return
     image_id = ""
     image_tags = []
+    image_tags_p = []
     counter_complete = False
     for subname in filename_splited:
         if counter_complete:
             if subname.isupper():
                 image_id += subname + "_"
-                image_tags.extend(scene_to_tag(subname))
+                image_tags_p.extend(scene_to_tag(subname))
             else:
                 image_tags.append(subname)
         else:
             image_id += subname + "_"
             if starts_and_ends_with_digit(subname): counter_complete = True
     image_id = image_id[:-1]
-    return image_id, image_tags
+    return image_id, image_tags, image_tags_p
 
 
 def fullname_to_tag(dirpath: str, filename: str, startdir=""):

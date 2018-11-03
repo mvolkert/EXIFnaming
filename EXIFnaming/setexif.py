@@ -158,6 +158,9 @@ def read_csv(main_csv: str, processing_csv =""):
     fileMetaDataList = [FileMetaData(dirpath, filename) for (dirpath, dirnames, filenames) in os.walk(inpath) for
                         filename in filterFiles(filenames, file_types)]
 
+    for meta_data in fileMetaDataList:
+        meta_data.import_filename()
+
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
     with open(main_csv) as csvfile:
         spamreader = csv.DictReader(csvfile, dialect='semicolon')
