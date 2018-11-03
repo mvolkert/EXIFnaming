@@ -78,6 +78,7 @@ class FileMetaData:
             self.counter = int(match.group(2))
         else:
             print(filename, 'does not match regex')
+        self.has_changed = False
 
     def import_filename(self):
         self.id, self.tags, self.tags_p = filename_to_tag(self.name)
@@ -146,6 +147,8 @@ class FileMetaData:
             return False
         if not_match_entry('name_part', lambda value: value in self.filename):
             return False
+
+        self.has_changed = True
         return True
 
     def to_tag_dict(self) -> dict:
@@ -160,11 +163,13 @@ class FileMetaData:
                                             "").strip("\n\n")
 
         tagDict = {'Label': self.name, 'title': self.title,
-                   'Keywords': self.tags + self.tags_p, 'Subject': list(self.tags + self.tags_p),
+                   'Keywords': self.tags, 'Subject': list(self.tags),
                    'ImageDescription': full_description, 'XPComment': full_description,
                    'Identifier': self.id, 'Rating': self.rating, 'Artist': photographer}
 
         add_dict(tagDict, self.location.to_tag_dict())
+        tagDict['Keywords'].extend(self.tags_p)
+        tagDict['Subject'].extend(self.tags_p)
         return tagDict
 
     def __str__(self):

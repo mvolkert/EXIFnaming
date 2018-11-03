@@ -4,6 +4,7 @@ Writes to Tags
 """
 import csv
 import datetime as dt
+import re
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
@@ -91,7 +92,7 @@ def location_to_keywords():
         write_exiftag(outTagDict, dirpath, filename)
 
 
-def name_to_exif(additional_tags=(), startdir=None):
+def name_to_exif(folder=r"", additional_tags=(), startdir=None):
     """
     extract title, description and mode from name and write them to exif
     """
@@ -101,6 +102,7 @@ def name_to_exif(additional_tags=(), startdir=None):
     askToContinue()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
+        if folder and not re.search(folder, dirpath): continue
         filenames = filterFiles(filenames, file_types)
         print(dirpath)
         for filename in filenames:
@@ -152,7 +154,7 @@ def geotag_single(lat: float, lon: float):
     call_exiftool(inpath, "*", options=options)
 
 
-def read_csv(main_csv: str, processing_csv=""):
+def read_csv(main_csv: str, processing_csv="", folder=r""):
     """
     csv files are used for setting tags
     the csv files have to be separated by semicolon
@@ -175,14 +177,17 @@ def read_csv(main_csv: str, processing_csv=""):
             'HDR' are evaluated as HDR description
             'TM' are evaluated as HDR Tone Mapping description
             'PANO' are evaluated as Panorama description
+    :param folder: process only folders matching this regex
     :return:
     """
     inpath = os.getcwd()
     clock = Clock()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if folder and not re.search(folder, dirpath): continue
         print(dirpath)
         for filename in filterFiles(filenames, file_types):
             meta_data = FileMetaData(dirpath, filename)
+            meta_data.import_filename()
 
             csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
             with open(main_csv) as csvfile:
@@ -196,6 +201,7 @@ def read_csv(main_csv: str, processing_csv=""):
                     for row in spamreader:
                         meta_data.update_processing(row)
 
-            write_exiftag(meta_data.to_tag_dict(), meta_data.directory, meta_data.filename)
+            if meta_data.has_changed:
+                write_exiftag(meta_data.to_tag_dict(), meta_data.directory, meta_data.filename)
 
     clock.finish()
