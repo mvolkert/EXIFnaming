@@ -66,12 +66,12 @@ def rename_pm(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, po
 def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
            postfix_stay=True, fileext=".JPG", fileext_Raw=".Raw", name=""):
     """
-    Rename into Format: [Prefix][dateformat](_[name])_[Filenumber][SeriesType][SeriesSubNumber]_[FotoMode]
+    Rename into Format: [Prefix][dateformat](_[name])_[Filenumber][SeriesType][SeriesSubNumber]_[PhotoMode]
     :param Prefix: prefix has to fulfil regex [-a-zA-Z]*
     :param dateformat: Y:Year,M:Month,D:Day,N:DayCounter; Number of occurrences determine number of digits
     :param startindex: minimal counter
     :param onlyprint: do not rename; only output file of proposed renaming into saves directory
-    :param postfix_stay: if you put a postfix after FotoMode with an other program and call this function again, the postfix will be preserved
+    :param postfix_stay: if you put a postfix after PhotoMode with an other program and call this function again, the postfix will be preserved
     :param fileext: file extension
     :param fileext_Raw: file extension for raw image that is to get same name as the normal one
     :param name: optional name between date and filenumber, seldom used

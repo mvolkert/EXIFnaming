@@ -142,10 +142,10 @@ def geotag(timezone=2, offset=""):
 
 def geotag_single(lat: float, lon: float):
     """
-        adds gps information to all pictures in all sub directories of current directory
-        :param lat: GPSLatitude
-        :param lon: GPSLongitude
-        """
+    adds gps information to all pictures in all sub directories of current directory
+    :param lat: GPSLatitude
+    :param lon: GPSLongitude
+    """
     inpath = os.getcwd()
     options = ["-GPSLatitudeRef=%f" % lat, "-GPSLatitude=%f" % lat, "-GPSLongitudeRef=%f" % lon,
                "-GPSLongitude=%f" % lon]
@@ -153,6 +153,30 @@ def geotag_single(lat: float, lon: float):
 
 
 def read_csv(main_csv: str, processing_csv=""):
+    """
+    csv files are used for setting tags
+    the csv files have to be separated by semicolon
+    empty values in a column or not present columns are not evaluated
+    each '' in the following is a possible column name
+
+    following restrictions to files are possible:
+        'directory': checks if value is part of directory
+        'name_main': checks if value is the first part of filename
+        'first': int counter min
+        'last': int counter max
+        'name_part': checks if value is part of filename
+
+    :param main_csv:
+        can set follow exif information: ['title', 'tags', 'rating', 'description']
+        can set Location via ['Country', 'State', 'City', 'Location']
+    :param processing_csv:
+        sets structured description for image processing like HDR and Panorama
+        columns starting with
+            'HDR' are evaluated as HDR description
+            'TM' are evaluated as HDR Tone Mapping description
+            'PANO' are evaluated as Panorama description
+    :return:
+    """
     inpath = os.getcwd()
     clock = Clock()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
