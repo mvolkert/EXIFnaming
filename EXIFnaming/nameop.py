@@ -144,6 +144,11 @@ def rename_HDR(mode="HDRT", folder=r"HDR\w*"):
                 _rename_match(dirpath, filename, mode, match)
             else:
                 print("no match:", filename)
+        for dirname in dirnames:
+            match = re.search(matchreg, dirname)
+            if match:
+                _rename_match(dirpath, dirname, mode, match)
+
 
 def _rename_match(dirpath: str, filename: str, mode: str, match: Optional[Match[str]]):
     extension = filename[filename.rfind("."):]
