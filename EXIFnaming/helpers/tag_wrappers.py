@@ -233,11 +233,11 @@ def split_filename(filename: str):
     counter_complete = False
     for subname in filename_splited:
         if counter_complete:
-            if is_scene_abbreviation(subname):
-                name["scene"].append(subname)
-                name["p_tags"].append(subname)
-            elif is_process_tag(subname):
+            if is_process_tag(subname):
                 name["process"].append(subname)
+                name["p_tags"].append(subname)
+            elif is_scene_abbreviation(subname):
+                name["scene"].append(subname)
                 name["p_tags"].append(subname)
             else:
                 name["tags"].append(subname)
