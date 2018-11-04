@@ -151,9 +151,9 @@ class FileMetaData:
             return False
         if not_match_entry('name_main', lambda value: value == self.main_name):
             return False
-        if not_match_entry('first', lambda value: int(value) <= self.counter):
+        if not_match_entry('first', lambda value: value <= self.counter):
             return False
-        if not_match_entry('last', lambda value: self.counter <= int(value)):
+        if not_match_entry('last', lambda value: self.counter <= value):
             return False
         if not_match_entry('name_part', lambda value: value in self.filename):
             return False
@@ -271,10 +271,10 @@ def get_main_and_counter(filename: str):
     for entry in filename_splited:
         if is_counter(entry):
             match = get_main_and_counter.regex.search(entry)
-            counter = int(match.group(1))
+            counter = match.group(1)
     return filename_splited[0], counter
 
-get_main_and_counter.regex = re.compile(r"M?(\d*)")
+get_main_and_counter.regex = re.compile(r"(M?\d*)")
 
 def fullname_to_tag(dirpath: str, filename: str, startdir=""):
     relpath = os.path.relpath(dirpath, startdir)
