@@ -99,7 +99,6 @@ class FileMetaData:
                 if not ": " in entry: continue
                 key, value = entry.split(": ", 1)
                 process_dict[key] = value
-            print(process_dict)
             self.update_processing({"PANO-program-comment": process_dict})
 
     def update(self, data: dict):

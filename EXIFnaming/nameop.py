@@ -236,7 +236,6 @@ def _sanitize_pano(filename_dict: dict):
 
 def _sanitize_process_counter(filename_dict: dict):
     processes_new = []
-    print(filename_dict)
     for process_mode in filename_dict["process"]:
         match = re.search(r'([^$\d]+)(\d[^$]*)', process_mode)
         if match:
