@@ -1,4 +1,3 @@
-import functools
 import os
 import re
 from collections import OrderedDict
@@ -6,7 +5,7 @@ from collections import OrderedDict
 import numpy as np
 
 from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer
-from EXIFnaming.helpers.tags import scene_to_tag
+from EXIFnaming.helpers.tags import scene_to_tag, is_scene_abbreviation, is_process_tag, process_to_tag
 
 
 class Location:
@@ -153,18 +152,16 @@ class FileMetaData:
 
     def to_tag_dict(self) -> dict:
         if not self.title:
-            self.title = functools.reduce(lambda title, tag: title + ", " + tag, self.tags + self.tags_p, "").strip(
-                ", ")
+            self.title = ", ".join(self.tags + self.tags_p)
 
         description_formated = format_as_tree(self.description_tree)
         if description_formated:
             self.descriptions.append(description_formated)
-        full_description = functools.reduce(lambda description, entry: description + "\n\n" + entry, self.descriptions,
-                                            "").strip("\n\n")
+        full_description = "\n\n".join(self.descriptions)
 
         tagDict = {'Label': self.name, 'title': self.title,
                    'Keywords': self.tags, 'Subject': list(self.tags),
-                   'ImageDescription': full_description, 'XPComment': full_description,
+                   'ImageDescription': full_description, 'XPComment': full_description, 'Description': full_description,
                    'Identifier': self.id, 'Rating': self.rating, 'Artist': photographer}
 
         add_dict(tagDict, self.location.to_tag_dict())
@@ -218,27 +215,36 @@ def set_path(data: dict, path, value=None):
 
 
 def filename_to_tag(filename: str):
+    filename_dict = split_filename(filename)
+    image_id = "_".join(filename_dict["main"] + filename_dict["p_tags"])
+    image_tags = filename_dict["tags"]
+    image_tags_p = [tag2 for tag in filename_dict["scene"] for tag2 in scene_to_tag(tag)]
+    image_tags_p += [tag2 for tag in filename_dict["process"] for tag2 in process_to_tag(tag)]
+    return image_id, image_tags, image_tags_p
+
+
+def split_filename(filename: str):
     def starts_and_ends_with_digit(string) -> bool:
         return np.chararray.isdigit(string[0]) and np.chararray.isdigit(string[-1])
 
     filename_splited = filename.split('_')
     if len(filename_splited) == 0: return
-    image_id = ""
-    image_tags = []
-    image_tags_p = []
+    name = {"main": [], "tags": [], "scene": [], "process": [], "p_tags": []}
     counter_complete = False
     for subname in filename_splited:
         if counter_complete:
-            if subname.isupper():
-                image_id += subname + "_"
-                image_tags_p.extend(scene_to_tag(subname))
+            if is_scene_abbreviation(subname):
+                name["scene"].append(subname)
+                name["p_tags"].append(subname)
+            elif is_process_tag(subname):
+                name["process"].append(subname)
+                name["p_tags"].append(subname)
             else:
-                image_tags.append(subname)
+                name["tags"].append(subname)
         else:
-            image_id += subname + "_"
+            name["main"].append(subname)
             if starts_and_ends_with_digit(subname): counter_complete = True
-    image_id = image_id[:-1]
-    return image_id, image_tags, image_tags_p
+    return name
 
 
 def fullname_to_tag(dirpath: str, filename: str, startdir=""):

@@ -84,13 +84,6 @@ unknownTags[("Advanced Scene Mode","Unknown (0 7)") ]="4K"
 unknownTags[("Scene Mode","Unknown (60)")]="4K"
 unknownTags[("Scene Mode","Unknown (54)") ]="HS"
 
-SceneToTag=OrderedDict()
-SceneToTag['PANO']="Panorama"
-SceneToTag['NIGHT']="night"
-SceneToTag['SUN']="sun"
-SceneToTag['HDR']="HDR"
-SceneToTag['HDRT']="HDR"
-
 CameraModelShort=OrderedDict()
 CameraModelShort['DMC-TZ7']='TZ7'
 CameraModelShort['SM-G900F']='S5'
