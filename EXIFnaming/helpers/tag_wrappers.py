@@ -132,13 +132,13 @@ class FileMetaData:
         known_keys = FileMetaData.restriction_keys + FileMetaData.tag_setting_keys + hdr_keys + tm_keys + pano_keys
         other_keys = [key for key in data if not key in known_keys and data[key]]
         if hdr_keys:
-            set_path(self.description_tree, ["Processing", "HDR", "program"], hdr_program)
+            set_path(self.description_tree, ["Processing", "HDR", "HDR-program"], hdr_program)
             set_keys(["Processing", "HDR", "HDR-setting"], hdr_keys)
         if tm_keys:
-            set_path(self.description_tree, ["Processing", "HDR", "program"], hdr_program)
+            set_path(self.description_tree, ["Processing", "HDR", "HDR-program"], hdr_program)
             set_keys(["Processing", "HDR", "HDR-Tonemapping"], tm_keys)
         if pano_keys:
-            set_path(self.description_tree, ["Processing", "Panorama", "program"], panorama_program)
+            set_path(self.description_tree, ["Processing", "Panorama", "PANO-program"], panorama_program)
             set_keys(["Processing", "Panorama"], pano_keys)
         if other_keys:
             set_keys(["Processing", "misc"], other_keys)
@@ -165,14 +165,15 @@ class FileMetaData:
         if not self.title:
             self.title = ", ".join(self.tags + self.tags_p)
 
+        self.description_tree = OrderedDict(sorted(self.description_tree.items()))
         description_formated = format_as_tree(self.description_tree)
         if description_formated:
             self.descriptions.append(description_formated)
-        full_description = "\n\n".join(self.descriptions)
+        full_description = " \n\n".join(self.descriptions)
 
-        tagDict = {'Label': self.name, 'title': self.title,
+        tagDict = {'Label': self.name, 'Title': self.title,
                    'Keywords': self.tags, 'Subject': list(self.tags),
-                   'ImageDescription': full_description, 'XPComment': full_description, 'Description': full_description,
+                   'Description': full_description, 'XPComment': full_description,
                    'Identifier': self.id, 'Rating': self.rating, 'Artist': photographer}
 
         if len(self.gps) == 2:
@@ -204,7 +205,7 @@ def format_as_tree(data: dict) -> str:
         return indented_newline + string.replace("\n", indented_newline)
 
     out = ""
-    indented_newline = "\n-" + " " * 3
+    indented_newline = "\n- "
     for key in data:
         if not data[key]:
             continue
@@ -214,8 +215,22 @@ def format_as_tree(data: dict) -> str:
         else:
             value = format_as_tree(data[key])
             value = indent(value)
-        out += key + ": " + value + "\n"
+        out += key + ": " + value + " \n"
     out = out.strip(indented_newline)
+    return out
+
+
+def format_plain(data: dict) -> str:
+    out = ""
+    for key in data:
+        if not data[key]:
+            continue
+        if type(data[key]) == str:
+            value = data[key]
+        else:
+            value = format_plain(data[key])
+        out += key + ": " + value + " - "
+    out = out[:-2]
     return out
 
 
@@ -260,10 +275,12 @@ def split_filename(filename: str):
             if is_counter(subname): counter_complete = True
     return filename_dict
 
+
 def is_counter(name) -> bool:
     starts_and_ends_with_digit = (np.chararray.isdigit(name[0]) and np.chararray.isdigit(name[-1]))
     is_movie_counter = name[0] == "M" and np.chararray.isdigit(name[-1])
     return starts_and_ends_with_digit or is_movie_counter
+
 
 def get_main_and_counter(filename: str):
     filename_splited = filename.split('_')
@@ -274,7 +291,9 @@ def get_main_and_counter(filename: str):
             counter = match.group(1)
     return filename_splited[0], counter
 
+
 get_main_and_counter.regex = re.compile(r"(M?\d*)")
+
 
 def fullname_to_tag(dirpath: str, filename: str, startdir=""):
     relpath = os.path.relpath(dirpath, startdir)
