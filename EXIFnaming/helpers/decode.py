@@ -152,7 +152,7 @@ def decode_exiftags(tags: str):
     date_org_name = "Date/Time Original"
     tagDict = OrderedDict()
     for tag in tags.split("\r\n"):
-        keyval = tag.split(": ")
+        keyval = tag.split(": ", 1)
         if not len(keyval) == 2: continue
         key = keyval[0].strip()
         val = keyval[1].strip()
