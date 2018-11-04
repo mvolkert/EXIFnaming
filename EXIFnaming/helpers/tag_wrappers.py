@@ -56,7 +56,6 @@ class Location:
 
 
 class FileMetaData:
-    regex = re.compile(r"^([-\w]+)_([0-9]+)[A-Z0-9]*")
     restriction_keys = ['directory', 'name_main', 'first', 'last', 'name_part']
     tag_setting_keys = ['title', 'tags', 'rating', 'description', 'gps']
 
@@ -74,12 +73,7 @@ class FileMetaData:
         self.rating = None
         self.gps = ()
         self.tagDict = None
-        match = FileMetaData.regex.search(filename)
-        if match:
-            self.main_name = match.group(1)
-            self.counter = int(match.group(2))
-        else:
-            print(filename, 'does not match regex')
+        self.main_name, self.counter = get_main_and_counter(self.name)
         self.has_changed = False
 
     def import_filename(self):
@@ -247,28 +241,40 @@ def filename_to_tag(filename: str):
 
 
 def split_filename(filename: str):
-    def starts_and_ends_with_digit(string) -> bool:
-        return np.chararray.isdigit(string[0]) and np.chararray.isdigit(string[-1])
-
     filename_splited = filename.split('_')
     if len(filename_splited) == 0: return
-    name = {"main": [], "tags": [], "scene": [], "process": [], "p_tags": []}
+    filename_dict = {"main": [], "tags": [], "scene": [], "process": [], "p_tags": []}
     counter_complete = False
     for subname in filename_splited:
         if counter_complete:
             if is_process_tag(subname):
-                name["process"].append(subname)
-                name["p_tags"].append(subname)
+                filename_dict["process"].append(subname)
+                filename_dict["p_tags"].append(subname)
             elif is_scene_abbreviation(subname):
-                name["scene"].append(subname)
-                name["p_tags"].append(subname)
+                filename_dict["scene"].append(subname)
+                filename_dict["p_tags"].append(subname)
             else:
-                name["tags"].append(subname)
+                filename_dict["tags"].append(subname)
         else:
-            name["main"].append(subname)
-            if starts_and_ends_with_digit(subname): counter_complete = True
-    return name
+            filename_dict["main"].append(subname)
+            if is_counter(subname): counter_complete = True
+    return filename_dict
 
+def is_counter(name) -> bool:
+    starts_and_ends_with_digit = (np.chararray.isdigit(name[0]) and np.chararray.isdigit(name[-1]))
+    is_movie_counter = name[0] == "M" and np.chararray.isdigit(name[-1])
+    return starts_and_ends_with_digit or is_movie_counter
+
+def get_main_and_counter(filename: str):
+    filename_splited = filename.split('_')
+    counter = None
+    for entry in filename_splited:
+        if is_counter(entry):
+            match = get_main_and_counter.regex.search(entry)
+            counter = int(match.group(1))
+    return filename_splited[0], counter
+
+get_main_and_counter.regex = re.compile(r"M?(\d*)")
 
 def fullname_to_tag(dirpath: str, filename: str, startdir=""):
     relpath = os.path.relpath(dirpath, startdir)

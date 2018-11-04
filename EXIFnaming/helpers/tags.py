@@ -154,8 +154,11 @@ def checkIntegrity(Tagdict, fileext=".JPG"):
 
 
 def scene_to_tag(scene: str) -> list:
+    out = [scene]
     scene_striped = scene.strip('123456789').split('$')[0]
-    return [scene, scene_striped.lower()]
+    if not scene in c.RecModes:
+        out.append(scene_striped.lower())
+    return out
 
 
 def process_to_tag(scene: str) -> list:
@@ -171,7 +174,7 @@ process_to_tag.map = {"HDR": "HDR", "HDRT": "HDR", "PANO": "Panorama"}
 
 
 def is_scene_abbreviation(name: str):
-    return name in c.SceneShort.values() or name in c.KreativeShort.values()
+    return name in c.SceneShort.values() or name in c.KreativeShort.values() or name in c.RecModes
 
 
 def is_process_tag(name: str):

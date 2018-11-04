@@ -88,3 +88,5 @@ CameraModelShort=OrderedDict()
 CameraModelShort['DMC-TZ7']='TZ7'
 CameraModelShort['SM-G900F']='S5'
 CameraModelShort[standard_kamera]=''
+
+RecModes = ["4KB", "4K", "HS", "FHD"]
