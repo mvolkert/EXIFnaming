@@ -14,6 +14,7 @@ from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, mo
     moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.settings import includeSubdirs
+from EXIFnaming.helpers.tag_wrappers import split_filename
 
 
 def filter_series():
@@ -186,6 +187,29 @@ def rename_to_front(mode="PANO", folder=r"HDR\w*"):
                 print("no match:", filename)
 
 
+def rename_PANO(folder=r""):
+    inpath = os.getcwd()
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not includeSubdirs and not inpath == dirpath: continue
+        if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
+        print("Folder: " + dirpath)
+        for filename in filenames:
+            if not "PANO" in filename: continue
+            name, ext = filename.rsplit('.')
+            pano_newname = "PANO"
+            filename_dict = split_filename(name)
+            pano_modi = ["blended", "fused", "hdr"]
+            for pano_modus in pano_modi:
+                if pano_modus in filename_dict["tags"]:
+                    pano_newname += "-" + pano_modus
+                    filename_dict["tags"].remove(pano_modus)
+
+            filename_dict["scene"].remove("PANO")
+            filename_dict["process"] = [pano_newname] + filename_dict["process"]
+            filename_new_list = filename_dict["main"] + filename_dict["scene"] + \
+                                filename_dict["process"] + filename_dict["tags"]
+            filename_new = "_".join(filename_new_list) + "." + ext
+            renameInPlace(dirpath, filename, filename_new)
 
 
 def rename_temp_back():
