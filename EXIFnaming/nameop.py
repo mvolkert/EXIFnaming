@@ -162,22 +162,22 @@ def _rename_match(dirpath: str, filename: str, mode: str, match: Optional[Match[
     renameInPlace(dirpath, filename, filename_new)
 
 
-def rename_to_front(mode="PANO", folder=""):
+def rename_to_front(mode="PANO", folder=r"HDR\w*"):
     """
     move the underscore entry matching the mode to the front after counter
     :param mode: name of underscore entry
     :param folder: only files in folders of this name are renamed
     """
-    panoOut = r"^([-\w]+_[0-9]+[A-Z0-9]*)_(.*)_(%s[-0-9]*)(.*)"%mode
+    panoOut = r"^([-\w]+_[0-9]+[A-Z0-9]*)_(.*)_(%s[-0-9]*)(.*)" % mode
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: continue
-        if not folder == "" and not folder == os.path.basename(dirpath): continue
+        if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
         print("Folder: " + dirpath)
         for filename in filenames:
             match = re.search(panoOut, filename)
             if match:
-                filename_new = match.group(1) + "_" + match.group(3)+ "_" + match.group(2) + match.group(4)
+                filename_new = match.group(1) + "_" + match.group(3) + "_" + match.group(2) + match.group(4)
                 if os.path.isfile(os.path.join(dirpath, filename_new)):
                     print("file already exists:", filename_new)
                 else:
