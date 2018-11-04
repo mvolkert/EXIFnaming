@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 import numpy as np
 
+from EXIFnaming.helpers.decode import read_exiftag
 from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer
 from EXIFnaming.helpers.tags import scene_to_tag, is_scene_abbreviation, is_process_tag, process_to_tag
 
@@ -57,7 +58,7 @@ class Location:
 class FileMetaData:
     regex = re.compile(r"^([-\w]+)_([0-9]+)[A-Z0-9]*")
     restriction_keys = ['directory', 'name_main', 'first', 'last', 'name_part']
-    tag_setting_keys = ['title', 'tags', 'rating', 'description']
+    tag_setting_keys = ['title', 'tags', 'rating', 'description', 'gps']
 
     def __init__(self, directory, filename):
         self.directory = directory
@@ -71,6 +72,8 @@ class FileMetaData:
         self.description_tree = OrderedDict()
         self.location = Location()
         self.rating = None
+        self.gps = ()
+        self.tagDict = None
         match = FileMetaData.regex.search(filename)
         if match:
             self.main_name = match.group(1)
@@ -94,6 +97,7 @@ class FileMetaData:
 
         if good_key('title'): self.title = data['title']
         if good_key('tags'): self.tags += [tag for tag in data['tags'].split(', ') if tag]
+        if good_key('gps'): self.gps = data['gps'].split(', ')
         if good_key('rating'): self.rating = data['rating']
         if good_key('description'): self.descriptions.append(data['description'])
         self.location.update(data)
@@ -163,6 +167,12 @@ class FileMetaData:
                    'Keywords': self.tags, 'Subject': list(self.tags),
                    'ImageDescription': full_description, 'XPComment': full_description, 'Description': full_description,
                    'Identifier': self.id, 'Rating': self.rating, 'Artist': photographer}
+
+        if len(self.gps) == 2:
+            tagDict["GPSLatitudeRef"] = self.gps[0]
+            tagDict["GPSLatitude"] = self.gps[0]
+            tagDict["GPSLongitudeRef"] = self.gps[1]
+            tagDict["GPSLongitude"] = self.gps[1]
 
         add_dict(tagDict, self.location.to_tag_dict())
         tagDict['Keywords'].extend(self.tags_p)
