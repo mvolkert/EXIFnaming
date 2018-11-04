@@ -196,20 +196,59 @@ def rename_PANO(folder=r""):
         for filename in filenames:
             if not "PANO" in filename: continue
             name, ext = filename.rsplit('.')
-            pano_newname = "PANO"
             filename_dict = split_filename(name)
-            pano_modi = ["blended", "fused", "hdr"]
-            for pano_modus in pano_modi:
-                if pano_modus in filename_dict["tags"]:
-                    pano_newname += "-" + pano_modus
-                    filename_dict["tags"].remove(pano_modus)
-
-            filename_dict["scene"].remove("PANO")
-            filename_dict["process"] = [pano_newname] + filename_dict["process"]
-            filename_new_list = filename_dict["main"] + filename_dict["scene"] + \
-                                filename_dict["process"] + filename_dict["tags"]
-            filename_new = "_".join(filename_new_list) + "." + ext
+            _sanitize_pano(filename_dict)
+            filename_new = _get_new_filename_from_dict(filename_dict) + "." + ext
             renameInPlace(dirpath, filename, filename_new)
+
+
+def sanitize_filename(folder=r""):
+    inpath = os.getcwd()
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not includeSubdirs and not inpath == dirpath: continue
+        if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
+        print("Folder: " + dirpath)
+        for filename in filenames:
+            name, ext = filename.rsplit('.')
+            filename_dict = split_filename(name)
+            _sanitize_process_counter(filename_dict)
+            _sanitize_pano(filename_dict)
+            filename_new = _get_new_filename_from_dict(filename_dict) + "." + ext
+            renameInPlace(dirpath, filename, filename_new)
+
+
+def _sanitize_pano(filename_dict: dict):
+    matches = [tag for tag in filename_dict["process"] if tag.startswith("PANO")]
+    if not matches: return
+    pano_name = matches[0]
+    pano_split = pano_name.split("$")
+    pano_newname = pano_split[0]
+    pano_modi = ["blended", "fused", "hdr"]
+    for pano_modus in pano_modi:
+        if pano_modus in filename_dict["tags"]:
+            pano_newname += "-" + pano_modus
+            filename_dict["tags"].remove(pano_modus)
+    if len(pano_split) > 0:
+        pano_newname = "$".join([pano_newname] + pano_split[1:])
+    filename_dict["process"].remove(matches[0])
+    filename_dict["process"] = [pano_newname] + filename_dict["process"]
+
+
+def _sanitize_process_counter(filename_dict: dict):
+    processes_new = []
+    print(filename_dict)
+    for process_mode in filename_dict["process"]:
+        match = re.search(r'([^$\d]+)(\d[^$]*)', process_mode)
+        if match:
+            process_mode = match.group(1) + "$" + match.group(2)
+        processes_new.append(process_mode)
+    filename_dict["process"] = processes_new
+
+
+def _get_new_filename_from_dict(filename_dict: dict):
+    filename_new_list = filename_dict["main"] + filename_dict["scene"] + \
+                        filename_dict["process"] + filename_dict["tags"]
+    return "_".join(filename_new_list)
 
 
 def rename_temp_back():
