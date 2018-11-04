@@ -108,7 +108,6 @@ class FileMetaData:
         if good_key('rating'): self.rating = data['rating']
         if good_key('description'): self.descriptions.append(data['description'])
         self.location.update(data)
-        set_path(self.description_tree, ["Location"], str(self.location))
 
     def update_processing(self, data: dict):
         def set_keys(path: [], keys: list):
@@ -165,6 +164,8 @@ class FileMetaData:
         if not self.title:
             self.title = ", ".join(self.tags + self.tags_p)
 
+        set_path(self.description_tree, ["Keywords"], str(self.tags))
+        set_path(self.description_tree, ["Location"], str(self.location))
         self.description_tree = OrderedDict(sorted(self.description_tree.items()))
         description_formated = format_as_tree(self.description_tree)
         if description_formated:
