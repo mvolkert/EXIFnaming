@@ -188,6 +188,7 @@ def read_csv(main_csv: str, processing_csv="", folder=r""):
         for filename in filterFiles(filenames, file_types):
             meta_data = FileMetaData(dirpath, filename)
             meta_data.import_filename()
+            meta_data.import_exif()
 
             csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
             with open(main_csv) as csvfile:

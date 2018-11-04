@@ -88,6 +88,20 @@ class FileMetaData:
     def import_fullname(self, startdir: str):
         self.id, self.tags = fullname_to_tag(self.directory, self.name, startdir)
 
+    def import_exif(self):
+        self.tagDict = read_exiftag(self.directory, self.filename)
+        self.location.update(self.tagDict)
+        if "User Comment" in self.tagDict:
+            user_comment = self.tagDict["User Comment"]
+            user_comment_split = user_comment.split("..")
+            process_dict = {}
+            for entry in user_comment_split:
+                if not ": " in entry: continue
+                key, value = entry.split(": ", 1)
+                process_dict[key] = value
+            print(process_dict)
+            self.update_processing({"PANO-program-comment": process_dict})
+
     def update(self, data: dict):
         def good_key(key: str):
             return key in data and data[key]
