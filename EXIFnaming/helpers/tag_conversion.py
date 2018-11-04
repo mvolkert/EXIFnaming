@@ -4,9 +4,9 @@ from collections import OrderedDict
 
 import numpy as np
 
+from EXIFnaming.helpers import constants as c
 from EXIFnaming.helpers.decode import read_exiftag
 from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer
-from EXIFnaming.helpers.tags import scene_to_tag, is_scene_abbreviation, is_process_tag, process_to_tag
 
 
 class Location:
@@ -304,3 +304,32 @@ def fullname_to_tag(dirpath: str, filename: str, startdir=""):
     image_id = filename
     image_tags = dirpath_split + [filename_prim]
     return image_id, image_tags
+
+
+def scene_to_tag(scene: str) -> list:
+    out = [scene]
+    scene_striped = scene.strip('123456789').split('$')[0]
+    if not scene in c.RecModes:
+        out.append(scene_striped.lower())
+    return out
+
+
+def process_to_tag(scene: str) -> list:
+    scene_striped = scene.strip('123456789').split('$')[0]
+    scene_main = scene_striped.split('-')[0]
+    out = [scene_striped]
+    if scene_main in process_to_tag.map:
+        out.append(process_to_tag.map[scene_main])
+    return out
+
+process_to_tag.map = {"HDR": "HDR", "HDRT": "HDR", "PANO": "Panorama"}
+
+
+def is_scene_abbreviation(name: str):
+    return name in c.SceneShort.values() or name in c.KreativeShort.values() or name in c.RecModes
+
+
+def is_process_tag(name: str):
+    scene_striped = name.strip('123456789').split('$')[0]
+    scene_main = scene_striped.split('-')[0]
+    return scene_main in process_to_tag.map.keys()

@@ -11,8 +11,8 @@ from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinu
     write_exiftag
 from EXIFnaming.helpers.fileop import filterFiles
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
-from EXIFnaming.helpers.settings import includeSubdirs, file_types, photographer
-from EXIFnaming.helpers.tag_wrappers import FileMetaData, Location, add_dict, fullname_to_tag, filename_to_tag
+from EXIFnaming.helpers.settings import includeSubdirs, file_types
+from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict
 from EXIFnaming.helpers.tags import *
 
 

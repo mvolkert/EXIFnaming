@@ -14,7 +14,7 @@ from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, mo
     moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.settings import includeSubdirs
-from EXIFnaming.helpers.tag_wrappers import split_filename
+from EXIFnaming.helpers.tag_conversion import split_filename
 
 
 def filter_series():
