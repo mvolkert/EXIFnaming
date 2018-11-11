@@ -329,15 +329,21 @@ def scene_to_tag(scene: str) -> list:
     return out
 
 
-def process_to_tag(scene: str) -> list:
-    scene_striped = scene.strip('123456789').split('$')[0]
-    scene_main = scene_striped.split('-')[0]
-    out = [scene_striped]
-    if scene_main in process_to_tag.map:
-        out.append(process_to_tag.map[scene_main])
+def process_to_tag(process: str) -> list:
+    process_striped = process.strip('123456789').split('$')[0]
+    process_main = process_striped
+    process_sub = ""
+    if '-' in process_main:
+        process_main, process_sub = process_striped.split('-', 1)
+    out = [process_striped]
+    if process_main in process_to_tag.map:
+        out.extend(process_to_tag.map[process_main])
+        if process_main == "HDR" and "-" in process_sub:
+            out.append("Tone Mapping")
     return out
 
-process_to_tag.map = {"HDR": "HDR", "HDRT": "HDR", "PANO": "Panorama"}
+
+process_to_tag.map = {"HDR": ["HDR"], "HDRT": ["HDR", "Tone Mapping"], "PANO": ["Panorama"]}
 
 
 def is_scene_abbreviation(name: str):
