@@ -58,6 +58,7 @@ class Location:
 class FileMetaData:
     restriction_keys = ['directory', 'name_main', 'first', 'last', 'name_part']
     tag_setting_keys = ['title', 'tags', 'rating', 'description', 'gps']
+    linesep = " | "
 
     def __init__(self, directory, filename):
         self.directory = directory
@@ -85,15 +86,22 @@ class FileMetaData:
     def import_exif(self):
         self.tagDict = read_exiftag(self.directory, self.filename)
         self.location.update(self.tagDict)
+
         if "User Comment" in self.tagDict:
             user_comment = self.tagDict["User Comment"]
             user_comment_split = user_comment.split("..")
+            user_comment_split = [string for line in user_comment_split for string in
+                                  line.split(FileMetaData.linesep + ".")]
             process_dict = {}
+            pano_keys = ["Projection", "FOV", "Ev"]
             for entry in user_comment_split:
                 if not ": " in entry: continue
+                entry = entry.strip(FileMetaData.linesep)
                 key, value = entry.split(": ", 1)
+                if key in pano_keys:
+                    key = "PANO-" + key
                 process_dict[key] = value
-            self.update_processing({"PANO-program-comment": process_dict})
+            self.update_processing(process_dict)
 
     def update(self, data: dict):
         def good_key(key: str):
@@ -110,37 +118,19 @@ class FileMetaData:
         self.location.update(data)
 
     def update_processing(self, data: dict):
-        def set_keys(path: [], keys: list):
-            for key in keys:
-                set_path(self.description_tree, path + [key], data[key])
-
         def good_key(key: str):
             return key in data and data[key]
-
-        def filter_keys(key_part: str):
-            return [key for key in data if key_part in key and data[key]]
 
         if not self._passes_restrictions(data):
             return
 
         if good_key('tags'): self.tags_p += [tag for tag in data['tags'].split(', ') if tag]
         if good_key('rating'): self.rating = data['rating']
-        hdr_keys = filter_keys("HDR")
-        tm_keys = filter_keys("TM")
-        pano_keys = filter_keys("PANO")
-        known_keys = FileMetaData.restriction_keys + FileMetaData.tag_setting_keys + hdr_keys + tm_keys + pano_keys
+
+        known_keys = FileMetaData.restriction_keys + FileMetaData.tag_setting_keys
         other_keys = [key for key in data if not key in known_keys and data[key]]
-        if hdr_keys:
-            set_path(self.description_tree, ["Processing", "HDR", "HDR-program"], hdr_program)
-            set_keys(["Processing", "HDR", "HDR-setting"], hdr_keys)
-        if tm_keys:
-            set_path(self.description_tree, ["Processing", "HDR", "HDR-program"], hdr_program)
-            set_keys(["Processing", "HDR", "HDR-Tonemapping"], tm_keys)
-        if pano_keys:
-            set_path(self.description_tree, ["Processing", "Panorama", "PANO-program"], panorama_program)
-            set_keys(["Processing", "Panorama"], pano_keys)
-        if other_keys:
-            set_keys(["Processing", "misc"], other_keys)
+        for key in other_keys:
+            self.description_tree[key] = data[key]
 
     def _passes_restrictions(self, data):
         def not_match_entry(key: str, func):
@@ -160,21 +150,33 @@ class FileMetaData:
         self.has_changed = True
         return True
 
+    def _write_description_tree(self):
+        if any(["HDR" in key or "TM" in key for key in self.description_tree]):
+            self.description_tree["HDR-program"] = hdr_program
+        if any(["PANO" in key for key in self.description_tree]):
+            self.description_tree["PANO-program"] = panorama_program
+        description_tree = OrderedDict()
+        process_order = ["HDR", "TM", "PANO"]
+        for key_part in process_order:
+            process_subkeys = [key for key in self.description_tree if key_part in key]
+            for key in process_subkeys:
+                description_tree[key] = self.description_tree[key]
+        description_formated = format_plain(description_tree)
+        self.descriptions.append(description_formated)
+
     def to_tag_dict(self) -> dict:
         if not self.title:
             self.title = ", ".join(self.tags + self.tags_p)
 
-        set_path(self.description_tree, ["Keywords"], str(self.tags))
-        set_path(self.description_tree, ["Location"], str(self.location))
-        self.description_tree = OrderedDict(sorted(self.description_tree.items()))
-        description_formated = format_as_tree(self.description_tree)
-        if description_formated:
-            self.descriptions.append(description_formated)
-        full_description = " \n\n".join(self.descriptions)
+        tags = [", ".join(self.tags), str(self.location), ", ".join(self.tags_p)]
+        self.descriptions.append((FileMetaData.linesep + "\n").join(tags))
+        if len(self.description_tree.keys()) > 0:
+            self._write_description_tree()
+        full_description = (FileMetaData.linesep + "\n\n").join(self.descriptions)
 
         tagDict = {'Label': self.name, 'Title': self.title,
                    'Keywords': self.tags, 'Subject': list(self.tags),
-                   'Description': full_description, 'XPComment': full_description,
+                   'Description': full_description, 'UserComment': full_description,
                    'Identifier': self.id, 'Rating': self.rating, 'Artist': photographer}
 
         if len(self.gps) == 2:
@@ -221,7 +223,20 @@ def format_as_tree(data: dict) -> str:
     return out
 
 
+def sort_by_list(data: dict, order: list) -> OrderedDict:
+    index_map = {v: i for i, v in enumerate(order)}
+    return OrderedDict(sorted(data.items(), key=lambda pair: index_map[pair[0]]))
+
+
 def format_plain(data: dict) -> str:
+    out = ""
+    for key in data:
+        out += key + ": " + data[key] + FileMetaData.linesep + "\n"
+    out = out[:-2]
+    return out
+
+
+def format_tree_plain(data: dict) -> str:
     out = ""
     for key in data:
         if not data[key]:
