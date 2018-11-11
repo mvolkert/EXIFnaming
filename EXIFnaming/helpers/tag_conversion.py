@@ -166,7 +166,7 @@ class FileMetaData:
         if any(["PANO" in key for key in self.description_tree]):
             self.description_tree["PANO-program"] = panorama_program
         description_tree = OrderedDict()
-        process_order = ["HDR", "TM", "PANO"]
+        process_order = ["HDR", "TM", "PANO", ""]
         for key_part in process_order:
             process_subkeys = [key for key in self.description_tree if key_part in key]
             for key in process_subkeys:

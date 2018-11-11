@@ -37,6 +37,7 @@ def move(filename, oldpath, newpath):
 
 
 def renameInPlace(dirpath: str, oldFilename: str, newFilename: str):
+    if oldFilename == newFilename: return
     rename_join((dirpath, oldFilename), (dirpath, newFilename))
 
 
