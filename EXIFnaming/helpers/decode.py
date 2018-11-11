@@ -4,6 +4,8 @@ import subprocess
 import sys
 from collections import OrderedDict
 
+from sortedcollections import OrderedSet
+
 from EXIFnaming.helpers.constants import unknownTags
 from EXIFnaming.helpers.fileop import count_files, count_files_in
 from EXIFnaming.helpers.measuring_tools import Clock
@@ -56,7 +58,7 @@ def write_exiftags(tagDict: dict, inpath=os.getcwd(), options=()):
     clock.finish()
 
 
-def write_exiftag(tagDict: dict, inpath=os.getcwd(), filename="", options=()):
+def write_exiftag(tagDict: dict, inpath=os.getcwd(), filename="", options=("-ImageDescription=", "-XPComment=")):
     all_options = list(options) + tag_dict_to_options(tagDict)
     call_exiftool(inpath, filename, all_options, True)
 
@@ -66,7 +68,8 @@ def tag_dict_to_options(data: dict):
     for key in data:
         if not data[key]: continue
         if type(data[key]) == list:
-            for value in data[key]:
+            data_set = OrderedSet(data[key])
+            for value in data_set:
                 if value:
                     options.append("-%s=%s" % (key, value))
         else:

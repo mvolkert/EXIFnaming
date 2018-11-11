@@ -1,3 +1,4 @@
+sortedcollections
 skimage
 cv2
 numpy
