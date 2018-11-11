@@ -154,7 +154,7 @@ def geotag_single(lat: float, lon: float):
     call_exiftool(inpath, "*", options=options)
 
 
-def read_csv(main_csv="", processing_csv="", folder=r"",
+def read_csv(csv_filenames=(), folder=r"", csv_folder = ".info",
              import_filename=True, import_exif=True, only_when_changed=True):
     """
     csv files are used for setting tags
@@ -168,18 +168,19 @@ def read_csv(main_csv="", processing_csv="", folder=r"",
         'first': int counter min
         'last': int counter max
         'name_part': checks if value is part of filename
-    :param main_csv:
-        can set follow exif information: ['title', 'tags', 'tags2', 'rating', 'description', 'gps']
+    :param csv_filenames:
+        can set follow exif information: ['title', 'tags', 'tags2', 'tags3', 'rating', 'description', 'gps']
             tags are expected to be separated by ', '
             rating is expected to be in interval [0,5]
             gps is expected to be 'lat, long' in decimal notation
         can set Location via ['Country', 'State', 'City', 'Location']
-    :param processing_csv:
-        sets structured description for image processing like HDR and Panorama
+
+        sets also structured description for image processing like HDR and Panorama
         columns starting with
             'HDR' are evaluated as HDR description
             'TM' are evaluated as HDR Tone Mapping description
             'PANO' are evaluated as Panorama description
+    :param csv_folder: location of csv files
     :param folder: process only folders matching this regex
     :param import_filename: whether to extract tags from filename
     :param import_exif: whether to extract tags from exif
@@ -188,6 +189,8 @@ def read_csv(main_csv="", processing_csv="", folder=r"",
     """
     inpath = os.getcwd()
     clock = Clock()
+    csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
+    csv_filenames = [os.path.join(csv_folder, csv_filename + ".csv") for csv_filename in csv_filenames]
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if folder and not re.search(folder, dirpath): continue
         print(dirpath)
@@ -196,18 +199,11 @@ def read_csv(main_csv="", processing_csv="", folder=r"",
             if import_filename: meta_data.import_filename()
             if import_exif: meta_data.import_exif()
 
-            if main_csv:
-                csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
-                with open(main_csv) as csvfile:
+            for csv_filename in csv_filenames:
+                with open(csv_filename) as csvfile:
                     spamreader = csv.DictReader(csvfile, dialect='semicolon')
                     for row in spamreader:
                         meta_data.update(row)
-
-            if processing_csv:
-                with open(processing_csv) as csvfile:
-                    spamreader = csv.DictReader(csvfile, dialect='semicolon')
-                    for row in spamreader:
-                        meta_data.update_processing(row)
 
             if not only_when_changed or meta_data.has_changed:
                 write_exiftag(meta_data.to_tag_dict(), meta_data.directory, meta_data.filename)

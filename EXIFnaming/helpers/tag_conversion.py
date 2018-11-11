@@ -57,7 +57,8 @@ class Location:
 
 class FileMetaData:
     restriction_keys = ['directory', 'name_main', 'first', 'last', 'name_part']
-    tag_setting_keys = ['title', 'tags', 'tags2', 'rating', 'description', 'gps']
+    tag_setting_keys = ['title', 'tags', 'tags2', 'tags3', 'rating', 'description', 'gps']
+    kown_keys = restriction_keys + tag_setting_keys + Location.location_keys
     linesep = " | "
     secondary_regex = re.compile(r"_[0-9]+[A-Z]+\d*[2-9]")
 
@@ -69,7 +70,7 @@ class FileMetaData:
         self.title = ""
         self.tags = []
         self.tags2 = []
-        self.tags_p = []
+        self.tags3 = []
         self.descriptions = []
         self.description_tree = OrderedDict()
         self.location = Location()
@@ -80,12 +81,17 @@ class FileMetaData:
         self.has_changed = False
 
     def import_filename(self):
-        self.id, self.tags, self.tags_p = filename_to_tag(self.name)
+        filename_dict = split_filename(self.name)
+        self.id, self.tags, self.tags2 = filedict_to_tag(filename_dict)
         match = FileMetaData.secondary_regex.search(self.id)
         if match:
             self.rating = 2
         else:
             self.rating = 3
+        for process in filename_dict["process"]:
+            des = process_to_description(process)
+            add_dict(self.description_tree, des)
+
 
     def import_fullname(self, startdir: str):
         self.id, self.tags = fullname_to_tag(self.directory, self.name, startdir)
@@ -101,16 +107,16 @@ class FileMetaData:
             user_comment_split = user_comment.split("..")
             user_comment_split = [string for line in user_comment_split for string in
                                   line.split(FileMetaData.linesep + ".")]
-            process_dict = {}
             pano_keys = ["Projection", "FOV", "Ev"]
             for entry in user_comment_split:
                 if not ": " in entry: continue
                 entry = entry.strip(FileMetaData.linesep)
                 key, value = entry.split(": ", 1)
+                if not key or not value: continue
+                if key in FileMetaData.kown_keys: continue
                 if key in pano_keys:
                     key = "PANO-" + key
-                process_dict[key] = value
-            self.update_processing(process_dict)
+                self.description_tree[key] = value
 
     def update(self, data: dict):
         def good_key(key: str):
@@ -121,25 +127,15 @@ class FileMetaData:
 
         if good_key('title'): self.title = data['title']
         if good_key('tags'): self.tags += [tag for tag in data['tags'].split(', ') if tag]
-        if good_key('tags2'): self.tags += [tag for tag in data['tags2'].split(', ') if tag]
+        if good_key('tags2'): self.tags2 += [tag for tag in data['tags2'].split(', ') if tag]
+        if good_key('tags3'): self.tags3 += [tag for tag in data['tags3'].split(', ') if tag]
         if good_key('gps'): self.gps = data['gps'].split(', ')
         if good_key('rating'): self.rating = data['rating']
         if good_key('description'): self.descriptions.append(data['description'])
         self.location.update(data)
 
-    def update_processing(self, data: dict):
-        def good_key(key: str):
-            return key in data and data[key]
-
-        if not self._passes_restrictions(data):
-            return
-
-        if good_key('tags'): self.tags_p += [tag for tag in data['tags'].split(', ') if tag]
-        if good_key('rating'): self.rating = data['rating']
-
-        known_keys = FileMetaData.restriction_keys + FileMetaData.tag_setting_keys
-        other_keys = [key for key in data if not key in known_keys and data[key]]
-        for key in other_keys:
+        for key in data:
+            if not data[key] or key in FileMetaData.kown_keys: continue
             self.description_tree[key] = data[key]
 
     def _passes_restrictions(self, data):
@@ -176,9 +172,9 @@ class FileMetaData:
 
     def to_tag_dict(self) -> dict:
         if not self.title:
-            self.title = ", ".join(self.tags + self.tags_p + self.tags2)
+            self.title = ", ".join(self.tags + self.tags2)
 
-        tags = [", ".join(self.tags), str(self.location), ", ".join(self.tags_p)]
+        tags = [", ".join(self.tags), str(self.location), ", ".join(self.tags2)]
         self.descriptions.append((FileMetaData.linesep + "\n").join(tags))
         if len(self.description_tree.keys()) > 0:
             self._write_description_tree()
@@ -196,8 +192,8 @@ class FileMetaData:
             tagDict["GPSLongitude"] = self.gps[1]
 
         add_dict(tagDict, self.location.to_tag_dict())
-        tagDict['Keywords'].extend(self.tags_p + self.tags2)
-        tagDict['Subject'].extend(self.tags_p + self.tags2)
+        tagDict['Keywords'].extend(self.tags2 + self.tags3)
+        tagDict['Subject'].extend(self.tags2 + self.tags3)
         return tagDict
 
     def __str__(self):
@@ -273,7 +269,9 @@ def set_path(data: dict, path, value=None):
 
 
 def filename_to_tag(filename: str):
-    filename_dict = split_filename(filename)
+    return filedict_to_tag(split_filename(filename))
+
+def filedict_to_tag(filename_dict: dict):
     image_id = "_".join(filename_dict["main"] + filename_dict["p_tags"])
     image_tags = filename_dict["tags"]
     image_tags_p = [tag2 for tag in filename_dict["scene"] for tag2 in scene_to_tag(tag)]
@@ -364,3 +362,20 @@ def is_process_tag(name: str):
     scene_striped = name.strip('123456789').split('$')[0]
     scene_main = scene_striped.split('-')[0]
     return scene_main in process_to_tag.map.keys()
+
+def process_to_description(process: str) -> dict:
+    description = {}
+    if not "HDR" in process: return description
+    process_striped = process.strip('123456789').split('$')[0]
+    process_split = process_striped.split('-')
+    if len(process_split)>1:
+        if process_split[1] in c.hdr_algorithm:
+            description["HDR-Algorithm"] = c.hdr_algorithm[process_split[1]]
+        else:
+            print(process_split[1], "not in hdr_algorithm")
+    if len(process_split)>2:
+        if process_split[2] in c.tm_preset:
+            description["TM-Preset"] = c.tm_preset[process_split[2]]
+        else:
+            print(process_split[1], "not in tm_preset")
+    return description
