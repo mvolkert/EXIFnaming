@@ -11,7 +11,7 @@ import numpy as np
 
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
-    moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo
+    moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.settings import includeSubdirs
 from EXIFnaming.helpers.tag_conversion import split_filename
@@ -195,7 +195,7 @@ def rename_PANO(folder=r""):
         print("Folder: " + dirpath)
         for filename in filenames:
             if not "PANO" in filename: continue
-            name, ext = filename.rsplit('.')
+            name, ext = filename.rsplit('.', 1)
             filename_dict = split_filename(name)
             _sanitize_pano(filename_dict)
             filename_new = _get_new_filename_from_dict(filename_dict) + "." + ext
@@ -209,7 +209,7 @@ def sanitize_filename(folder=r""):
         if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
         print("Folder: " + dirpath)
         for filename in filenames:
-            name, ext = filename.rsplit('.')
+            name, ext = filename.rsplit('.', 1)
             filename_dict = split_filename(name)
             _sanitize_process_counter(filename_dict)
             _sanitize_pano(filename_dict)
@@ -266,7 +266,7 @@ def rename_temp_back():
 
 def rename_back(timestring="", fileext=".JPG"):
     """
-    rename back using backup in saves; change to directory you want o rename back
+    rename back using backup in saves; change to directory you want to rename back
     :param timestring: time of backup
     :param fileext: file extension
     :return:

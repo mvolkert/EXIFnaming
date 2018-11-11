@@ -36,7 +36,7 @@ def move(filename, oldpath, newpath):
     rename_join((oldpath, filename), (newpath, filename))
 
 
-def renameInPlace(dirpath, oldFilename, newFilename):
+def renameInPlace(dirpath: str, oldFilename: str, newFilename: str):
     rename_join((dirpath, oldFilename), (dirpath, newFilename))
 
 
@@ -54,7 +54,7 @@ def getSavesDir():
     return path
 
 
-def writeToFile(path, content):
+def writeToFile(path: str, content: str):
     ofile = open(path, 'a')
     ofile.write(content)
     ofile.close()
@@ -122,6 +122,7 @@ def moveSeries(dirpath: str, filenames: list, series_type="S") -> list:
             other_filenames.append(filename)
     return other_filenames
 
+
 def move_media(dirpath: str, filenames: list, name_search=".MP4", dest="mp4") -> list:
     other_filenames = []
     for filename in filenames:
@@ -132,7 +133,7 @@ def move_media(dirpath: str, filenames: list, name_search=".MP4", dest="mp4") ->
     return other_filenames
 
 
-def copyFilesTo(files: list, path: str, prompt = True):
+def copyFilesTo(files: list, path: str, prompt=True):
     print(len(files), "matches are to be copied to", path)
     if prompt: askToContinue()
     os.makedirs(path, exist_ok=True)
@@ -160,10 +161,12 @@ def count_files_in(inpath: str, file_extensions: tuple, skipdirs=()):
 
 
 def count_files(filenames: [], file_extensions: tuple):
-    return len(filterFiles(filenames,file_extensions))
+    return len(filterFiles(filenames, file_extensions))
+
 
 def filterFiles(filenames: [], file_extensions: tuple):
     return [filename for filename in filenames if not file_extensions or file_has_ext(filename, file_extensions)]
+
 
 def file_has_ext(filename: str, file_extensions: tuple, ignore_case=True) -> bool:
     for fileext in file_extensions:
@@ -173,4 +176,3 @@ def file_has_ext(filename: str, file_extensions: tuple, ignore_case=True) -> boo
         if fileext == filename[filename.rfind("."):]:
             return True
     return False
-
