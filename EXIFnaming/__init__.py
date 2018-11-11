@@ -2,7 +2,7 @@
 """
 collection of Tag operations
 works with: www.sno.phy.queensu.ca/~phil/exiftool/
-exiftool.exe has to be in the same folder
+exiftool.exe has to be in the helpers folder
 """
 
 __author__ = "Marco Volkert"
@@ -16,6 +16,6 @@ from EXIFnaming.readexif import print_info, rename_pm, rename, order, searchby_e
 from EXIFnaming.nameop import filter_series, rename_back, filter_primary, rename_HDR, \
     rename_temp_back, folders_to_main, copy_subdirectories
 from EXIFnaming.picture import detectBlurry, detectSimilar
-from EXIFnaming.setexif import shift_time, add_location, geotag, name_to_exif, fake_date
+from EXIFnaming.setexif import shift_time, add_location, geotag, name_to_exif, fake_date, read_csv
 from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.decode import read_exiftags, write_exiftags
