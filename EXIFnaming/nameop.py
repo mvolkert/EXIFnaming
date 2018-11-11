@@ -287,3 +287,16 @@ def rename_back(timestring="", fileext=".JPG"):
         Tagdict["File Name new"][i], Tagdict["File Name"][i] = Tagdict["File Name"][i], Tagdict["File Name new"][i]
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
     np.savez_compressed(os.path.join(dirname, "Tags" + fileext + timestring), Tagdict=Tagdict)
+
+
+def extract_tags():
+    inpath = os.getcwd()
+    tag_set = set()
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not includeSubdirs and not inpath == dirpath: continue
+        print("Folder: " + dirpath)
+        for filename in filenames:
+            name, ext = filename.rsplit('.', 1)
+            filename_dict = split_filename(name)
+            tag_set.update(filename_dict["tags"])
+    writeToFile("tags.txt", "\n".join(tag_set))
