@@ -57,7 +57,7 @@ class Location:
 
 class FileMetaData:
     restriction_keys = ['directory', 'name_main', 'first', 'last', 'name_part']
-    tag_setting_keys = ['title', 'tags', 'rating', 'description', 'gps']
+    tag_setting_keys = ['title', 'tags', 'tags2', 'rating', 'description', 'gps']
     linesep = " | "
 
     def __init__(self, directory, filename):
@@ -67,6 +67,7 @@ class FileMetaData:
         self.id = self.filename
         self.title = ""
         self.tags = []
+        self.tags2 = []
         self.tags_p = []
         self.descriptions = []
         self.description_tree = OrderedDict()
@@ -112,6 +113,7 @@ class FileMetaData:
 
         if good_key('title'): self.title = data['title']
         if good_key('tags'): self.tags += [tag for tag in data['tags'].split(', ') if tag]
+        if good_key('tags2'): self.tags += [tag for tag in data['tags2'].split(', ') if tag]
         if good_key('gps'): self.gps = data['gps'].split(', ')
         if good_key('rating'): self.rating = data['rating']
         if good_key('description'): self.descriptions.append(data['description'])
@@ -166,7 +168,7 @@ class FileMetaData:
 
     def to_tag_dict(self) -> dict:
         if not self.title:
-            self.title = ", ".join(self.tags + self.tags_p)
+            self.title = ", ".join(self.tags + self.tags_p + self.tags2)
 
         tags = [", ".join(self.tags), str(self.location), ", ".join(self.tags_p)]
         self.descriptions.append((FileMetaData.linesep + "\n").join(tags))
@@ -186,8 +188,8 @@ class FileMetaData:
             tagDict["GPSLongitude"] = self.gps[1]
 
         add_dict(tagDict, self.location.to_tag_dict())
-        tagDict['Keywords'].extend(self.tags_p)
-        tagDict['Subject'].extend(self.tags_p)
+        tagDict['Keywords'].extend(self.tags_p + self.tags2)
+        tagDict['Subject'].extend(self.tags_p + self.tags2)
         return tagDict
 
     def __str__(self):

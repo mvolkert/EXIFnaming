@@ -169,7 +169,7 @@ def read_csv(main_csv="", processing_csv="", folder=r"",
         'last': int counter max
         'name_part': checks if value is part of filename
     :param main_csv:
-        can set follow exif information: ['title', 'tags', 'rating', 'description', 'gps']
+        can set follow exif information: ['title', 'tags', 'tags2', 'rating', 'description', 'gps']
             tags are expected to be separated by ', '
             rating is expected to be in interval [0,5]
             gps is expected to be 'lat, long' in decimal notation
