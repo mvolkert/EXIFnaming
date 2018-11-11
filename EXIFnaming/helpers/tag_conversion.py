@@ -59,6 +59,7 @@ class FileMetaData:
     restriction_keys = ['directory', 'name_main', 'first', 'last', 'name_part']
     tag_setting_keys = ['title', 'tags', 'tags2', 'rating', 'description', 'gps']
     linesep = " | "
+    secondary_regex = re.compile(r"_[0-9]+[A-Z]+\d*[2-9]")
 
     def __init__(self, directory, filename):
         self.directory = directory
@@ -80,6 +81,11 @@ class FileMetaData:
 
     def import_filename(self):
         self.id, self.tags, self.tags_p = filename_to_tag(self.name)
+        match = FileMetaData.secondary_regex.search(self.id)
+        if match:
+            self.rating = 2
+        else:
+            self.rating = 3
 
     def import_fullname(self, startdir: str):
         self.id, self.tags = fullname_to_tag(self.directory, self.name, startdir)
@@ -87,6 +93,8 @@ class FileMetaData:
     def import_exif(self):
         self.tagDict = read_exiftag(self.directory, self.filename)
         self.location.update(self.tagDict)
+        if "Rating" in self.tagDict and int(self.tagDict["Rating"]) > 0:
+            self.rating = self.tagDict["Rating"]
 
         if "User Comment" in self.tagDict:
             user_comment = self.tagDict["User Comment"]
