@@ -36,6 +36,14 @@ class Location:
             if key in data and data[key][i]:
                 self.location[key] = data[key][i]
 
+    def get_minor(self) -> list:
+        out = []
+        minor_keys = ["City", "Location"]
+        for key in minor_keys:
+            if not key in self.location: continue
+            out.append(self.location[key])
+        return out
+
     def to_tag_dict(self) -> dict:
         tag_dict = {}
         if self.location.keys():
@@ -172,7 +180,7 @@ class FileMetaData:
 
     def to_tag_dict(self) -> dict:
         if not self.title:
-            self.title = ", ".join(self.tags + self.tags2)
+            self.title = ", ".join(self.location.get_minor() + self.tags)
 
         tags = [", ".join(self.tags), str(self.location), ", ".join(self.tags2)]
         self.descriptions.append((FileMetaData.linesep + "\n").join(tags))
