@@ -9,7 +9,7 @@ import re
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
     write_exiftag
-from EXIFnaming.helpers.fileop import filterFiles
+from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, get_info_dir
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.settings import includeSubdirs, file_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict
@@ -124,7 +124,7 @@ def geotag(timezone=2, offset=""):
     :param offset: offset in minutes and seconds, has to be in format +/-mm:ss e.g. -03:02
     """
     inpath = os.getcwd()
-    gpxDir = inpath + r"\.gps"
+    gpxDir = os.path.join(inpath + get_gps_dir())
     options = ["-r", "-geotime<${DateTimeOriginal}%+03d:00" % timezone]
     if offset:
         options.append("-geosync=" + offset)
@@ -154,7 +154,7 @@ def geotag_single(lat: float, lon: float):
     call_exiftool(inpath, "*", options=options)
 
 
-def read_csv(csv_filenames=(), folder=r"", csv_folder = ".info",
+def read_csv(csv_filenames=(), folder=r"", csv_folder=get_info_dir(),
              import_filename=True, import_exif=True, only_when_changed=True):
     """
     csv files are used for setting tags
@@ -180,7 +180,7 @@ def read_csv(csv_filenames=(), folder=r"", csv_folder = ".info",
             'HDR' are evaluated as HDR description
             'TM' are evaluated as HDR Tone Mapping description
             'PANO' are evaluated as Panorama description
-    :param csv_folder: location of csv files
+    :param csv_folder: location of csv files - standard is the .EXIFnaming/info
     :param folder: process only folders matching this regex
     :param import_filename: whether to extract tags from filename
     :param import_exif: whether to extract tags from exif

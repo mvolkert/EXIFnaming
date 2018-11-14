@@ -12,7 +12,7 @@ from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
-    moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile
+    moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile, get_info_dir
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.settings import includeSubdirs
 from EXIFnaming.helpers.tag_conversion import split_filename
@@ -306,4 +306,4 @@ def extract_tags():
                     filename_dict = split_filename(name)
                     for tag in filename_dict["tags"]:
                         tag_set.add(tag)
-            writeToFile("tags.txt", dirname + "\n\t" + "\n\t".join(tag_set) + "\n")
+            writeToFile(get_info_dir("tags.txt"), dirname + "\n\t" + "\n\t".join(tag_set) + "\n")

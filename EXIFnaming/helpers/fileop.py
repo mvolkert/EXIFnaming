@@ -1,6 +1,8 @@
 import os
 import re
 import shutil
+import numpy as np
+from collections import OrderedDict
 
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.settings import includeSubdirs
@@ -49,10 +51,29 @@ def isfile(*path):
     return os.path.isfile(os.path.join(*path))
 
 
-def getSavesDir():
-    path = ".EXIFnaming"
-    os.makedirs(path, exist_ok=True)
-    return path
+def getSavesDir(*subpath):
+    create_program_dir()
+    return os.path.join(".EXIFnaming", "saves", *subpath)
+
+
+def get_gps_dir(*subpath):
+    return os.path.join(".EXIFnaming", "gps", *subpath)
+
+
+def get_info_dir(*subpath):
+    return os.path.join(".EXIFnaming", "info", *subpath)
+
+
+def create_program_dir():
+    mainpath = ".EXIFnaming"
+    subdirs = ["saves", "gps", "info"]
+    for subdir in subdirs:
+        path = os.path.join(mainpath, subdir)
+        os.makedirs(path, exist_ok=True)
+
+
+def save_tagdict(fileext: str, timestring: str, Tagdict: OrderedDict):
+    np.savez_compressed(getSavesDir("Tags" + fileext + timestring), Tagdict=Tagdict)
 
 
 def writeToFile(path: str, content: str):

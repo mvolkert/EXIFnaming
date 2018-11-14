@@ -14,7 +14,7 @@ from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_
     find_dir_with_closest_time
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
-    copyFilesTo, getSavesDir, isfile, filterFiles
+    copyFilesTo, getSavesDir, isfile, filterFiles, save_tagdict, get_info_dir
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat, getPostfix
 from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
@@ -279,7 +279,7 @@ def searchby_exiftag_interval(tag_name: str, min_value: float, max_value: float,
     copyFilesTo(files, os.path.join(inpath, "matches"))
 
 
-def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask = True):
+def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask=True):
     """
     rotate back according to tag information (Rotate 90 CW or Rotate 270 CW)
     :param subname: only files that contain this name are rotated, empty string: no restriction
@@ -299,7 +299,7 @@ def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask = True):
         if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
         if len(filenames) == 0: continue
         print(dirpath)
-        Tagdict = read_exiftags(dirpath, ".jpg", ask = ask)
+        Tagdict = read_exiftags(dirpath, ".jpg", ask=ask)
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Rotation"]): return
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):
@@ -358,7 +358,7 @@ def _get_time(dirpath, filename):
     return str(time)
 
 
-def order_with_timefile(timefile="timetable.txt", fileexts=(".JPG", ".MP4")):
+def order_with_timefile(timefile=get_info_dir("timetable.txt"), fileexts=(".JPG", ".MP4")):
     inpath = os.getcwd()
     dirNameDict_firsttime, dirNameDict_lasttime = _read_time_file(timefile)
     for fileext in fileexts:
@@ -374,7 +374,7 @@ def order_with_timefile(timefile="timetable.txt", fileexts=(".JPG", ".MP4")):
                 move(Tagdict["File Name"][i], Tagdict["Directory"][i], os.path.join(inpath, dirName))
 
 
-def _read_time_file(filename="timetable.txt"):
+def _read_time_file(filename=get_info_dir("timetable.txt")):
     file = open(filename, 'r')
     dirNameDict_firsttime = OrderedDict()
     dirNameDict_lasttime = OrderedDict()
