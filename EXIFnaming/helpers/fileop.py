@@ -198,3 +198,14 @@ def file_has_ext(filename: str, file_extensions: tuple, ignore_case=True) -> boo
         if fileext == filename[filename.rfind("."):]:
             return True
     return False
+
+def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r""):
+    inpath = os.getcwd()
+    basename = os.path.basename(dirpath)
+    if not includeSubdirs and not inpath == dirpath: return True
+    if basename.startswith('.'):  return True
+    if '.EXIFnaming' in dirpath:  return True
+    if balcklist and basename in balcklist: return True
+    if whitelist and not basename in whitelist: return True
+    if regex and not re.search(regex, basename): return True
+    return False

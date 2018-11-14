@@ -12,7 +12,8 @@ from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
-    moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile, get_info_dir
+    moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile, get_info_dir, \
+    is_invalid_path
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.settings import includeSubdirs
 from EXIFnaming.helpers.tag_conversion import split_filename
@@ -27,8 +28,7 @@ def filter_series():
 
     print(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: continue
-        if os.path.basename(dirpath) in skipdirs: continue
+        if is_invalid_path(dirpath, skipdirs): continue
         print(dirpath, len(dirnames), len(filenames))
         filenames = moveBracketSeries(dirpath, filenames)
         filenames = moveSeries(dirpath, filenames, "S")
@@ -49,8 +49,7 @@ def filter_primary():
     print(inpath)
     folders_to_main(False, False, False, False, ["B" + str(i) for i in range(1, 8)])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: continue
-        if os.path.basename(dirpath) in skipdirs: continue
+        if is_invalid_path(dirpath, skipdirs): continue
         print(dirpath, len(dirnames), len(filenames))
         moveSeries(dirpath, filenames, "S")
         moveSeries(dirpath, filenames, "SM")
@@ -73,8 +72,7 @@ def copy_subdirectories(dest: str, dir_names: []):
     inpath = os.getcwd()
     print(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: continue
-        if not os.path.basename(dirpath) in dir_names: continue
+        if is_invalid_path(dirpath, whitelist=dir_names): continue
         copyFilesTo(filenames, dest, False)
 
 
@@ -136,8 +134,7 @@ def rename_HDR(mode="HDRT", folder=r"HDR\w*"):
     matchreg = r"^([-\w]+_[0-9]+)B\d(.*)_\d\2"
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: continue
-        if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
+        if is_invalid_path(dirpath, regex=folder): continue
         print("Folder: " + dirpath)
         for filename in filenames:
             if mode in filename: continue
@@ -173,8 +170,7 @@ def rename_to_front(mode="PANO", folder=r"HDR\w*"):
     panoOut = r"^([-\w]+_[0-9]+[A-Z0-9]*)_(.*)_(%s[-0-9]*)(.*)" % mode
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: continue
-        if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
+        if is_invalid_path(dirpath, regex=folder): continue
         print("Folder: " + dirpath)
         for filename in filenames:
             match = re.search(panoOut, filename)
@@ -191,8 +187,7 @@ def rename_to_front(mode="PANO", folder=r"HDR\w*"):
 def rename_PANO(folder=r""):
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: continue
-        if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
+        if is_invalid_path(dirpath, regex=folder): continue
         print("Folder: " + dirpath)
         for filename in filenames:
             if not "PANO" in filename: continue
@@ -206,8 +201,7 @@ def rename_PANO(folder=r""):
 def sanitize_filename(folder=r""):
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: continue
-        if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
+        if is_invalid_path(dirpath, regex=folder): continue
         print("Folder: " + dirpath)
         for filename in filenames:
             name, ext = filename.rsplit('.', 1)

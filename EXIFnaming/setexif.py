@@ -9,7 +9,7 @@ import re
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
     write_exiftag
-from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, get_info_dir
+from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, get_info_dir, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.settings import includeSubdirs, file_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict
@@ -54,7 +54,7 @@ def fake_date(start='2000:01:01'):
     start_time = giveDatetime(start)
     dir_counter = -1
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: break
+        if is_invalid_path(dirpath): continue
         filenames = filterFiles(filenames, file_types)
         if not filenames: continue
         print(dirpath)
@@ -101,8 +101,7 @@ def name_to_exif(folder=r"", additional_tags=(), startdir=None):
     print("process", count_files_in(inpath, file_types, ""), "Files in ", inpath, "subdir:", includeSubdirs)
     askToContinue()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: break
-        if folder and not re.search(folder, dirpath): continue
+        if is_invalid_path(dirpath, regex=folder): continue
         filenames = filterFiles(filenames, file_types)
         print(dirpath)
         for filename in filenames:
@@ -192,7 +191,7 @@ def read_csv(csv_filenames=(), folder=r"", csv_folder=get_info_dir(),
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
     csv_filenames = [os.path.join(csv_folder, csv_filename + ".csv") for csv_filename in csv_filenames]
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if folder and not re.search(folder, dirpath): continue
+        if is_invalid_path(dirpath, regex=folder): continue
         print(dirpath)
         for filename in filterFiles(filenames, file_types):
             meta_data = FileMetaData(dirpath, filename)

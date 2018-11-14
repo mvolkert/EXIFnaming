@@ -5,7 +5,7 @@ Does not uses Tags at all
 import os
 
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
-from EXIFnaming.helpers.fileop import moveToSubpath, isfile
+from EXIFnaming.helpers.fileop import moveToSubpath, isfile, is_invalid_path
 from EXIFnaming.helpers.settings import includeSubdirs
 
 
@@ -15,7 +15,7 @@ def detectBlurry():
     """
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: continue
+        if is_invalid_path(dirpath): continue
         print(dirpath, len(dirnames), len(filenames))
         for filename in filenames:
             if not ".JPG" in filename: continue
@@ -30,7 +30,7 @@ def detectSimilar(similarity=0.9):
     """
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: continue
+        if is_invalid_path(dirpath): continue
         print(dirpath, len(dirnames), len(filenames))
         dircounter = 0
         filenamesA = [filename for filename in filenames if ".JPG" in filename]
