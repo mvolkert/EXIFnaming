@@ -8,6 +8,7 @@ import re
 from typing import Optional, Match
 
 import numpy as np
+from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
@@ -292,12 +293,17 @@ def rename_back(timestring="", fileext=".JPG"):
 
 def extract_tags():
     inpath = os.getcwd()
-    tag_set = set()
-    for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: continue
-        print("Folder: " + dirpath)
-        for filename in filenames:
-            name, ext = filename.rsplit('.', 1)
-            filename_dict = split_filename(name)
-            tag_set.update(filename_dict["tags"])
-    writeToFile("tags.txt", "\n".join(tag_set))
+
+    for (dirpath1, dirnames1, filenames1) in os.walk(inpath):
+        if not inpath == dirpath1: continue
+        for dirname in dirnames1:
+            if dirname.startswith('.'): continue
+            tag_set = OrderedSet()
+            for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, dirname)):
+                print("Folder: " + dirpath)
+                for filename in filenames:
+                    name, ext = filename.rsplit('.', 1)
+                    filename_dict = split_filename(name)
+                    for tag in filename_dict["tags"]:
+                        tag_set.add(tag)
+            writeToFile("tags.txt", dirname + "\n\t" + "\n\t".join(tag_set) + "\n")
