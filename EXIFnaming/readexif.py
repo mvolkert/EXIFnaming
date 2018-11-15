@@ -399,29 +399,39 @@ _read_timetable.timeformat = "%y%m%d %H:%M"
 
 
 def better_gpx_via_timetable(gpxfilename="London.gpx"):
+    def write(dirName_last, gpxfile_out):
+        if dirName != dirName_last:
+            if not dirName_last == "": gpxfile_out.write("</trkseg></trk>\r\n")
+            gpxfile_out.write("<trk><name>" + dirName + "</name><trkseg>\r\n")
+        gpxfile_out.write(line)
     timefile = get_info_dir("timetable.txt")
     gpxfilename = get_gps_dir(gpxfilename)
     dirNameDict_firsttime, dirNameDict_lasttime = _read_timetable(timefile)
     timeregex = re.compile("(.*<time>)([^<]*)(</time>.*)")
     gpxfilename_out, ext = gpxfilename.rsplit('.', 1)
-    gpxfilename_out = gpxfilename_out + "_new." + ext
-    dirName_last = ""
-    gpxfile_out = open(gpxfilename_out, "w")
+    dirName_last1 = ""
+    dirName_last2 = ""
+    gpxfile_out1 = open(gpxfilename_out + "_new1." + ext, "w")
+    gpxfile_out2 = open(gpxfilename_out + "_new2." + ext, "w")
     with open(gpxfilename, "r") as gpxfile:
         for line in gpxfile:
             match = timeregex.match(line)
             if not match:
                 if "</gpx>" in line:
-                    gpxfile_out.write("</trkseg></trk>\r\n")
-                    gpxfile_out.write(line)
+                    gpxfile_out1.write("</trkseg></trk>\r\n")
+                    gpxfile_out2.write("</trkseg></trk>\r\n")
+                gpxfile_out1.write(line)
+                gpxfile_out2.write(line)
                 continue
             line = line.replace("wpt", "trkpt")
             time = match.group(2)
             time = dt.datetime.strptime(time, "%Y-%m-%dT%H:%M:%SZ")
             dirName = find_dir_with_closest_time(dirNameDict_firsttime, dirNameDict_lasttime, time, 3600)
-            if dirName != dirName_last:
-                if not dirName_last=="": gpxfile_out.write("</trkseg></trk>\r\n")
-                gpxfile_out.write("<trk><name>" + dirName + "</name><trkseg>\r\n")
-            dirName_last = dirName
-            gpxfile_out.write(line)
-    gpxfile_out.close()
+            if "unrelated" in dirName:
+                write(dirName_last2, gpxfile_out2)
+                dirName_last2 = dirName
+            else:
+                write(dirName_last1, gpxfile_out1)
+                dirName_last1 = dirName
+    gpxfile_out1.close()
+    gpxfile_out2.close()
