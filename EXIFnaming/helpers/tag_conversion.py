@@ -85,6 +85,7 @@ class FileMetaData:
         self.location = Location()
         self.rating = None
         self.gps = ()
+        self.gps_exif = False
         self.tagDict = None
         self.main_name, self.counter = get_main_and_counter(self.name)
         self.has_changed = False
@@ -109,6 +110,9 @@ class FileMetaData:
         self.location.update(self.tagDict)
         if "Rating" in self.tagDict and int(self.tagDict["Rating"]) > 0:
             self.rating = self.tagDict["Rating"]
+
+        if "GPSLatitude" in self.tagDict and self.tagDict["GPSLatitude"]:
+            self.gps_exif = True
 
         if "User Comment" in self.tagDict:
             user_comment = self.tagDict["User Comment"]
@@ -137,7 +141,7 @@ class FileMetaData:
         if good_key('tags'): self.tags += [tag for tag in data['tags'].split(', ') if tag]
         if good_key('tags2'): self.tags2 += [tag for tag in data['tags2'].split(', ') if tag]
         if good_key('tags3'): self.tags3 += [tag for tag in data['tags3'].split(', ') if tag]
-        if good_key('gps'): self.gps = data['gps'].split(', ')
+        if good_key('gps') and not self.gps_exif: self.gps = data['gps'].split(', ')
         if good_key('rating'): self.rating = data['rating']
         if good_key('description'): self.descriptions.append(data['description'])
         self.location.update(data)
