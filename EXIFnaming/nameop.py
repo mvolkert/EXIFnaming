@@ -13,9 +13,8 @@ from sortedcollections import OrderedSet
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
     moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile, get_info_dir, \
-    is_invalid_path
+    is_invalid_path, get_plain_filenames
 from EXIFnaming.helpers.misc import askToContinue
-from EXIFnaming.helpers.settings import includeSubdirs
 from EXIFnaming.helpers.tag_conversion import split_filename
 
 
@@ -288,16 +287,16 @@ def rename_back(timestring="", fileext=".JPG"):
 def extract_tags():
     inpath = os.getcwd()
 
-    for (dirpath1, dirnames1, filenames1) in os.walk(inpath):
-        if not inpath == dirpath1: continue
-        for dirname in dirnames1:
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not inpath == dirpath: continue
+        for dirname in dirnames:
             if dirname.startswith('.'): continue
+            print("Folder: " + dirname)
             tag_set = OrderedSet()
-            for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, dirname)):
-                print("Folder: " + dirpath)
-                for filename in filenames:
-                    name, ext = filename.rsplit('.', 1)
-                    filename_dict = split_filename(name)
-                    for tag in filename_dict["tags"]:
-                        tag_set.add(tag)
+            plain_filenames = get_plain_filenames(inpath, dirname)
+            for filename in plain_filenames:
+                name, ext = filename.rsplit('.', 1)
+                filename_dict = split_filename(name)
+                for tag in filename_dict["tags"]:
+                    tag_set.add(tag)
             writeToFile(get_info_dir("tags.txt"), dirname + "\n\t" + "\n\t".join(tag_set) + "\n")

@@ -122,7 +122,6 @@ def getCameraModel(Tagdict, i: int):
     if model: model = "_" + model
     return model
 
-
 def getPath(Tagdict, i: int):
     if not all([x in Tagdict for x in ["Directory", "File Name"]]):
         print("Directory or File Name is not in Tagdict")

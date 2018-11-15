@@ -1,9 +1,11 @@
 import os
 import re
 import shutil
-import numpy as np
 from collections import OrderedDict
 
+import numpy as np
+
+import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.settings import includeSubdirs
 
@@ -61,6 +63,7 @@ def get_gps_dir(*subpath):
 
 
 def get_info_dir(*subpath):
+    create_program_dir()
     return os.path.join(".EXIFnaming", "info", *subpath)
 
 
@@ -199,7 +202,8 @@ def file_has_ext(filename: str, file_extensions: tuple, ignore_case=True) -> boo
             return True
     return False
 
-def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r""):
+
+def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r"") -> bool:
     inpath = os.getcwd()
     basename = os.path.basename(dirpath)
     if not includeSubdirs and not inpath == dirpath: return True
@@ -209,3 +213,25 @@ def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r""):
     if whitelist and not basename in whitelist: return True
     if regex and not re.search(regex, basename): return True
     return False
+
+
+def get_plain_filenames(*path) -> list:
+    plain_filenames = []
+    for (dirpath, dirnames, filenames) in os.walk(os.path.join(*path)):
+        plain_filenames += filenames
+    return sorted(plain_filenames)
+
+
+def get_filename_sorted_dirfiletuples(file_extensions, *path) -> list:
+    out = []
+    for (dirpath, dirnames, filenames) in os.walk(os.path.join(*path)):
+        for filename in filenames:
+            if not file_has_ext(filename, file_extensions): continue
+            if is_not_standard_camera(filename): continue
+            out.append((dirpath, filename))
+    return sorted(out, key=lambda x: x[1])
+
+
+def is_not_standard_camera(filename: str) -> bool:
+    models = [model for model in c.CameraModelShort.values() if not model == ""]
+    return any(model in filename for model in models)

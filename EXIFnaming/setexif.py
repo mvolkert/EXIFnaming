@@ -4,7 +4,6 @@ Writes to Tags
 """
 import csv
 import datetime as dt
-import re
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \

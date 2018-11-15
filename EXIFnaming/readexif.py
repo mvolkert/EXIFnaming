@@ -5,8 +5,9 @@ Reads Tags to use them, but not write to them
 
 import datetime as dt
 import os
-from collections import OrderedDict
 import re
+from collections import OrderedDict
+
 import numpy as np
 
 import EXIFnaming.helpers.constants as c
@@ -14,7 +15,7 @@ from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_
     find_dir_with_closest_time
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
-    copyFilesTo, getSavesDir, isfile, filterFiles, save_tagdict, get_info_dir
+    copyFilesTo, getSavesDir, isfile, get_info_dir, get_filename_sorted_dirfiletuples
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat, getPostfix
 from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
@@ -337,30 +338,35 @@ def exif_to_name():
             renameInPlace(Tagdict["Directory"][i], Tagdict["File Name"][i] + temppostfix, Tagdict["Label"][i] + fileext)
 
 
-def print_timeinterval():
+def print_timetable():
     """
     print the time of the first and last picture in a directory to a file
     """
     inpath = os.getcwd()
-    ofile = open("timetable.txt", 'a')
+    ofile = open(get_info_dir("timetable.txt"), 'a')
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        fotos = filterFiles(filenames, image_types)
-        if not fotos: continue
-        first = _get_time(dirpath, fotos[0])
-        last = _get_time(dirpath, fotos[-1])
-        ofile.write("%-55s, %8s, %8s\n" % (os.path.relpath(dirpath), first, last))
+        if not inpath == dirpath: continue
+        for dirname in dirnames:
+            if dirname.startswith('.'): continue
+            print("Folder: " + dirname)
+            fotos = get_filename_sorted_dirfiletuples(image_types, inpath, dirname)
+            if not fotos: continue
+            first = _get_time(fotos[0])
+            last = _get_time(fotos[-1])
+            ofile.write("%-55s, %12s, %12s\n" % (dirname, first, last))
     ofile.close()
 
 
-def _get_time(dirpath, filename):
-    tags = read_exiftag(dirpath, filename)
-    time = giveDatetime(tags["Date/Time Original"]).time()
-    return str(time)
+def _get_time(dirfile: tuple) -> str:
+    tags = read_exiftag(dirfile[0], dirfile[1])
+    if not "Date/Time Original" in tags: return ""
+    time = giveDatetime(tags["Date/Time Original"])
+    return time.strftime(_read_timetable.timeformat)
 
 
-def order_with_timefile(timefile=get_info_dir("timetable.txt"), fileexts=(".JPG", ".MP4")):
+def order_with_timetable(timefile=get_info_dir("timetable.txt"), fileexts=(".JPG", ".MP4")):
     inpath = os.getcwd()
-    dirNameDict_firsttime, dirNameDict_lasttime = _read_time_file(timefile)
+    dirNameDict_firsttime, dirNameDict_lasttime = _read_timetable(timefile)
     for fileext in fileexts:
         Tagdict = read_exiftags(inpath, fileext=fileext)
         if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
@@ -374,15 +380,16 @@ def order_with_timefile(timefile=get_info_dir("timetable.txt"), fileexts=(".JPG"
                 move(Tagdict["File Name"][i], Tagdict["Directory"][i], os.path.join(inpath, dirName))
 
 
-def _read_time_file(filename=get_info_dir("timetable.txt")):
+def _read_timetable(filename=get_info_dir("timetable.txt")):
     file = open(filename, 'r')
     dirNameDict_firsttime = OrderedDict()
     dirNameDict_lasttime = OrderedDict()
     for line in file:
         dir_name, start, end = [entry.strip(' ') for entry in line.split(',')]
-        start = giveDatetime(start)
-        end = giveDatetime(end)
+        start = dt.datetime.strptime(start, _read_timetable.timeformat)
+        end = dt.datetime.strptime(end, _read_timetable.timeformat)
         dirNameDict_firsttime[start] = dir_name
         dirNameDict_lasttime[end] = dir_name
     file.close()
     return dirNameDict_firsttime, dirNameDict_lasttime
+_read_timetable.timeformat = "%y%m%d %H:%M"
