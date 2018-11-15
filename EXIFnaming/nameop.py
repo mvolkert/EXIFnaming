@@ -204,6 +204,7 @@ def sanitize_filename(folder=r""):
         print("Folder: " + dirpath)
         for filename in filenames:
             name, ext = filename.rsplit('.', 1)
+            name = name.replace("panorama","PANO")
             filename_dict = split_filename(name)
             _sanitize_process_counter(filename_dict)
             _sanitize_pano(filename_dict)
