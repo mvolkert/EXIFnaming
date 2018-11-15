@@ -15,7 +15,7 @@ from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_
     find_dir_with_closest_time
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
-    copyFilesTo, getSavesDir, isfile, get_info_dir, get_filename_sorted_dirfiletuples
+    copyFilesTo, getSavesDir, isfile, get_info_dir, get_filename_sorted_dirfiletuples, get_gps_dir
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat, getPostfix
 from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
@@ -353,7 +353,7 @@ def print_timetable():
             if not fotos: continue
             first = _get_time(fotos[0])
             last = _get_time(fotos[-1])
-            ofile.write("%-55s, %12s, %12s\n" % (dirname, first, last))
+            ofile.write("%-55s; %12s; %12s\n" % (dirname, first, last))
     ofile.close()
 
 
@@ -385,11 +385,43 @@ def _read_timetable(filename=get_info_dir("timetable.txt")):
     dirNameDict_firsttime = OrderedDict()
     dirNameDict_lasttime = OrderedDict()
     for line in file:
-        dir_name, start, end = [entry.strip(' ') for entry in line.split(',')]
+        dir_name, start, end = [entry.strip(' ').strip('\r\n') for entry in line.split(';')]
+        if not start or not end: continue
         start = dt.datetime.strptime(start, _read_timetable.timeformat)
         end = dt.datetime.strptime(end, _read_timetable.timeformat)
         dirNameDict_firsttime[start] = dir_name
         dirNameDict_lasttime[end] = dir_name
     file.close()
     return dirNameDict_firsttime, dirNameDict_lasttime
+
+
 _read_timetable.timeformat = "%y%m%d %H:%M"
+
+
+def better_gpx_via_timetable(gpxfilename="London.gpx"):
+    timefile = get_info_dir("timetable.txt")
+    gpxfilename = get_gps_dir(gpxfilename)
+    dirNameDict_firsttime, dirNameDict_lasttime = _read_timetable(timefile)
+    timeregex = re.compile("(.*<time>)([^<]*)(</time>.*)")
+    gpxfilename_out, ext = gpxfilename.rsplit('.', 1)
+    gpxfilename_out = gpxfilename_out + "_new." + ext
+    dirName_last = ""
+    gpxfile_out = open(gpxfilename_out, "w")
+    with open(gpxfilename, "r") as gpxfile:
+        for line in gpxfile:
+            match = timeregex.match(line)
+            if not match:
+                if "</gpx>" in line:
+                    gpxfile_out.write("</trkseg></trk>\r\n")
+                    gpxfile_out.write(line)
+                continue
+            line = line.replace("wpt", "trkpt")
+            time = match.group(2)
+            time = dt.datetime.strptime(time, "%Y-%m-%dT%H:%M:%SZ")
+            dirName = find_dir_with_closest_time(dirNameDict_firsttime, dirNameDict_lasttime, time, 3600)
+            if dirName != dirName_last:
+                if not dirName_last=="": gpxfile_out.write("</trkseg></trk>\r\n")
+                gpxfile_out.write("<trk><name>" + dirName + "</name><trkseg>\r\n")
+            dirName_last = dirName
+            gpxfile_out.write(line)
+    gpxfile_out.close()

@@ -12,7 +12,7 @@ __status__ = "Development"
 
 from EXIFnaming import readexif, setexif, nameop, picture, steps
 from EXIFnaming.readexif import print_info, rename_pm, rename, order, searchby_exiftag_equality, searchby_exiftag_interval, rotate, \
-    exif_to_name, print_timeinterval
+    exif_to_name, print_timetable, better_gpx_via_timetable
 from EXIFnaming.nameop import filter_series, rename_back, filter_primary, rename_HDR, \
     rename_temp_back, folders_to_main, copy_subdirectories
 from EXIFnaming.picture import detectBlurry, detectSimilar

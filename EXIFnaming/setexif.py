@@ -122,7 +122,7 @@ def geotag(timezone=2, offset=""):
     :param offset: offset in minutes and seconds, has to be in format +/-mm:ss e.g. -03:02
     """
     inpath = os.getcwd()
-    gpxDir = os.path.join(inpath + get_gps_dir())
+    gpxDir = get_gps_dir()
     options = ["-r", "-geotime<${DateTimeOriginal}%+03d:00" % timezone]
     if offset:
         options.append("-geosync=" + offset)

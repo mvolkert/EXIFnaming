@@ -55,7 +55,7 @@ def _replace_date_ID(dateformat, search_str, value) -> str:
     return dateformat.replace(search_str * count, ("%0" + str(count) + "d") % value)
 
 
-def find_dir_with_closest_time(dirDict_firsttime: dict, dirDict_lasttime: dict, time) -> str:
+def find_dir_with_closest_time(dirDict_firsttime: dict, dirDict_lasttime: dict, time: dt.datetime, maxdelta = 3600*24) -> str:
     deltaDict = OrderedDict()
     for firsttime, name in dirDict_firsttime.items():
         deltaseconds = abs((time - firsttime).total_seconds())
@@ -64,7 +64,9 @@ def find_dir_with_closest_time(dirDict_firsttime: dict, dirDict_lasttime: dict, 
         deltaseconds = abs((time - lasttime).total_seconds())
         deltaDict[deltaseconds] = name
     deltatime_min = min(deltaDict.keys())
-    return deltaDict[deltatime_min]
+    if deltatime_min < maxdelta:
+        return deltaDict[deltatime_min]
+    return time.strftime("%y%m%d_unrelated")
 
 
 def print_firstlast_of_dirname(dirDict_firsttime: dict, dirDict_lasttime: dict):
