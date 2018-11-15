@@ -3,6 +3,7 @@ import re
 from collections import OrderedDict
 
 import numpy as np
+from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers import constants as c
 from EXIFnaming.helpers.decode import read_exiftag
@@ -100,7 +101,6 @@ class FileMetaData:
             des = process_to_description(process)
             add_dict(self.description_tree, des)
 
-
     def import_fullname(self, startdir: str):
         self.id, self.tags = fullname_to_tag(self.directory, self.name, startdir)
 
@@ -180,7 +180,7 @@ class FileMetaData:
 
     def to_tag_dict(self) -> dict:
         if not self.title:
-            self.title = ", ".join(self.location.get_minor() + self.tags)
+            self.title = ", ".join(OrderedSet(self.location.get_minor() + self.tags))
 
         tags = [", ".join(self.tags), str(self.location), ", ".join(self.tags2)]
         self.descriptions.append((FileMetaData.linesep + "\n").join(tags))
@@ -279,6 +279,7 @@ def set_path(data: dict, path, value=None):
 def filename_to_tag(filename: str):
     return filedict_to_tag(split_filename(filename))
 
+
 def filedict_to_tag(filename_dict: dict):
     image_id = "_".join(filename_dict["main"] + filename_dict["p_tags"])
     image_tags = filename_dict["tags"]
@@ -371,17 +372,18 @@ def is_process_tag(name: str):
     scene_main = scene_striped.split('-')[0]
     return scene_main in process_to_tag.map.keys()
 
+
 def process_to_description(process: str) -> dict:
     description = {}
     if not "HDR" in process: return description
     process_striped = process.strip('123456789').split('$')[0]
     process_split = process_striped.split('-')
-    if len(process_split)>1:
+    if len(process_split) > 1:
         if process_split[1] in c.hdr_algorithm:
             description["HDR-Algorithm"] = c.hdr_algorithm[process_split[1]]
         else:
             print(process_split[1], "not in hdr_algorithm")
-    if len(process_split)>2:
+    if len(process_split) > 2:
         if process_split[2] in c.tm_preset:
             description["TM-Preset"] = c.tm_preset[process_split[2]]
         else:
