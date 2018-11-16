@@ -114,12 +114,13 @@ def name_to_exif(folder=r"", additional_tags=(), startdir=None):
     clock.finish()
 
 
-def geotag(timezone=2, offset=""):
+def geotag(timezone=2, offset="", start_folder=""):
     """
     adds gps information to all pictures in all sub directories of current directory
     the gps information is obtained from gpx files, that are expected to be in a folder called ".gps"
     :param timezone: number of hours offset
     :param offset: offset in minutes and seconds, has to be in format +/-mm:ss e.g. -03:02
+    :param start_folder: directories before this name will be ignored, does not needs to be a full directory name
     """
     inpath = os.getcwd()
     gpxDir = get_gps_dir()
@@ -136,6 +137,7 @@ def geotag(timezone=2, offset=""):
         if not inpath == dirpath: break
         for dirname in dirnames:
             if dirname.startswith("."): continue
+            if dirname < start_folder: continue
             print(dirname)
             call_exiftool(inpath, dirname, options=options)
 
