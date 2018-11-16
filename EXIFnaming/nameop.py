@@ -130,7 +130,7 @@ def rename_HDR(mode="HDRT", folder=r"HDR\w*"):
     :param mode: name for HDR-Mode written to file
     :param folder: only files in folders of this name are renamed
     """
-    matchreg = r"^([-\w]+_[0-9]+)B\d(.*)_\d\2"
+    matchreg = r"^([-\w]+_[0-9]+)B\d(.*)_(?:\d+B)?\d\2"
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
@@ -204,7 +204,7 @@ def sanitize_filename(folder=r""):
         print("Folder: " + dirpath)
         for filename in filenames:
             name, ext = filename.rsplit('.', 1)
-            name = name.replace("panorama","PANO")
+            name = name.replace("panorama", "PANO")
             filename_dict = split_filename(name)
             _sanitize_process_counter(filename_dict)
             _sanitize_pano(filename_dict)
