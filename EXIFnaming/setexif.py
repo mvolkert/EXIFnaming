@@ -8,7 +8,7 @@ import datetime as dt
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
     write_exiftag
-from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, get_info_dir, is_invalid_path
+from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, get_info_dir, is_invalid_path, get_setexif_dir
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.settings import includeSubdirs, file_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict
@@ -154,7 +154,7 @@ def geotag_single(lat: float, lon: float):
     call_exiftool(inpath, "*", options=options)
 
 
-def read_csv(csv_filenames=(), folder=r"", csv_folder=get_info_dir(),
+def read_csv(csv_filenames=(), folder=r"", csv_folder=get_setexif_dir(),
              import_filename=True, import_exif=True, only_when_changed=True):
     """
     csv files are used for setting tags

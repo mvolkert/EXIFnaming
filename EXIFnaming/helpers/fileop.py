@@ -66,10 +66,14 @@ def get_info_dir(*subpath):
     create_program_dir()
     return os.path.join(".EXIFnaming", "info", *subpath)
 
+def get_setexif_dir(*subpath):
+    create_program_dir()
+    return os.path.join(".EXIFnaming", "setexif", *subpath)
+
 
 def create_program_dir():
     mainpath = ".EXIFnaming"
-    subdirs = ["saves", "gps", "info"]
+    subdirs = ["saves", "gps", "info", "setexif"]
     for subdir in subdirs:
         path = os.path.join(mainpath, subdir)
         os.makedirs(path, exist_ok=True)
