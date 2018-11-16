@@ -10,7 +10,7 @@ __copyright__ = "Copyright 2017, Marco Volkert"
 __email__ = "marco.volkert24@gmx.de"
 __status__ = "Development"
 
-from EXIFnaming import readexif, setexif, nameop, picture, steps
+from EXIFnaming import readexif, setexif, nameop, picture, steps, placeinfo
 from EXIFnaming.readexif import print_info, rename_pm, rename, order, searchby_exiftag_equality, searchby_exiftag_interval, rotate, \
     exif_to_name, print_timetable, better_gpx_via_timetable
 from EXIFnaming.nameop import filter_series, rename_back, filter_primary, rename_HDR, \
