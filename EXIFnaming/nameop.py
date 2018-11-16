@@ -2,6 +2,7 @@
 """
 Does not uses Tags at all
 """
+import csv
 import datetime as dt
 import os
 import re
@@ -287,7 +288,11 @@ def rename_back(timestring="", fileext=".JPG"):
 
 def extract_tags():
     inpath = os.getcwd()
-
+    csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
+    tag_set_names = OrderedSet()
+    tags_places_file = open(get_info_dir("tags_places.csv"), "w")
+    writer = csv.writer(tags_places_file, dialect="semicolon")
+    writer.writerow(["dirname", "tag"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not inpath == dirpath: continue
         for dirname in dirnames:
@@ -299,5 +304,17 @@ def extract_tags():
                 name, ext = filename.rsplit('.', 1)
                 filename_dict = split_filename(name)
                 for tag in filename_dict["tags"]:
+                    if not tag: continue
                     tag_set.add(tag)
             writeToFile(get_info_dir("tags.txt"), dirname + "\n\t" + "\n\t".join(tag_set) + "\n")
+
+            dirname_split = dirname.split("_")
+            if len(dirname_split) > 3:
+                dirname = ""
+            else:
+                dirname = dirname_split[-1]
+            for tag in tag_set:
+                if not tag[0].isupper(): continue
+                tag_set_names.add((dirname, tag))
+    writer.writerows(tag_set_names)
+    tags_places_file.close()
