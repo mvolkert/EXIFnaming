@@ -2,12 +2,13 @@ import os
 import re
 import shutil
 from collections import OrderedDict
+from typing import Iterable
 
 import numpy as np
 
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.misc import askToContinue
-from EXIFnaming.helpers.settings import includeSubdirs
+from EXIFnaming.helpers.settings import includeSubdirs, encoding_format
 
 
 def moveFiles(filenames, path: str):
@@ -193,7 +194,7 @@ def count_files(filenames: [], file_extensions: tuple):
     return len(filterFiles(filenames, file_extensions))
 
 
-def filterFiles(filenames: [], file_extensions: tuple):
+def filterFiles(filenames: [], file_extensions: Iterable):
     return [filename for filename in filenames if not file_extensions or file_has_ext(filename, file_extensions)]
 
 
@@ -207,7 +208,7 @@ def file_has_ext(filename: str, file_extensions: tuple, ignore_case=True) -> boo
     return False
 
 
-def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r"") -> bool:
+def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r"", start="") -> bool:
     inpath = os.getcwd()
     basename = os.path.basename(dirpath)
     if not includeSubdirs and not inpath == dirpath: return True
@@ -216,6 +217,7 @@ def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r"") -> bool:
     if balcklist and basename in balcklist: return True
     if whitelist and not basename in whitelist: return True
     if regex and not re.search(regex, basename): return True
+    if start and str(os.path.relpath(dirpath, inpath)).split(os.sep)[0] < start: return True
     return False
 
 

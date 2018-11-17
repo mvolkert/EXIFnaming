@@ -154,8 +154,8 @@ def geotag_single(lat: float, lon: float):
     call_exiftool(inpath, "*", options=options)
 
 
-def read_csv(csv_filenames=(), folder=r"", csv_folder=get_setexif_dir(),
-             import_filename=True, import_exif=True, only_when_changed=True):
+def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setexif_dir(),
+             import_filename=True, import_exif=True, only_when_changed=False):
     """
     csv files are used for setting tags
     the csv files have to be separated by semicolon
@@ -168,7 +168,10 @@ def read_csv(csv_filenames=(), folder=r"", csv_folder=get_setexif_dir(),
         'first': int counter min
         'last': int counter max
         'name_part': checks if value is part of filename
+
     :param csv_filenames:
+        can be either "*" for all files in directory or a iterable of filenames
+
         can set follow exif information: ['title', 'tags', 'tags2', 'tags3', 'rating', 'description', 'gps']
             tags are expected to be separated by ', '
             rating is expected to be in interval [0,5]
@@ -182,6 +185,7 @@ def read_csv(csv_filenames=(), folder=r"", csv_folder=get_setexif_dir(),
             'PANO' are evaluated as Panorama description
     :param csv_folder: location of csv files - standard is the .EXIFnaming/info
     :param folder: process only folders matching this regex
+    :param start_folder: directories before this name will be ignored, does not needs to be a full directory name
     :param import_filename: whether to extract tags from filename
     :param import_exif: whether to extract tags from exif
     :param only_when_changed: whether to update only when csv entry changes it
@@ -190,9 +194,11 @@ def read_csv(csv_filenames=(), folder=r"", csv_folder=get_setexif_dir(),
     inpath = os.getcwd()
     clock = Clock()
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
+    if csv_filenames == "*":
+        csv_filenames = filterFiles(os.listdir(csv_folder), [".csv"])
     csv_filenames = [os.path.join(csv_folder, csv_filename + ".csv") for csv_filename in csv_filenames]
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if is_invalid_path(dirpath, regex=folder): continue
+        if is_invalid_path(dirpath, regex=folder, start=start_folder): continue
         print(dirpath)
         for filename in filterFiles(filenames, file_types):
             meta_data = FileMetaData(dirpath, filename)
