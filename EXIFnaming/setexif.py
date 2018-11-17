@@ -8,7 +8,7 @@ import datetime as dt
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
     write_exiftag
-from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, get_info_dir, is_invalid_path, get_setexif_dir
+from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, is_invalid_path, get_setexif_dir
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.settings import includeSubdirs, file_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict
