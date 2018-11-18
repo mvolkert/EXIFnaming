@@ -193,9 +193,13 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
     inpath = os.getcwd()
     clock = Clock()
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
+
     if csv_filenames == "*":
         csv_filenames = filterFiles(os.listdir(csv_folder), [".csv"])
-    csv_filenames = [os.path.join(csv_folder, csv_filename + ".csv") for csv_filename in csv_filenames]
+    elif csv_filenames:
+        csv_filenames = [csv_filename + ".csv" for csv_filename in csv_filenames]
+    csv_filenames = [os.path.join(csv_folder, csv_filename) for csv_filename in csv_filenames]
+
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder, start=start_folder): continue
         for filename in filterFiles(filenames, file_types):

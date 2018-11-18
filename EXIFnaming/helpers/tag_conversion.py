@@ -111,7 +111,7 @@ class FileMetaData:
         if "Rating" in self.tagDict and int(self.tagDict["Rating"]) > 0:
             self.rating = self.tagDict["Rating"]
 
-        if "GPSLatitude" in self.tagDict and self.tagDict["GPSLatitude"]:
+        if "GPS Latitude" in self.tagDict and self.tagDict["GPS Latitude"]:
             self.gps_exif = True
 
         if "User Comment" in self.tagDict:
@@ -182,12 +182,22 @@ class FileMetaData:
         description_formated = format_plain(description_tree)
         self.descriptions.append(description_formated)
 
+    def _write_description_tags(self):
+        tags = []
+        if self.tags:
+            tags.append(", ".join(self.tags))
+        if str(self.location):
+            tags.append(str(self.location))
+        if self.tags2:
+            tags.append(", ".join(self.tags2))
+        if tags:
+            self.descriptions.append((FileMetaData.linesep + "\n").join(tags))
+
     def to_tag_dict(self) -> dict:
         if not self.title:
             self.title = ", ".join(OrderedSet(self.location.get_minor() + self.tags))
 
-        tags = [", ".join(self.tags), str(self.location), ", ".join(self.tags2)]
-        self.descriptions.append((FileMetaData.linesep + "\n").join(tags))
+        self._write_description_tags()
         if len(self.description_tree.keys()) > 0:
             self._write_description_tree()
         full_description = (FileMetaData.linesep + "\n\n").join(self.descriptions)

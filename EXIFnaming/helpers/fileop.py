@@ -266,6 +266,7 @@ def get_logger() -> Logger:
         consoleHandler = logging.StreamHandler()
         consoleHandler.setFormatter(logFormatter)
         rootLogger.addHandler(consoleHandler)
+        rootLogger.setLevel(10)
         get_logger.logger = rootLogger
     return get_logger.logger
 
