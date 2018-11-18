@@ -7,7 +7,7 @@ from collections import OrderedDict
 from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers.constants import unknownTags
-from EXIFnaming.helpers.fileop import count_files, count_files_in
+from EXIFnaming.helpers.fileop import count_files, count_files_in, get_logger
 from EXIFnaming.helpers.measuring_tools import Clock
 from EXIFnaming.helpers.settings import includeSubdirs, encoding_format, file_types
 
@@ -97,9 +97,13 @@ def call_exiftool(dirpath: str, name: str, options=(), override=True) -> str:
     encoding_args = ["-charset", encoding_format, "-charset", "FileName=" + encoding_format]
     args = [path + "exiftool", fullname] + encoding_args + options
     if override and options: args.append("-overwrite_original_in_place")
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE)  # , shell=True
+    proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     out = out.decode(encoding_format)
+    errors = err.decode(encoding_format).split("\r\n")
+    for line in errors:
+        if not line: continue
+        get_logger().warning(line)
     return out
 
 
@@ -125,7 +129,7 @@ def sort_dict(indict: OrderedDict, keys: list):
             if key in indict:
                 vals.append(indict[key][i])
             else:
-                print("sortDict_badkey", key)
+                get_logger().warning("sortDict_badkey %s"%key)
         lists.append(vals)
 
     for col in reversed(cols):
@@ -164,7 +168,7 @@ def decode_exiftags(tags: str):
         if key == "Directory": val = val.replace("/", os.sep)
         tagDict[key] = val
     if not tagDict:
-        print("error: no tags extracted from:", tags)
+        get_logger().error("no tags extracted from: %s" % tags)
     elif not date_org_name in tagDict:
         print("error:", date_org_name, "not in", tagDict)
     return tagDict

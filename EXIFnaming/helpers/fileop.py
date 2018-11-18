@@ -2,13 +2,15 @@ import os
 import re
 import shutil
 from collections import OrderedDict
+from logging import Logger
 from typing import Iterable
 
 import numpy as np
+import datetime as dt
 
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.misc import askToContinue
-from EXIFnaming.helpers.settings import includeSubdirs, encoding_format
+from EXIFnaming.helpers.settings import includeSubdirs
 
 
 def moveFiles(filenames, path: str):
@@ -67,14 +69,20 @@ def get_info_dir(*subpath):
     create_program_dir()
     return os.path.join(".EXIFnaming", "info", *subpath)
 
+
 def get_setexif_dir(*subpath):
     create_program_dir()
     return os.path.join(".EXIFnaming", "setexif", *subpath)
 
 
+def get_log_dir(*subpath):
+    create_program_dir()
+    return os.path.join(".EXIFnaming", "log", *subpath)
+
+
 def create_program_dir():
     mainpath = ".EXIFnaming"
-    subdirs = ["saves", "gps", "info", "setexif"]
+    subdirs = ["saves", "gps", "info", "setexif", "log"]
     for subdir in subdirs:
         path = os.path.join(mainpath, subdir)
         os.makedirs(path, exist_ok=True)
@@ -181,7 +189,7 @@ def get_relpath_depth(inpath, dirpath):
     return len(relpath.split(os.sep))
 
 
-def count_files_in(inpath: str, file_extensions: tuple, skipdirs=()):
+def count_files_in(inpath: str, file_extensions: Iterable, skipdirs=()):
     NFiles = 0
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
@@ -190,7 +198,7 @@ def count_files_in(inpath: str, file_extensions: tuple, skipdirs=()):
     return NFiles
 
 
-def count_files(filenames: [], file_extensions: tuple):
+def count_files(filenames: [], file_extensions: Iterable):
     return len(filterFiles(filenames, file_extensions))
 
 
@@ -198,7 +206,7 @@ def filterFiles(filenames: [], file_extensions: Iterable):
     return [filename for filename in filenames if not file_extensions or file_has_ext(filename, file_extensions)]
 
 
-def file_has_ext(filename: str, file_extensions: tuple, ignore_case=True) -> bool:
+def file_has_ext(filename: str, file_extensions: Iterable, ignore_case=True) -> bool:
     for fileext in file_extensions:
         if ignore_case:
             fileext = fileext.lower()
@@ -218,6 +226,7 @@ def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r"", start=""
     if whitelist and not basename in whitelist: return True
     if regex and not re.search(regex, basename): return True
     if start and str(os.path.relpath(dirpath, inpath)).split(os.sep)[0] < start: return True
+    get_logger().info(dirpath)
     return False
 
 
@@ -241,3 +250,23 @@ def get_filename_sorted_dirfiletuples(file_extensions, *path) -> list:
 def is_not_standard_camera(filename: str) -> bool:
     models = [model for model in c.CameraModelShort.values() if not model == ""]
     return any(model in filename for model in models)
+
+
+def get_logger() -> Logger:
+    if not get_logger.logger:
+        import logging
+        logFormatter = logging.Formatter("%(asctime)s  %(message)s")
+        rootLogger = logging.getLogger()
+
+        timestring = dt.datetime.now().strftime("%y%m%d%H%M")
+        fileHandler = logging.FileHandler(os.path.join(get_log_dir(), timestring + ".log"))
+        fileHandler.setFormatter(logFormatter)
+        rootLogger.addHandler(fileHandler)
+
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setFormatter(logFormatter)
+        rootLogger.addHandler(consoleHandler)
+        get_logger.logger = rootLogger
+    return get_logger.logger
+
+get_logger.logger = None

@@ -8,7 +8,7 @@ import datetime as dt
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
     write_exiftag
-from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, is_invalid_path, get_setexif_dir
+from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, is_invalid_path, get_setexif_dir, get_logger
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.settings import includeSubdirs, file_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict
@@ -102,7 +102,6 @@ def name_to_exif(folder=r"", additional_tags=(), startdir=None):
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
         filenames = filterFiles(filenames, file_types)
-        print(dirpath)
         for filename in filenames:
             meta_data = FileMetaData(dirpath, filename)
             if startdir:
@@ -138,7 +137,7 @@ def geotag(timezone=2, offset="", start_folder=""):
         for dirname in dirnames:
             if dirname.startswith("."): continue
             if dirname < start_folder: continue
-            print(dirname)
+            get_logger().info(dirname)
             call_exiftool(inpath, dirname, options=options)
 
 
@@ -199,7 +198,6 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
     csv_filenames = [os.path.join(csv_folder, csv_filename + ".csv") for csv_filename in csv_filenames]
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder, start=start_folder): continue
-        print(dirpath)
         for filename in filterFiles(filenames, file_types):
             meta_data = FileMetaData(dirpath, filename)
             if import_filename: meta_data.import_filename()
