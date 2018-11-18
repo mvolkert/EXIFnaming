@@ -29,7 +29,10 @@ class Location:
 
         for key in Location.location_keys:
             if key in data and data[key]:
-                self.location[key] = data[key]
+                if data[key] == "none":
+                    self.location.pop(key, None)
+                else:
+                    self.location[key] = data[key]
 
     def update_via_tag_array(self, data: dict, i: int):
 
