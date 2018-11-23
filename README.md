@@ -6,8 +6,7 @@ Renaming/Ordering/Modifying Photos using EXIF tool https://sno.phy.queensu.ca/~p
 Developed for Panasonic Lumix TZ101 but other models may also work.
 You are free to contact me for verifying the support of your kamera model.
 
-##Functionalities:
-
+## Functionalities:
 * Ordering:   
     in folders by date
 
@@ -27,13 +26,13 @@ You are free to contact me for verifying the support of your kamera model.
 
 And many more...
 
-##Usage:
+## Usage:
 It is designed to be used via ipython.
 You do need at least basic knowlege about python.
 The different functions can either be used via the toplevel module or via the subscriptes.
 
 
-##Naming Conventions:
+## Naming Conventions:
 * AbrivationforPlace
     can be choosen freely
 * YearMonthDay
@@ -70,7 +69,7 @@ The different functions can either be used via the toplevel module or via the su
     have to be seperated by "_"
 
     
-##EXIF Conventions
+## EXIF Conventions
 * Label:  
     Same as Filename used to retrive Filename if it was changed
 * Title:  
