@@ -311,6 +311,7 @@ def split_filename(filename: str):
     filename_dict = {"main": [], "tags": [], "scene": [], "process": [], "p_tags": []}
     counter_complete = False
     for subname in filename_splited:
+        if not subname: continue
         if counter_complete:
             if is_process_tag(subname):
                 filename_dict["process"].append(subname)
@@ -336,6 +337,7 @@ def get_main_and_counter(filename: str):
     filename_splited = filename.split('_')
     counter = None
     for entry in filename_splited:
+        if not entry: continue
         if is_counter(entry):
             match = get_main_and_counter.regex.search(entry)
             counter = match.group(1)

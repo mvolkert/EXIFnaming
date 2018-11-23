@@ -225,7 +225,7 @@ def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r"", start=""
     if balcklist and basename in balcklist: return True
     if whitelist and not basename in whitelist: return True
     if regex and not re.search(regex, basename): return True
-    if start and str(os.path.relpath(dirpath, inpath)).split(os.sep)[0] < start: return True
+    if start and str(os.path.relpath(dirpath, inpath)) < start: return True
     get_logger().info(dirpath)
     return False
 

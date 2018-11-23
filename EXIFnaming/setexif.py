@@ -208,7 +208,7 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
             if import_exif: meta_data.import_exif()
 
             for csv_filename in csv_filenames:
-                with open(csv_filename) as csvfile:
+                with open(csv_filename, "r") as csvfile:
                     spamreader = csv.DictReader(csvfile, dialect='semicolon')
                     for row in spamreader:
                         meta_data.update(row)
