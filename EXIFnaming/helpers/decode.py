@@ -30,7 +30,7 @@ def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
         if count_files(filenames, selected_file_types) == 0:
             print("  No matching files in ", os.path.relpath(dirpath, inpath))
             continue
-        out = call_exiftool(dirpath, "*" + fileext, [], False)
+        out, err = call_exiftool(dirpath, "*" + fileext, [], False)
         out = out[out.find("ExifTool Version Number"):]
         out_split = out.split("========")
         print("%4d tags extracted in " % len(out_split), os.path.relpath(dirpath, inpath))
@@ -91,7 +91,7 @@ def has_not_keys(indict: dict, keys: list):
     return False
 
 
-def call_exiftool(dirpath: str, name: str, options=(), override=True) -> str:
+def call_exiftool(dirpath: str, name: str, options=(), override=True) -> (str, str):
     path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
     fullname = os.path.join(dirpath, name)
     encoding_args = ["-charset", encoding_format, "-charset", "FileName=" + encoding_format]
@@ -100,11 +100,11 @@ def call_exiftool(dirpath: str, name: str, options=(), override=True) -> str:
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     out = out.decode(encoding_format)
-    errors = err.decode(encoding_format).split("\r\n")
-    for line in errors:
+    err = err.decode(encoding_format)
+    for line in err.split("\r\n"):
         if not line: continue
         get_logger().warning(line)
-    return out
+    return out, err
 
 
 def sort_dict_by_date(indict: OrderedDict):
@@ -151,7 +151,7 @@ def askToContinue():
 
 
 def read_exiftag(dirpath: str, filename: str):
-    out = call_exiftool(dirpath, filename, [], False)
+    out, err = call_exiftool(dirpath, filename, [], False)
     return decode_exiftags(out)
 
 
