@@ -10,7 +10,7 @@ from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinu
     write_exiftag
 from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, is_invalid_path, get_setexif_dir, get_logger
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
-from EXIFnaming.helpers.settings import includeSubdirs, file_types
+from EXIFnaming.helpers.settings import includeSubdirs, file_types, image_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict
 from EXIFnaming.helpers.tags import *
 
@@ -204,7 +204,7 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder, start=start_folder): continue
-        for filename in filterFiles(filenames, file_types):
+        for filename in filterFiles(filenames, image_types):
             meta_data = FileMetaData(dirpath, filename)
             if not _passes_restrictor(meta_data, csv_restriction): continue
             if import_filename: meta_data.import_filename()
