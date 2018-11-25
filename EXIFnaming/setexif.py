@@ -153,7 +153,7 @@ def geotag_single(lat: float, lon: float):
     call_exiftool(inpath, "*", options=options)
 
 
-def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setexif_dir(),
+def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setexif_dir(), csv_restriction="",
              import_filename=True, import_exif=True, only_when_changed=False):
     """
     csv files are used for setting tags
@@ -183,6 +183,7 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
             'TM' are evaluated as HDR Tone Mapping description
             'PANO' are evaluated as Panorama description
     :param csv_folder: location of csv files - standard is the .EXIFnaming/info
+    :param csv_restriction: files that do not pass any of the restriction in this file are not modified at all
     :param folder: process only folders matching this regex
     :param start_folder: directories before this name will be ignored, does not needs to be a full directory name
     :param import_filename: whether to extract tags from filename
@@ -199,11 +200,13 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
     elif csv_filenames:
         csv_filenames = [csv_filename + ".csv" for csv_filename in csv_filenames]
     csv_filenames = [os.path.join(csv_folder, csv_filename) for csv_filename in csv_filenames]
+    csv_restriction = os.path.join(csv_folder, csv_restriction) + ".csv"
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder, start=start_folder): continue
         for filename in filterFiles(filenames, file_types):
             meta_data = FileMetaData(dirpath, filename)
+            if not _passes_restrictor(meta_data, csv_restriction): continue
             if import_filename: meta_data.import_filename()
             if import_exif: meta_data.import_exif()
 
@@ -217,3 +220,14 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
                 write_exiftag(meta_data.to_tag_dict(), meta_data.directory, meta_data.filename)
 
     clock.finish()
+
+
+def _passes_restrictor(meta_data, csv_restriction):
+    if not csv_restriction:
+        return True
+    with open(csv_restriction, "r") as csvfile:
+        spamreader = csv.DictReader(csvfile, dialect='semicolon')
+        for row in spamreader:
+            if meta_data.passes_restrictions(row):
+                return True
+    return False

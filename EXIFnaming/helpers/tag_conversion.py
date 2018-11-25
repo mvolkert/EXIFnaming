@@ -137,7 +137,7 @@ class FileMetaData:
         def good_key(key: str):
             return key in data and data[key]
 
-        if not self._passes_restrictions(data):
+        if not self.passes_restrictions(data):
             return
 
         if good_key('title'): self.title = data['title']
@@ -153,7 +153,7 @@ class FileMetaData:
             if not data[key] or key in FileMetaData.kown_keys: continue
             self.description_tree[key] = data[key]
 
-    def _passes_restrictions(self, data):
+    def passes_restrictions(self, data):
         def not_match_entry(key: str, func):
             return key in data and data[key] and not func(data[key])
 
