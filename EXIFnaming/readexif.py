@@ -398,7 +398,7 @@ def _read_timetable(filename=get_info_dir("timetable.txt")):
 _read_timetable.timeformat = "%y%m%d %H:%M"
 
 
-def better_gpx_via_timetable(gpxfilename="London.gpx"):
+def better_gpx_via_timetable(gpxfilename: str):
     def write(dirName_last, gpxfile_out):
         if dirName != dirName_last:
             if not dirName_last == "": gpxfile_out.write("</trkseg></trk>\r\n")

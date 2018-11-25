@@ -292,7 +292,7 @@ def extract_tags():
     tag_set_names = OrderedSet()
     tags_places_file = open(get_info_dir("tags_places.csv"), "w")
     writer = csv.writer(tags_places_file, dialect="semicolon")
-    writer.writerow(["dirname", "tag"])
+    writer.writerow(["directory", "name_part"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not inpath == dirpath: continue
         for dirname in dirnames:
