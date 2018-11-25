@@ -200,7 +200,8 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
     elif csv_filenames:
         csv_filenames = [csv_filename + ".csv" for csv_filename in csv_filenames]
     csv_filenames = [os.path.join(csv_folder, csv_filename) for csv_filename in csv_filenames]
-    csv_restriction = os.path.join(csv_folder, csv_restriction) + ".csv"
+    if csv_restriction:
+        csv_restriction = os.path.join(csv_folder, csv_restriction) + ".csv"
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder, start=start_folder): continue

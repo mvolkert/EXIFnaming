@@ -219,13 +219,15 @@ def file_has_ext(filename: str, file_extensions: Iterable, ignore_case=True) -> 
 def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r"", start="") -> bool:
     inpath = os.getcwd()
     basename = os.path.basename(dirpath)
+    relpath = str(os.path.relpath(dirpath, inpath))
+    dirnames = relpath.split(os.sep)
     if not includeSubdirs and not inpath == dirpath: return True
-    if basename.startswith('.'):  return True
+    if any(dirname.startswith('.') for dirname in dirnames):  return True
     if '.EXIFnaming' in dirpath:  return True
     if balcklist and basename in balcklist: return True
     if whitelist and not basename in whitelist: return True
     if regex and not re.search(regex, basename): return True
-    if start and str(os.path.relpath(dirpath, inpath)).lower() < start.lower(): return True
+    if start and relpath.lower() < start.lower(): return True
     get_logger().info(dirpath)
     return False
 
