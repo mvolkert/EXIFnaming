@@ -21,29 +21,29 @@ class DMC_TZ101(ModelBase):
     TagNames['Rec'] = ["Audio", "Megapixels", "Video Frame Rate", "Image Quality"]
     TagNames['Rot'] = ["Orientation", "Rotation", "Camera Orientation", "Roll Angle", "Pitch Angle"]
 
-    KreativeShort = OrderedDict()
-    KreativeShort['Expressive'] = "EXPS"
-    KreativeShort['Retro'] = "RETR"
-    KreativeShort['Old Days'] = "OLD"
-    KreativeShort['High Key'] = "HKEY"
-    KreativeShort['Low Key'] = "LKEY"
-    KreativeShort['Sepia'] = "SEPI"
-    KreativeShort['Monochrome'] = "MONO"
-    KreativeShort['Dynamic Monochrome'] = "D.MONO"
-    KreativeShort['Rough Monochrome'] = "R.MONO"
-    KreativeShort['Silky Monochrome'] = "S.MONO"
-    KreativeShort['Impressive Art'] = "IART"
-    KreativeShort['High Dynamic'] = "HDYN"
-    KreativeShort['Cross Process'] = "XPRO"
-    KreativeShort['Toy Effect'] = "TOY "
-    KreativeShort['Toy Pop'] = "TOYP"
-    KreativeShort['Bleach Bypass'] = "BLEA"
-    KreativeShort['Miniature'] = "MINI"
-    KreativeShort['Soft'] = "SOFT"
-    KreativeShort['Fantasy'] = "FAN "
-    KreativeShort['Star'] = "STAR"
-    KreativeShort['Color Select'] = "CLR"
-    KreativeShort['Sunshine'] = "SUN"
+    CreativeShort = OrderedDict()
+    CreativeShort['Expressive'] = "EXPS"
+    CreativeShort['Retro'] = "RETR"
+    CreativeShort['Old Days'] = "OLD"
+    CreativeShort['High Key'] = "HKEY"
+    CreativeShort['Low Key'] = "LKEY"
+    CreativeShort['Sepia'] = "SEPI"
+    CreativeShort['Monochrome'] = "MONO"
+    CreativeShort['Dynamic Monochrome'] = "D.MONO"
+    CreativeShort['Rough Monochrome'] = "R.MONO"
+    CreativeShort['Silky Monochrome'] = "S.MONO"
+    CreativeShort['Impressive Art'] = "IART"
+    CreativeShort['High Dynamic'] = "HDYN"
+    CreativeShort['Cross Process'] = "XPRO"
+    CreativeShort['Toy Effect'] = "TOY "
+    CreativeShort['Toy Pop'] = "TOYP"
+    CreativeShort['Bleach Bypass'] = "BLEA"
+    CreativeShort['Miniature'] = "MINI"
+    CreativeShort['Soft'] = "SOFT"
+    CreativeShort['Fantasy'] = "FAN "
+    CreativeShort['Star'] = "STAR"
+    CreativeShort['Color Select'] = "CLR"
+    CreativeShort['Sunshine'] = "SUN"
 
     SceneShort = OrderedDict()
     SceneShort['Clear Portrait'] = "POR1"
@@ -131,4 +131,4 @@ class DMC_TZ101(ModelBase):
         return DMC_TZ101.SceneShort
 
     def get_creative_abbr_dict(self) -> OrderedDict:
-        return DMC_TZ101.KreativeShort
+        return DMC_TZ101.CreativeShort

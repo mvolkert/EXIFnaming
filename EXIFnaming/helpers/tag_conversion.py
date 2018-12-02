@@ -384,7 +384,7 @@ process_to_tag.map = {"HDR": ["HDR"], "HDRT": ["HDR", "Tone Mapping"], "PANO": [
 
 
 def is_scene_abbreviation(name: str):
-    return name in DMC_TZ101.SceneShort.values() or name in DMC_TZ101.KreativeShort.values() or name in c.RecModes
+    return name in DMC_TZ101.SceneShort.values() or name in DMC_TZ101.CreativeShort.values() or name in c.RecModes
 
 
 def is_process_tag(name: str):
