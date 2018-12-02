@@ -7,6 +7,7 @@ from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers import constants as c
 from EXIFnaming.helpers.decode import read_exiftag
+from EXIFnaming.helpers.misc import is_counter
 from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer
 from EXIFnaming.models.DMC_TZ101 import DMC_TZ101
 
@@ -326,13 +327,6 @@ def split_filename(filename: str):
             filename_dict["main"].append(subname)
             if is_counter(subname): counter_complete = True
     return filename_dict
-
-
-def is_counter(name) -> bool:
-    starts_and_ends_with_digit = (np.chararray.isdigit(name[0]) and np.chararray.isdigit(name[-1]))
-    is_movie_counter = name[0] == "M" and np.chararray.isdigit(name[-1])
-    return starts_and_ends_with_digit or is_movie_counter
-
 
 def get_main_and_counter(filename: str):
     filename_splited = filename.split('_')

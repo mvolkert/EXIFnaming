@@ -1,7 +1,6 @@
 import sys
 
-from EXIFnaming.helpers.tag_conversion import is_counter
-
+import numpy as np
 
 def askToContinue():
     response = input("Do you want to continue ?")
@@ -42,3 +41,10 @@ def getPostfix(filename, postfix_stay=True):
                 found = True
 
     return postfix
+
+
+
+def is_counter(name) -> bool:
+    starts_and_ends_with_digit = (np.chararray.isdigit(name[0]) and np.chararray.isdigit(name[-1]))
+    is_movie_counter = name[0] == "M" and np.chararray.isdigit(name[-1])
+    return starts_and_ends_with_digit or is_movie_counter
