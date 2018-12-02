@@ -36,43 +36,43 @@ class DMC_TZ7(ModelBase):
     def __init__(self, Tagdict: OrderedDict, i: int):
         super().__init__(Tagdict, i)
 
-    def is_4KBurst(self):
+    def is_4KBurst(self) -> bool:
         return False
 
-    def is_4KFilm(self):
+    def is_4KFilm(self) -> bool:
         return False
 
-    def is_HighSpeed(self):
+    def is_HighSpeed(self) -> bool:
         return False
 
-    def is_FullHD(self):
+    def is_FullHD(self) -> bool:
         return False
 
-    def is_series(self):
+    def is_series(self) -> bool:
         return self.check_entry("Burst Mode", "On")
 
-    def is_Bracket(self):
+    def is_Bracket(self) -> bool:
         return self.has("Burst Mode") and not self.check_entry("Burst Mode", "Auto Exposure Bracketing (AEB)")
 
-    def is_stopmotion(self):
+    def is_stopmotion(self) -> bool:
         return False
 
-    def is_timelapse(self):
+    def is_timelapse(self) -> bool:
         return False
 
-    def is_4K(self):
+    def is_4K(self) -> bool:
         return False
 
-    def is_creative(self):
+    def is_creative(self) -> bool:
         return False
 
-    def is_scene(self):
+    def is_scene(self) -> bool:
         return self.has("Scene Mode") and not self.check_entry("Scene Mode", "Off") and self.is_printable_scene()
 
-    def is_HDR(self):
+    def is_HDR(self) -> bool:
         return False
 
-    def is_sun(self):
+    def is_sun(self) -> bool:
         return self.check_entry("Scene Mode", "Sunset")
 
     def get_scene_abbr_dict(self) -> OrderedDict:

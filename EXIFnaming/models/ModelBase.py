@@ -2,6 +2,8 @@ import os
 from collections import OrderedDict
 import numpy as np
 
+import EXIFnaming.helpers.constants as c
+
 
 class ModelBase:
     TagNames = OrderedDict()
@@ -90,65 +92,75 @@ class ModelBase:
         self.i = i
         self.filename = self.get_entry("File Name")
         self.dir = self.get_entry("Directory")
+        self.filename_new = self.get_entry("File Name new")
 
     def get_entry(self, entry: str):
         return self.Tagdict[entry][self.i]
 
-    def check_entry(self, entry: str, value: str):
+    def check_entry(self, entry: str, value: str) -> bool:
         return self.get_entry(entry) == value
 
-    def has(self, entry: str):
+    def has(self, entry: str) -> bool:
         return entry in self.Tagdict and self.get_entry(entry)
 
-    def is_4KBurst(self):
+    def is_4KBurst(self) -> bool:
         return self.check_entry("Image Quality", "4k Movie") and self.check_entry("Video Frame Rate", "29.97")
 
-    def is_4KFilm(self):
+    def is_4KFilm(self) -> bool:
         return self.check_entry("Image Quality", "4k Movie")
 
-    def is_HighSpeed(self):
+    def is_HighSpeed(self) -> bool:
         return self.check_entry("Image Quality", "Full HD Movie") and self.check_entry("Advanced Scene Mode", "HS")
 
-    def is_FullHD(self):
+    def is_FullHD(self) -> bool:
         return self.check_entry("Image Quality", "Full HD Movie") and self.check_entry("Advanced Scene Mode", "Off")
 
-    def is_series(self):
+    def is_series(self) -> bool:
         return self.check_entry("Burst Mode", "On")
 
-    def is_Bracket(self):
+    def is_Bracket(self) -> bool:
         return self.has("Bracket Settings") and not self.check_entry("Bracket Settings", "No Bracket")
 
-    def is_stopmotion(self):
+    def is_stopmotion(self) -> bool:
         return self.check_entry("Timer Recording", "Stop-motion Animation")
 
-    def is_timelapse(self):
+    def is_timelapse(self) -> bool:
         return self.check_entry("Timer Recording", "Time Lapse")
 
-    def is_4K(self):
+    def is_4K(self) -> bool:
         return self.check_entry("Image Quality", '8.2')
 
-    def is_creative(self):
+    def is_creative(self) -> bool:
         return self.check_entry("Scene Mode", "Creative Control") or self.check_entry("Scene Mode", "Digital Filter")
 
-    def is_scene(self):
+    def is_scene(self) -> bool:
         return self.has("Scene Mode") and not self.check_entry("Scene Mode", "Off") and self.is_printable_scene()
 
-    def is_HDR(self):
+    def is_HDR(self) -> bool:
         return self.has("HDR") and not self.check_entry("HDR", "Off")
 
-    def is_sun(self):
+    def is_sun(self) -> bool:
         return self.check_entry("Scene Mode", "Sun1") or self.check_entry("Scene Mode", "Sun2")
 
-    def is_printable_scene(self):
+    def is_rotated_by(self, deg: int) -> bool:
+        if deg == 0:
+            return self.check_entry("Rotation", "Horizontal (normal)")
+        elif deg == 90:
+            return self.check_entry("Rotation", "Rotate 90 CW")
+        elif deg == 270 or deg == -90:
+            return self.check_entry("Rotation", "Rotate 270 CW")
+        return False
+
+    def is_printable_scene(self) -> bool:
         return self.get_entry("Advanced Scene Mode") in self.get_scene_abbr_dict()
 
-    def is_printable_creative(self):
+    def is_printable_creative(self) -> bool:
         return self.get_entry("Advanced Scene Mode") in self.get_creative_abbr_dict()
 
-    def get_printable_scene(self):
+    def get_printable_scene(self) -> str:
         return self.get_scene_abbr_dict()[self.get_entry("Advanced Scene Mode")]
 
-    def get_printable_creative(self):
+    def get_printable_creative(self) -> str:
         return self.get_creative_abbr_dict()[self.get_entry("Advanced Scene Mode")]
 
     def get_scene_abbr_dict(self) -> OrderedDict:
@@ -157,7 +169,7 @@ class ModelBase:
     def get_creative_abbr_dict(self) -> OrderedDict:
         return ModelBase.CreativeShort
 
-    def get_recMode(self):
+    def get_recMode(self) -> str:
         if self.is_4KBurst():
             return "_4KB"
         elif self.is_4KFilm():
@@ -177,7 +189,7 @@ class ModelBase:
         if self.is_4K(): return "4KBSF"
         return ""
 
-    def get_mode(self):
+    def get_mode(self) -> str:
         if self.is_scene():
             return "_" + self.get_printable_scene()
         elif self.is_creative():
@@ -186,14 +198,14 @@ class ModelBase:
             return "_HDR"
         return ""
 
-    def get_date(self):
+    def get_date(self) -> str:
         dateTimeString = self.get_entry("Date/Time Original")
         if self.has("Sub Sec Time Original"):
             subsec = self.get_entry("Sub Sec Time Original")
             if subsec: dateTimeString += "." + subsec
         return dateTimeString
 
-    def get_SequenceNumber(self):
+    def get_SequenceNumber(self) -> int:
         """
         sequence starts with 1; 0 means no sequence
         """
@@ -202,13 +214,16 @@ class ModelBase:
         if np.chararray.isdigit(sequence_str): return int(sequence_str)
         return 0
 
-    def get_path(self):
+    def get_path(self) -> str:
         if not all([x in self.Tagdict for x in ["Directory", "File Name"]]):
             print("Directory or File Name is not in Tagdict")
             return ""
         return os.path.join(self.get_entry("Directory"), self.get_entry("File Name"))
 
-    def get_model_abbr(self):
+    def get_model_abbr(self) -> str:
         if self.has('Camera Model Name'): return ""
-        model = "_" + self.get_entry('Camera Model Name')
+        model = self.get_entry('Camera Model Name')
+        if model in c.CameraModelShort:
+            model = c.CameraModelShort[model]
+        if model: model = "_" + model
         return model

@@ -88,43 +88,43 @@ class DMC_TZ101(ModelBase):
     def __init__(self, Tagdict: OrderedDict, i: int):
         super().__init__(Tagdict, i)
 
-    def is_4KBurst(self):
+    def is_4KBurst(self) -> bool:
         return self.check_entry("Image Quality", "4k Movie") and self.check_entry("Video Frame Rate", "29.97")
 
-    def is_4KFilm(self):
+    def is_4KFilm(self) -> bool:
         return self.check_entry("Image Quality", "4k Movie")
 
-    def is_HighSpeed(self):
+    def is_HighSpeed(self) -> bool:
         return self.check_entry("Image Quality", "Full HD Movie") and self.check_entry("Advanced Scene Mode", "HS")
 
-    def is_FullHD(self):
+    def is_FullHD(self) -> bool:
         return self.check_entry("Image Quality", "Full HD Movie") and self.check_entry("Advanced Scene Mode", "Off")
 
-    def is_series(self):
+    def is_series(self) -> bool:
         return self.check_entry("Burst Mode", "On")
 
-    def is_Bracket(self):
+    def is_Bracket(self) -> bool:
         return self.has("Bracket Settings") and not self.check_entry("Bracket Settings", "No Bracket")
 
-    def is_stopmotion(self):
+    def is_stopmotion(self) -> bool:
         return self.check_entry("Timer Recording", "Stop-motion Animation")
 
-    def is_timelapse(self):
+    def is_timelapse(self) -> bool:
         return self.check_entry("Timer Recording", "Time Lapse")
 
-    def is_4K(self):
+    def is_4K(self) -> bool:
         return self.check_entry("Image Quality", '8.2')
 
-    def is_creative(self):
+    def is_creative(self) -> bool:
         return self.check_entry("Scene Mode", "Creative Control") or self.check_entry("Scene Mode", "Digital Filter")
 
-    def is_scene(self):
+    def is_scene(self) -> bool:
         return self.has("Scene Mode") and not self.check_entry("Scene Mode", "Off") and self.is_printable_scene()
 
-    def is_HDR(self):
+    def is_HDR(self) -> bool:
         return self.has("HDR") and not self.check_entry("HDR", "Off")
 
-    def is_sun(self):
+    def is_sun(self) -> bool:
         return self.check_entry("Scene Mode", "Sun1") or self.check_entry("Scene Mode", "Sun2")
 
     def get_scene_abbr_dict(self) -> OrderedDict:

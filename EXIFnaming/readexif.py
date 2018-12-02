@@ -109,7 +109,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
             NamePrefix = Prefix + daystring + model.get_model_abbr() + name
             if not i == 0: counter = 0
 
-        filename = Tagdict["File Name"][i]
+        filename = model.filename
         postfix = getPostfix(filename, postfix_stay)
         counterString = ""
         sequenceString = ""
@@ -154,10 +154,10 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
 
         newname += filename[filename.rfind("."):]
         Tagdict["File Name new"].append(newname)
-        outstring += _write(Tagdict["Directory"][i], filename, temppostfix, newname, onlyprint)
+        outstring += _write(model.dir, filename, temppostfix, newname, onlyprint)
         filename_Raw = changeExtension(filename, fileext_Raw)
-        if not fileext_Raw == "" and isfile(Tagdict["Directory"][i], filename_Raw):
-            outstring += _write(Tagdict["Directory"][i], filename_Raw, temppostfix,
+        if not fileext_Raw == "" and isfile(model.dir, filename_Raw):
+            outstring += _write(model.dir, filename_Raw, temppostfix,
                                 changeExtension(newname, fileext_Raw), onlyprint)
 
     dirname = getSavesDir()
@@ -195,7 +195,6 @@ def order():
     inpath = os.getcwd()
 
     Tagdict = read_exiftags(inpath)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     timeJumpDetector = TimeJumpDetector()
     time_old = giveDatetime()
     dircounter = 1
@@ -203,13 +202,14 @@ def order():
     leng = len(list(Tagdict.values())[0])
     dirNameDict_firsttime = OrderedDict()
     dirNameDict_lasttime = OrderedDict()
-    time = giveDatetime(Tagdict["Date/Time Original"][0])
+    time = giveDatetime(create_model(Tagdict,0).get_date())
     daystring = dateformating(time, "YYMMDD_")
     dirName = daystring + "%02d" % dircounter
     dirNameDict_firsttime[time] = dirName
     print('Number of JPG: %d' % leng)
     for i in range(leng):
-        time = giveDatetime(Tagdict["Date/Time Original"][i])
+        model = create_model(Tagdict, i)
+        time = giveDatetime(model.get_date())
 
         if timeJumpDetector.isJump(time, len(filenames)):
             dirNameDict_lasttime[time_old] = dirName
@@ -223,7 +223,7 @@ def order():
                 dircounter += 1
             dirName = daystring + "%02d" % dircounter
             dirNameDict_firsttime[time] = dirName
-        filenames.append((Tagdict["Directory"][i], Tagdict["File Name"][i]))
+        filenames.append((model.dir, model.filename))
         time_old = time
 
     dirNameDict_lasttime[time_old] = dirName
@@ -236,7 +236,8 @@ def order():
     leng = len(list(Tagdict_mp4.values())[0])
     print('Number of mp4: %d' % leng)
     for i in range(leng):
-        time = giveDatetime(Tagdict_mp4["Date/Time Original"][i])
+        model = create_model(Tagdict, i)
+        time = giveDatetime(model.get_date())
         dirName = find_dir_with_closest_time(dirNameDict_firsttime, dirNameDict_lasttime, time)
 
         if dirName:
@@ -306,16 +307,17 @@ def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask=True):
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):
             # Load the original image:
-            if not subname in Tagdict["File Name"][i]: continue
-            if Tagdict["Rotation"][i] == "Horizontal (normal)":
+            model = create_model(Tagdict, i)
+            if not subname in model.filename: continue
+            if model.is_rotated_by(0):
                 continue
             else:
-                name = os.path.join(Tagdict["Directory"][i], Tagdict["File Name"][i])
-                print(Tagdict["File Name"][i])
+                name = model.get_path()
+                print(model.filename)
                 img = Image.open(name)
-                if Tagdict["Rotation"][i] == "Rotate 90 CW":
+                if model.is_rotated_by(90):
                     img_rot = img.rotate(90 * sign, expand=True)
-                elif Tagdict["Rotation"][i] == "Rotate 270 CW":
+                elif model.is_rotated_by(-90):
                     img_rot = img.rotate(-90 * sign, expand=True)
                 else:
                     continue
@@ -374,11 +376,12 @@ def order_with_timetable(timefile=get_info_dir("timetable.txt"), fileexts=(".JPG
         leng = len(list(Tagdict.values())[0])
         print('Number of jpg: %d' % leng)
         for i in range(leng):
-            time = giveDatetime(Tagdict["Date/Time Original"][i])
+            model = create_model(Tagdict, i)
+            time = giveDatetime(model.get_date())
             dirName = find_dir_with_closest_time(dirNameDict_firsttime, dirNameDict_lasttime, time)
 
             if dirName:
-                move(Tagdict["File Name"][i], Tagdict["Directory"][i], os.path.join(inpath, dirName))
+                move(model.filename, model.dir, os.path.join(inpath, dirName))
 
 
 def _read_timetable(filename=get_info_dir("timetable.txt")):
@@ -405,6 +408,7 @@ def better_gpx_via_timetable(gpxfilename: str):
             if not dirName_last == "": gpxfile_out.write("</trkseg></trk>\r\n")
             gpxfile_out.write("<trk><name>" + dirName + "</name><trkseg>\r\n")
         gpxfile_out.write(line)
+
     timefile = get_info_dir("timetable.txt")
     gpxfilename = get_gps_dir(gpxfilename)
     dirNameDict_firsttime, dirNameDict_lasttime = _read_timetable(timefile)

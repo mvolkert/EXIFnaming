@@ -28,7 +28,8 @@ def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):
     time_tags_mp4 = ["TrackCreateDate", "TrackModifyDate", "MediaCreateDate", "MediaModifyDate"]
     dir_change_printer = DirChangePrinter(Tagdict["Directory"][0])
     for i in range(leng):
-        time = giveDatetime(Tagdict["Date/Time Original"][i])
+        model = create_model(Tagdict, i)
+        time = giveDatetime(model.get_date())
         newtime = time + delta_t
         timestring = dateformating(newtime, "YYYY:MM:DD HH:mm:ss")
         outTagDict = {}
@@ -37,8 +38,8 @@ def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):
         if fileext in (".MP4", ".mp4"):
             for time_tag in time_tags_mp4:
                 outTagDict[time_tag] = timestring
-        write_exiftags(outTagDict, Tagdict["Directory"][i], Tagdict["File Name"][i])
-        dir_change_printer.update(Tagdict["Directory"][i])
+        write_exiftags(outTagDict, model.dir, model.filename)
+        dir_change_printer.update(model.dir)
     dir_change_printer.finish()
 
 
@@ -79,7 +80,6 @@ def location_to_keywords():
     print("process", count_files_in(inpath, file_types, ""), "Files in ", inpath, "subdir:", includeSubdirs)
     askToContinue()
     Tagdict = read_exiftags(inpath, ask=False)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     for i in range(leng):
         dirpath = Tagdict["Directory"][i]

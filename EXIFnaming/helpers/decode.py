@@ -108,8 +108,16 @@ def call_exiftool(dirpath: str, name: str, options=(), override=True) -> (str, s
 
 
 def sort_dict_by_date(indict: OrderedDict):
-    sortkeys = ["Date/Time Original"]
-    if "Sub Sec Time Original" in indict: sortkeys.append("Sub Sec Time Original")
+    date_mod_name = "File Modification Date/Time"
+    date_org_name = "Date/Time Original"
+    date_sub_name = "Sub Sec Time Original"
+    sortkeys = []
+    if date_org_name in indict:
+        sortkeys.append(date_org_name)
+        if date_sub_name in indict:
+            sortkeys.append(date_sub_name)
+    if date_mod_name in indict:
+        sortkeys.append(date_mod_name)
     return sort_dict(indict, sortkeys)
 
 
@@ -156,7 +164,6 @@ def read_exiftag(dirpath: str, filename: str):
 
 
 def decode_exiftags(tags: str):
-    date_org_name = "Date/Time Original"
     tagDict = OrderedDict()
     for tag in tags.split("\r\n"):
         keyval = tag.split(": ", 1)
@@ -169,8 +176,6 @@ def decode_exiftags(tags: str):
         tagDict[key] = val
     if not tagDict:
         get_logger().error("no tags extracted from: %s" % tags)
-    elif not date_org_name in tagDict:
-        print("error:", date_org_name, "not in", tagDict)
     return tagDict
 
 
@@ -180,7 +185,7 @@ def listsOfDicts_to_dictOfLists(listOfDicts: list, ask=True) -> OrderedDict:
     :type listOfDicts: list
     :parm ask whether to ask for continue when keys not occur
     """
-    essential = ["File Name", "Directory", "Date/Time Original"]
+    essential = ["File Name", "Directory", "File Modification Date/Time"]
     if not listOfDicts or not listOfDicts[0] or not listOfDicts[0].keys(): return OrderedDict()
     if has_not_keys(listOfDicts[0], essential): return OrderedDict()
 

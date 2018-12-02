@@ -8,7 +8,7 @@ import os
 
 from EXIFnaming.helpers.decode import has_not_keys
 from EXIFnaming.models import *
-from EXIFnaming.models.ModelBase import ModelBase
+
 
 def getPath(Tagdict, i: int):
     if not all([x in Tagdict for x in ["Directory", "File Name"]]):
@@ -40,9 +40,14 @@ def checkIntegrity(Tagdict, fileext=".JPG"):
         return
 
 
-def create_model(Tagdict, i: int):
-    if not 'Camera Model Name' in Tagdict: return ""
+def create_model(Tagdict, i: int) -> ModelBase:
+    if not 'Camera Model Name' in Tagdict:
+        return NormalFile(Tagdict, i)
     model = Tagdict['Camera Model Name'][i]
     if model == "DMC_TZ101":
         return DMC_TZ101(Tagdict, i)
-    return ModelBase(Tagdict, i)
+    if model == "DMC_TZ7":
+        return DMC_TZ7(Tagdict, i)
+    if model in ["SM-G900F"]:
+        return PhotoFile(Tagdict, i)
+    return NormalFile(Tagdict, i)
