@@ -10,7 +10,6 @@ from collections import OrderedDict
 
 import numpy as np
 
-import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_firstlast_of_dirname, \
     find_dir_with_closest_time
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag

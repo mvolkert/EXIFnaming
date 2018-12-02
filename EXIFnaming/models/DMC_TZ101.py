@@ -1,4 +1,5 @@
 from collections import OrderedDict
+
 from EXIFnaming.models.ModelBase import ModelBase
 
 
@@ -83,7 +84,6 @@ class DMC_TZ101(ModelBase):
     unknownTags[("Advanced Scene Mode", "Unknown (0 7)")] = "4K"
     unknownTags[("Scene Mode", "Unknown (60)")] = "4K"
     unknownTags[("Scene Mode", "Unknown (54)")] = "HS"
-
 
     def __init__(self, Tagdict: OrderedDict, i: int):
         super().__init__(Tagdict, i)

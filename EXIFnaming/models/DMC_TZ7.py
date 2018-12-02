@@ -1,4 +1,5 @@
 from collections import OrderedDict
+
 from EXIFnaming.models.ModelBase import ModelBase
 
 
@@ -7,12 +8,14 @@ class DMC_TZ7(ModelBase):
 
     TagNames['AF'] = ["AF Area Mode", "AF Assist Lamp", "Focus Mode", "Macro Mode", "Metering Mode"]
     TagNames['Mode'] = ["Advanced Scene Mode", "Advanced Scene Type", "Color Effect", "Contrast Mode"
-                        "Scene Capture Type", "Scene Mode", "Scene Type", "Self Timer", "Shooting Mode"]
+                                                                                      "Scene Capture Type",
+                        "Scene Mode", "Scene Type", "Self Timer", "Shooting Mode"]
     TagNames['Series'] = ["Bracket Settings", "Burst Mode", "Sequence Number"]
     TagNames['Series'] += ["Dependent Image 1 Entry Number", "Dependent Image 2 Entry Number", "Number Of Images"]
     TagNames['Exposure'] = ["Exposure Compensation", "Exposure Mode", "Exposure Program", "Exposure Time"]
     TagNames['Flash'] = ["Flash", "Flash Bias", "Flash Warning"]
-    TagNames['Zoom'] = ["Field Of View", "Focal Length", "Focal Length In 35mm Format", "F Number", "Hyperfocal Distance"]
+    TagNames['Zoom'] = ["Field Of View", "Focal Length", "Focal Length In 35mm Format", "F Number",
+                        "Hyperfocal Distance"]
     TagNames['Qual'] = ["ISO", "Light Source", "Light Value", "Program ISO",
                         "Gain Control", "White Balance"]
     TagNames['Time'] = ["Date/Time Original"]
@@ -31,7 +34,6 @@ class DMC_TZ7(ModelBase):
     SceneShort['Panorama Assist'] = "PANOP"
 
     unknownTags = OrderedDict()
-
 
     def __init__(self, Tagdict: OrderedDict, i: int):
         super().__init__(Tagdict, i)

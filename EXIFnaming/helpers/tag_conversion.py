@@ -2,7 +2,6 @@ import os
 import re
 from collections import OrderedDict
 
-import numpy as np
 from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers import constants as c
@@ -327,6 +326,7 @@ def split_filename(filename: str):
             filename_dict["main"].append(subname)
             if is_counter(subname): counter_complete = True
     return filename_dict
+
 
 def get_main_and_counter(filename: str):
     filename_splited = filename.split('_')

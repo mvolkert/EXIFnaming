@@ -6,10 +6,12 @@ Just ideas
 import os
 import shutil
 
+from PIL import Image
+
 from EXIFnaming.helpers.date import giveDatetime
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys
 from EXIFnaming.helpers.tags import getPath, create_model
-from PIL import Image
+
 
 def _detect_3D():
     """
@@ -62,6 +64,7 @@ def _detect_sunset():
         if os.path.isfile(filename.replace(Tagdict["Directory"][i], newDir)): continue
         shutil.copy2(filename, newDir)
         # evening and Sun1 or Sun2 are used
+
 
 def _convert_to_jpg():
     """

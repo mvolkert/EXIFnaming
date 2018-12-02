@@ -1,4 +1,5 @@
 from collections import OrderedDict
+
 from EXIFnaming.models.ModelBase import ModelBase
 
 
@@ -10,7 +11,6 @@ class NormalFile(ModelBase):
     SceneShort = OrderedDict()
 
     unknownTags = OrderedDict()
-
 
     def __init__(self, Tagdict: OrderedDict, i: int):
         super().__init__(Tagdict, i)
@@ -59,7 +59,6 @@ class NormalFile(ModelBase):
 
     def get_creative_abbr_dict(self) -> OrderedDict:
         return NormalFile.CreativeShort
-
 
     def get_recMode(self) -> str:
         return ""

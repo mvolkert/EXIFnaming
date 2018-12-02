@@ -2,6 +2,7 @@ import sys
 
 import numpy as np
 
+
 def askToContinue():
     response = input("Do you want to continue ?")
     print(response)
@@ -41,7 +42,6 @@ def getPostfix(filename, postfix_stay=True):
                 found = True
 
     return postfix
-
 
 
 def is_counter(name) -> bool:

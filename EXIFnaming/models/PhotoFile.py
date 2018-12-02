@@ -1,4 +1,5 @@
 from collections import OrderedDict
+
 from EXIFnaming.models.ModelBase import ModelBase
 
 
@@ -10,7 +11,6 @@ class PhotoFile(ModelBase):
     SceneShort = OrderedDict()
 
     unknownTags = OrderedDict()
-
 
     def __init__(self, Tagdict: OrderedDict, i: int):
         super().__init__(Tagdict, i)
@@ -60,7 +60,6 @@ class PhotoFile(ModelBase):
     def get_creative_abbr_dict(self) -> OrderedDict:
         return PhotoFile.CreativeShort
 
-
     def get_recMode(self) -> str:
         return ""
 
@@ -72,4 +71,3 @@ class PhotoFile(ModelBase):
 
     def get_SequenceNumber(self) -> int:
         return 0
-

@@ -1,10 +1,11 @@
 # https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
 
+import os
+
+import cv2
+import numpy as np
 # import the necessary packages
 from skimage.measure import compare_ssim as ssim
-import numpy as np
-import cv2
-import os
 
 
 def is_blurry(directory, filename, threshold=100):

@@ -1,3 +1,4 @@
+import datetime as dt
 import os
 import re
 import shutil
@@ -6,7 +7,6 @@ from logging import Logger
 from typing import Iterable
 
 import numpy as np
-import datetime as dt
 
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.misc import askToContinue
@@ -271,5 +271,6 @@ def get_logger() -> Logger:
         rootLogger.setLevel(10)
         get_logger.logger = rootLogger
     return get_logger.logger
+
 
 get_logger.logger = None

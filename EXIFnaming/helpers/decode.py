@@ -137,7 +137,7 @@ def sort_dict(indict: OrderedDict, keys: list):
             if key in indict:
                 vals.append(indict[key][i])
             else:
-                get_logger().warning("sortDict_badkey %s"%key)
+                get_logger().warning("sortDict_badkey %s" % key)
         lists.append(vals)
 
     for col in reversed(cols):
