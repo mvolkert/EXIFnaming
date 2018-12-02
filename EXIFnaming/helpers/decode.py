@@ -181,9 +181,8 @@ def decode_exiftags(tags: str):
 
 def listsOfDicts_to_dictOfLists(listOfDicts: list, ask=True) -> OrderedDict:
     """
-
     :type listOfDicts: list
-    :parm ask whether to ask for continue when keys not occur
+    :param ask: whether to ask for continue when keys not occur
     """
     essential = ["File Name", "Directory", "File Modification Date/Time"]
     if not listOfDicts or not listOfDicts[0] or not listOfDicts[0].keys(): return OrderedDict()

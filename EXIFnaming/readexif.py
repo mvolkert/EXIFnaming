@@ -30,24 +30,23 @@ def print_info(tagGroupNames=(), allGroups=False, fileext=".JPG"):
     :param fileext: file extension
     """
     inpath = os.getcwd()
-    outdict = read_exiftags(inpath, fileext)
-    if allGroups: tagGroupNames = c.TagNames.keys()
-    for tagGroupName in c.TagNames:
+    tagdict = read_exiftags(inpath, fileext)
+    model = create_model(tagdict, 0)
+    tagnames = model.TagNames
+    if allGroups: tagGroupNames = tagnames.keys()
+    for tagGroupName in tagnames:
         if not tagGroupNames == [] and not tagGroupName in tagGroupNames: continue
         outstring = ""
-        for entry in ["File Name"] + c.TagNames[tagGroupName]:
-            if not entry in outdict: continue
-            if len(outdict[entry]) == len(outdict["File Name"]):
-                outstring += "%-30s\t" % entry
-            else:
-                del outdict[entry]
+        for entry in ["File Name"] + tagnames[tagGroupName]:
+            if not entry in tagdict: continue
+            outstring += "%-30s\t" % entry
         outstring += "\n"
-        for i in range(len(outdict["File Name"])):
 
-            outstring += "%-40s\t" % outdict["File Name"][i]
-            for entry in c.TagNames[tagGroupName]:
-                if not entry in outdict: continue
-                val = outdict[entry]
+        for i in range(len(tagdict["File Name"])):
+            outstring += "%-40s\t" % tagdict["File Name"][i]
+            for entry in tagnames[tagGroupName]:
+                if not entry in tagdict: continue
+                val = tagdict[entry]
                 outstring += "%-30s\t" % val[i]
             outstring += "\n"
 
@@ -144,7 +143,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
         if newname == lastnewname: newname = NamePrefix + counterString + sequenceString + "_K" + newpostfix
 
         if newname in Tagdict["File Name new"]:
-            print(os.path.join(Tagdict["Directory"][i], newname + postfix),
+            print(os.path.join(model.dir, newname + postfix),
                   "already exists - counted further up - time:", time, "time_old: ", time_old)
             counter += 1
             newname = NamePrefix + ("_%0" + digits + "d") % counter + sequenceString + newpostfix
@@ -202,7 +201,7 @@ def order():
     leng = len(list(Tagdict.values())[0])
     dirNameDict_firsttime = OrderedDict()
     dirNameDict_lasttime = OrderedDict()
-    time = giveDatetime(create_model(Tagdict,0).get_date())
+    time = giveDatetime(create_model(Tagdict, 0).get_date())
     daystring = dateformating(time, "YYMMDD_")
     dirName = daystring + "%02d" % dircounter
     dirNameDict_firsttime[time] = dirName
@@ -232,7 +231,6 @@ def order():
     print_firstlast_of_dirname(dirNameDict_firsttime, dirNameDict_lasttime)
 
     Tagdict_mp4 = read_exiftags(inpath, fileext=".MP4")
-    if has_not_keys(Tagdict_mp4, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict_mp4.values())[0])
     print('Number of mp4: %d' % leng)
     for i in range(leng):
@@ -241,7 +239,7 @@ def order():
         dirName = find_dir_with_closest_time(dirNameDict_firsttime, dirNameDict_lasttime, time)
 
         if dirName:
-            move(Tagdict_mp4["File Name"][i], Tagdict_mp4["Directory"][i], os.path.join(inpath, dirName, "mp4"))
+            move(model.filename, model.dir, os.path.join(inpath, dirName, "mp4"))
 
 
 def searchby_exiftag_equality(tag_name: str, value: str, fileext=".JPG"):
@@ -272,7 +270,7 @@ def searchby_exiftag_interval(tag_name: str, min_value: float, max_value: float,
     """
     inpath = os.getcwd()
     Tagdict = read_exiftags(inpath, fileext)
-    if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", tag_name]): return
+    if has_not_keys(Tagdict, keys=[tag_name]): return
     leng = len(list(Tagdict.values())[0])
     files = []
     for i in range(leng):
@@ -303,7 +301,7 @@ def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask=True):
         if len(filenames) == 0: continue
         print(dirpath)
         Tagdict = read_exiftags(dirpath, ".jpg", ask=ask)
-        if has_not_keys(Tagdict, keys=["Directory", "File Name", "Rotation"]): return
+        if has_not_keys(Tagdict, keys=["Rotation"]): return
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):
             # Load the original image:
@@ -334,7 +332,7 @@ def exif_to_name():
     inpath = os.getcwd()
     for fileext in file_types:
         Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
-        if has_not_keys(Tagdict, keys=["Directory", "File Name", "Label"]): return
+        if has_not_keys(Tagdict, keys=["Label"]): return
         temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):
@@ -372,7 +370,6 @@ def order_with_timetable(timefile=get_info_dir("timetable.txt"), fileexts=(".JPG
     dirNameDict_firsttime, dirNameDict_lasttime = _read_timetable(timefile)
     for fileext in fileexts:
         Tagdict = read_exiftags(inpath, fileext=fileext)
-        if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
         leng = len(list(Tagdict.values())[0])
         print('Number of jpg: %d' % leng)
         for i in range(leng):

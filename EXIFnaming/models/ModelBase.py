@@ -215,10 +215,7 @@ class ModelBase:
         return 0
 
     def get_path(self) -> str:
-        if not all([x in self.Tagdict for x in ["Directory", "File Name"]]):
-            print("Directory or File Name is not in Tagdict")
-            return ""
-        return os.path.join(self.get_entry("Directory"), self.get_entry("File Name"))
+        return os.path.join(self.dir, self.filename)
 
     def get_model_abbr(self) -> str:
         if self.has('Camera Model Name'): return ""
