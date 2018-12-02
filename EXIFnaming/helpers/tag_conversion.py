@@ -8,6 +8,7 @@ from sortedcollections import OrderedSet
 from EXIFnaming.helpers import constants as c
 from EXIFnaming.helpers.decode import read_exiftag
 from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer
+from EXIFnaming.models.DMC_TZ101 import DMC_TZ101
 
 
 class Location:
@@ -383,7 +384,7 @@ process_to_tag.map = {"HDR": ["HDR"], "HDRT": ["HDR", "Tone Mapping"], "PANO": [
 
 
 def is_scene_abbreviation(name: str):
-    return name in c.SceneShort.values() or name in c.KreativeShort.values() or name in c.RecModes
+    return name in DMC_TZ101.SceneShort.values() or name in DMC_TZ101.KreativeShort.values() or name in c.RecModes
 
 
 def is_process_tag(name: str):

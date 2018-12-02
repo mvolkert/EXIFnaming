@@ -29,5 +29,5 @@ def step4_sanitzeHDR(subname="HDRT", folder="HDR"):
     rename_HDR(mode=subname, folder=folder)
 
 def step5_write_exif():
-    name_to_exif(artist="Marco Volkert", additional_tags=(), startdir=None)
+    name_to_exif(additional_tags=(), startdir=None)
     geotag(timezone=2, offset="")

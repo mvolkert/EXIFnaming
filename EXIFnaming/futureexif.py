@@ -8,7 +8,7 @@ import shutil
 
 from EXIFnaming.helpers.date import giveDatetime
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys
-from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getDate, is_series, is_sun
+from EXIFnaming.helpers.tags import getPath, create_model
 from PIL import Image
 
 def _detect_3D():
@@ -25,9 +25,10 @@ def _detect_3D():
     for i in range(len(list(Tagdict.values())[0])):
         newDir = os.path.join(Tagdict["Directory"][i], dir3D)
         os.makedirs(newDir, exist_ok=True)
-        SequenceNumber = getSequenceNumber(Tagdict, i)
-        if is_series(Tagdict, i) or SequenceNumber > 1: continue
-        time = giveDatetime(getDate(Tagdict, i))
+        model = create_model(Tagdict, i)
+        SequenceNumber = model.get_SequenceNumber()
+        if model.is_series() or SequenceNumber > 1: continue
+        time = giveDatetime(model.get_date())
         timedelta = time - time_old
         timedelta_sec = timedelta.days * 3600 * 24 + timedelta.seconds
         time_old = time
@@ -53,9 +54,10 @@ def _detect_sunset():
     for i in range(len(list(Tagdict.values())[0])):
         newDir = os.path.join(Tagdict["Directory"][i], "Sunset")
         os.makedirs(newDir, exist_ok=True)
-        time = giveDatetime(getDate(Tagdict, i))
+        model = create_model(Tagdict, i)
+        time = giveDatetime(model.get_date())
         if 23 < time.hour or time.hour < 17: continue
-        if not is_sun(Tagdict, i): continue
+        if not model.is_sun(): continue
         filename = getPath(Tagdict, i)
         if os.path.isfile(filename.replace(Tagdict["Directory"][i], newDir)): continue
         shutil.copy2(filename, newDir)

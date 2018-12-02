@@ -1,0 +1,1 @@
+from EXIFnaming.models.DMC_TZ101 import DMC_TZ101

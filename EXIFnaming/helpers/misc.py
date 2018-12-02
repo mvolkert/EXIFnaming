@@ -1,5 +1,7 @@
 import sys
-import numpy as np
+
+from EXIFnaming.helpers.tag_conversion import is_counter
+
 
 def askToContinue():
     response = input("Do you want to continue ?")
@@ -36,7 +38,7 @@ def getPostfix(filename, postfix_stay=True):
         for subname in filename_splited:
             if found:
                 postfix += "_" + subname
-            elif np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1]):
+            elif is_counter(subname):
                 found = True
 
     return postfix

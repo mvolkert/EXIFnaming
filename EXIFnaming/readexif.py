@@ -19,8 +19,7 @@ from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtensio
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat, getPostfix
 from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
-from EXIFnaming.helpers.tags import getPath, getSequenceNumber, getMode, getCameraModel, getDate, get_recMode, \
-    get_sequence_string, checkIntegrity
+from EXIFnaming.helpers.tags import checkIntegrity, create_model, getPath
 
 
 def print_info(tagGroupNames=(), allGroups=False, fileext=".JPG"):
@@ -102,11 +101,12 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     NamePrefix = ""
 
     for i in range(number_of_files):
-        time = giveDatetime(getDate(Tagdict, i))
+        model = create_model(Tagdict, i)
+        time = giveDatetime(model.get_date())
 
         if newdate(time, time_old, 'D' in dateformat or 'N' in dateformat):
             daystring = dateformating(time, dateformat)
-            NamePrefix = Prefix + daystring + getCameraModel(Tagdict, i) + name
+            NamePrefix = Prefix + daystring + model.get_model_abbr() + name
             if not i == 0: counter = 0
 
         filename = Tagdict["File Name"][i]
@@ -120,9 +120,9 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
                 counter += 1
             else:
                 # SequenceNumber
-                SequenceNumber = getSequenceNumber(Tagdict, i)
+                SequenceNumber = model.get_SequenceNumber()
                 if SequenceNumber < 2 and not time == time_old: counter += 1
-                if not "HDR" in filename: sequenceString = get_sequence_string(SequenceNumber, Tagdict, i)
+                if not "HDR" in filename: sequenceString = model.get_sequence_string(SequenceNumber)
 
             counterString = ("_%0" + digits + "d") % counter
 
@@ -130,11 +130,11 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
             counter += 1
             counterString = "_M" + "%02d" % counter
             if not easymode:
-                newpostfix += get_recMode(Tagdict, i)
+                newpostfix += model.get_recMode()
 
         if not easymode:
             # Name Scene Modes
-            newpostfix += getMode(Tagdict, i)
+            newpostfix += model.get_mode()
             if newpostfix in postfix:
                 newpostfix = postfix
             else:
@@ -178,12 +178,13 @@ def _count_files_for_each_date(Tagdict, startindex, dateformat):
     maxCounter = 0
     print("number of photos for each date:")
     for i in range(leng):
-        time = giveDatetime(getDate(Tagdict, i))
+        model = create_model(Tagdict, i)
+        time = giveDatetime(model.get_date())
         if not i == 0 and newdate(time, time_old, 'D' in dateformat or 'N' in dateformat):
             print(time_old.date(), counter)
             if maxCounter < counter: maxCounter = counter
             counter = startindex - 1
-        if getSequenceNumber(Tagdict, i) < 2: counter += 1
+        if model.get_SequenceNumber() < 2: counter += 1
         time_old = time
     print(time_old.date(), counter)
     if maxCounter < counter: maxCounter = counter
