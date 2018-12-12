@@ -1,5 +1,6 @@
 sortedcollections
-skimage
-cv2
+scikit-image
+opencv-python
 numpy
-PIL
+Pillow
+googlemaps
