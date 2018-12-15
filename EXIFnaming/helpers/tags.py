@@ -5,8 +5,6 @@ collection of Tag tools
 """
 
 import os
-
-from EXIFnaming.helpers.decode import has_not_keys
 from EXIFnaming.models import *
 
 
@@ -16,30 +14,6 @@ def getPath(Tagdict, i: int):
         return ""
     return os.path.join(Tagdict["Directory"][i], Tagdict["File Name"][i])
 
-
-def checkIntegrity(Tagdict, fileext=".JPG"):
-    """
-    :return: None if not primary keys, false if not advanced keys
-    """
-    # check integrity
-    if len(Tagdict) == 0: return
-    keysPrim = ["Directory", "File Name", "Date/Time Original"]
-    keysJPG = ["Image Quality", "HDR", "Advanced Scene Mode", "Scene Mode", "Bracket Settings", "Burst Mode",
-               "Sequence Number", "Sub Sec Time Original"]
-    keysMP4 = ["Image Quality", "HDR", "Advanced Scene Mode", "Scene Mode", "Video Frame Rate"]
-
-    if not Tagdict: return
-    if has_not_keys(Tagdict, keys=keysPrim): return
-
-    if any(fileext == ext for ext in ['.jpg', '.JPG']):
-        return has_not_keys(Tagdict, keys=keysJPG)
-    elif any(fileext == ext for ext in ['.mp4', '.MP4']):
-        return has_not_keys(Tagdict, keys=keysMP4)
-    else:
-        print("unknown file extension")
-        return
-
-
 def create_model(Tagdict, i: int) -> ModelBase:
     if not 'Camera Model Name' in Tagdict:
         return NormalFile(Tagdict, i)
@@ -48,6 +22,7 @@ def create_model(Tagdict, i: int) -> ModelBase:
         return DMC_TZ101(Tagdict, i)
     if model == "DMC_TZ7":
         return DMC_TZ7(Tagdict, i)
-    if model in ["SM-G900F"]:
+    dateTimeKey = "Date/Time Original"
+    if dateTimeKey in Tagdict and Tagdict[dateTimeKey][i]:
         return PhotoFile(Tagdict, i)
     return NormalFile(Tagdict, i)

@@ -63,7 +63,7 @@ class NormalFile(ModelBase):
     def get_recMode(self) -> str:
         return ""
 
-    def get_sequence_string(self, SequenceNumber: int) -> str:
+    def get_sequence_string(self) -> str:
         return ""
 
     def get_mode(self) -> str:
@@ -73,7 +73,7 @@ class NormalFile(ModelBase):
         dateTimeString = self.get_entry("File Modification Date/Time")
         return dateTimeString
 
-    def get_SequenceNumber(self) -> int:
+    def get_sequence_number(self) -> int:
         return 0
 
     def get_model_abbr(self) -> str:

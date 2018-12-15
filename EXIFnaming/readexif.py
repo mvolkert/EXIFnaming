@@ -18,7 +18,7 @@ from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtensio
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat, getPostfix
 from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
-from EXIFnaming.helpers.tags import checkIntegrity, create_model, getPath
+from EXIFnaming.helpers.tags import create_model, getPath
 
 
 def print_info(tagGroupNames=(), allGroups=False, fileext=".JPG"):
@@ -77,10 +77,6 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     inpath = os.getcwd()
     Tagdict = read_exiftags(inpath, fileext)
 
-    # check integrity
-    easymode = checkIntegrity(Tagdict, fileext)
-    if easymode is None: return
-
     # rename temporary
     if not onlyprint:
         temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
@@ -114,29 +110,24 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
         newpostfix = ""
 
         if fileext in image_types:
-            if easymode:
-                counter += 1
-            else:
-                # SequenceNumber
-                SequenceNumber = model.get_SequenceNumber()
-                if SequenceNumber < 2 and not time == time_old: counter += 1
-                if not "HDR" in filename: sequenceString = model.get_sequence_string(SequenceNumber)
+            # SequenceNumber
+            sequence_number = model.get_sequence_number()
+            if sequence_number < 2 and not time == time_old: counter += 1
+            if not "HDR" in filename: sequenceString = model.get_sequence_string()
 
             counterString = ("_%0" + digits + "d") % counter
 
         elif fileext in video_types:
             counter += 1
             counterString = "_M" + "%02d" % counter
-            if not easymode:
-                newpostfix += model.get_recMode()
+            newpostfix += model.get_recMode()
 
-        if not easymode:
-            # Name Scene Modes
-            newpostfix += model.get_mode()
-            if newpostfix in postfix:
-                newpostfix = postfix
-            else:
-                newpostfix += postfix
+        # Name Scene Modes
+        newpostfix += model.get_mode()
+        if newpostfix in postfix:
+            newpostfix = postfix
+        else:
+            newpostfix += postfix
 
         newname = NamePrefix + counterString + sequenceString + newpostfix
         if newname == lastnewname: newname = NamePrefix + counterString + sequenceString + "_K" + newpostfix
@@ -182,7 +173,7 @@ def _count_files_for_each_date(Tagdict, startindex, dateformat):
             print(time_old.date(), counter)
             if maxCounter < counter: maxCounter = counter
             counter = startindex - 1
-        if model.get_SequenceNumber() < 2: counter += 1
+        if model.get_sequence_number() < 2: counter += 1
         time_old = time
     print(time_old.date(), counter)
     if maxCounter < counter: maxCounter = counter

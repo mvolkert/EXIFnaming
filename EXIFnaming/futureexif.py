@@ -28,7 +28,7 @@ def _detect_3D():
         newDir = os.path.join(Tagdict["Directory"][i], dir3D)
         os.makedirs(newDir, exist_ok=True)
         model = create_model(Tagdict, i)
-        SequenceNumber = model.get_SequenceNumber()
+        SequenceNumber = model.get_sequence_number()
         if model.is_series() or SequenceNumber > 1: continue
         time = giveDatetime(model.get_date())
         timedelta = time - time_old

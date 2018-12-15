@@ -182,11 +182,12 @@ class ModelBase:
         else:
             return ""
 
-    def get_sequence_string(self, SequenceNumber: int) -> str:
-        if self.is_Bracket(): return "B%d" % SequenceNumber
-        if self.is_series():  return "S%02d" % SequenceNumber
-        if self.is_stopmotion(): return "SM%03d" % SequenceNumber
-        if self.is_timelapse(): return "TL%03d" % SequenceNumber
+    def get_sequence_string(self) -> str:
+        sequence_number = self.get_sequence_number()
+        if self.is_Bracket(): return "B%d" % sequence_number
+        if self.is_series():  return "S%02d" % sequence_number
+        if self.is_stopmotion(): return "SM%03d" % sequence_number
+        if self.is_timelapse(): return "TL%03d" % sequence_number
         if self.is_4K(): return "4KBSF"
         return ""
 
@@ -206,7 +207,7 @@ class ModelBase:
             if subsec: dateTimeString += "." + subsec
         return dateTimeString
 
-    def get_SequenceNumber(self) -> int:
+    def get_sequence_number(self) -> int:
         """
         sequence starts with 1; 0 means no sequence
         """

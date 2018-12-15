@@ -4,15 +4,16 @@ Writes to Tags
 """
 import csv
 import datetime as dt
+import os
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
-    write_exiftag
+    write_exiftag, has_not_keys
 from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, is_invalid_path, get_setexif_dir, get_logger
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.settings import includeSubdirs, file_types, image_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict
-from EXIFnaming.helpers.tags import *
+from EXIFnaming.helpers.tags import create_model
 
 
 def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):

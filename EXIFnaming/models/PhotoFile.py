@@ -63,11 +63,11 @@ class PhotoFile(ModelBase):
     def get_recMode(self) -> str:
         return ""
 
-    def get_sequence_string(self, SequenceNumber: int) -> str:
+    def get_sequence_string(self) -> str:
         return ""
 
     def get_mode(self) -> str:
         return ""
 
-    def get_SequenceNumber(self) -> int:
+    def get_sequence_number(self) -> int:
         return 0
