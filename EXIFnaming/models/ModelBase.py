@@ -93,7 +93,6 @@ class ModelBase:
         self.i = i
         self.filename = self.get_entry("File Name")
         self.dir = self.get_entry("Directory")
-        self.filename_new = self.get_entry("File Name new")
 
     def fix_unknownTags(self):
         for key in self.Tagdict:

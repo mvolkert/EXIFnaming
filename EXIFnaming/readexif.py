@@ -76,6 +76,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     """
     inpath = os.getcwd()
     Tagdict = read_exiftags(inpath, fileext)
+    if not Tagdict: return
 
     # rename temporary
     if not onlyprint:

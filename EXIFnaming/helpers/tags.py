@@ -19,8 +19,8 @@ def getPath(Tagdict, i: int):
 
 
 ModelInit: Dict[str, Callable[[dict, int], ModelBase]] = OrderedDict()
-ModelInit['DMC_TZ101'] = lambda Tagdict, i: DMC_TZ101(Tagdict, i)
-ModelInit['DMC_TZ7'] = lambda Tagdict, i: DMC_TZ7(Tagdict, i)
+ModelInit['DMC-TZ101'] = lambda Tagdict, i: DMC_TZ101(Tagdict, i)
+ModelInit['DMC-TZ7'] = lambda Tagdict, i: DMC_TZ7(Tagdict, i)
 
 
 def create_model(Tagdict, i: int) -> ModelBase:
@@ -29,7 +29,7 @@ def create_model(Tagdict, i: int) -> ModelBase:
     if modelKey in Tagdict:
         model = Tagdict[modelKey][i]
         if model in ModelInit:
-            return ModelInit[model]()
+            return ModelInit[model](Tagdict, i)
     if dateTimeKey in Tagdict and Tagdict[dateTimeKey][i]:
         return PhotoFile(Tagdict, i)
     return NormalFile(Tagdict, i)
