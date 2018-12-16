@@ -108,7 +108,7 @@ def call_exiftool(dirpath: str, name: str, options=(), override=True) -> (str, s
     return out, err
 
 
-def sort_dict_by_date(indict: OrderedDict) -> Dict[str, list]:
+def sort_dict_by_date(indict: Dict[str, list]) -> Dict[str, list]:
     date_mod_name = "File Modification Date/Time"
     date_org_name = "Date/Time Original"
     date_sub_name = "Sub Sec Time Original"
@@ -122,7 +122,7 @@ def sort_dict_by_date(indict: OrderedDict) -> Dict[str, list]:
     return sort_dict(indict, sortkeys)
 
 
-def sort_dict(indict: OrderedDict, keys: list) -> Dict[str, list]:
+def sort_dict(indict: Dict[str, list], keys: list) -> Dict[str, list]:
     """example:
     sort indict by keys
     indict={"foo": [1, 3, 2], "bar": [8, 7, 6]}
@@ -159,12 +159,12 @@ def askToContinue():
         sys.exit('aborted')
 
 
-def read_exiftag(dirpath: str, filename: str) -> OrderedDict[str, str]:
+def read_exiftag(dirpath: str, filename: str) -> Dict[str, str]:
     out, err = call_exiftool(dirpath, filename, [], False)
     return decode_exiftags(out)
 
 
-def decode_exiftags(tags: str) -> OrderedDict[str, str]:
+def decode_exiftags(tags: str) -> Dict[str, str]:
     tagDict = OrderedDict()
     for tag in tags.split("\r\n"):
         keyval = tag.split(": ", 1)
@@ -180,7 +180,7 @@ def decode_exiftags(tags: str) -> OrderedDict[str, str]:
     return tagDict
 
 
-def listsOfDicts_to_dictOfLists(listOfDicts: List[dict], ask=True) -> OrderedDict[str, list]:
+def listsOfDicts_to_dictOfLists(listOfDicts: List[dict], ask=True) -> Dict[str, list]:
     """
     :type listOfDicts: list
     :param ask: whether to ask for continue when keys not occur

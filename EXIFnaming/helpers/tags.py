@@ -6,7 +6,7 @@ collection of Tag tools
 
 import os
 from collections import OrderedDict
-from typing import Callable
+from typing import Callable, Dict
 
 from EXIFnaming.models import *
 
@@ -18,7 +18,7 @@ def getPath(Tagdict, i: int):
     return os.path.join(Tagdict["Directory"][i], Tagdict["File Name"][i])
 
 
-ModelInit: OrderedDict[str, Callable[[dict, int], ModelBase]] = OrderedDict()
+ModelInit: Dict[str, Callable[[dict, int], ModelBase]] = OrderedDict()
 ModelInit['DMC_TZ101'] = lambda Tagdict, i: DMC_TZ101(Tagdict, i)
 ModelInit['DMC_TZ7'] = lambda Tagdict, i: DMC_TZ7(Tagdict, i)
 
