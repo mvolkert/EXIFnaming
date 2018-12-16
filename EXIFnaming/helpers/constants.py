@@ -2,38 +2,6 @@ from collections import OrderedDict
 
 from EXIFnaming.helpers.settings import standard_kamera
 
-TagNames = OrderedDict()
-
-TagNames['AF'] = ["AF Area Mode", "AF Assist Lamp", "Focus Mode", "Macro Mode", "Metering Mode"]
-TagNames['Mode'] = ["Advanced Scene Mode", "Advanced Scene Type", "Color Effect", "Contrast Mode", "HDR", "Photo Style",
-                    "Scene Capture Type", "Scene Mode", "Scene Type", "Self Timer", "Sensitivity Type", "Shooting Mode",
-                    "Shutter Type", "Sweep Panorama Direction", "Sweep Panorama Field Of View", "Timer Recording"]
-TagNames['Series'] = ["Bracket Settings", "Burst Mode", "Burst Speed", "Sequence Number"]
-TagNames['Series'] += ["Dependent Image 1 Entry Number", "Dependent Image 2 Entry Number", "Number Of Images"]
-TagNames['Exposure'] = ["Exposure Compensation", "Exposure Mode", "Exposure Program", "Exposure Time"]
-TagNames['Flash'] = ["Flash", "Flash Bias", "Flash Curtain", "Flash Fired"]
-TagNames['Zoom'] = ["Field Of View", "Focal Length In 35mm Format", "F Number", "Hyperfocal Distance"]
-TagNames['Qual'] = ["ISO", "Light Source", "Light Value", "Long Exposure Noise Reduction", "Program ISO",
-                    "Gain Control", "White Balance"]
-TagNames['Time'] = ["Date/Time Original", "Sub Sec Time Original"]
-TagNames['Rec'] = ["Audio", "Megapixels", "Video Frame Rate", "Image Quality"]
-TagNames['Rot'] = ["Orientation", "Rotation", "Camera Orientation", "Roll Angle", "Pitch Angle"]
-
-# Rotation: Horizontal (normal), Rotate 270 CW
-# Camera Orientation: Normal, Rotate CCW
-
-unknownTags = OrderedDict()
-unknownTags[("AF Area Mode", "Unknown (0 49)")] = "49-area"
-unknownTags[("AF Area Mode", "Unknown (240 0) ")] = "Tracking"
-unknownTags[("Contrast Mode", "Unknown (0x3)")] = "3"
-unknownTags[("Contrast Mode", "Unknown (0x5)")] = "5"
-unknownTags[("Contrast Mode", "Unknown (0x8)")] = "8"
-unknownTags[("Advanced Scene Mode", "Unknown (54 1)")] = "HS"
-unknownTags[("Advanced Scene Mode", "Unknown (60 7)")] = "4K"
-unknownTags[("Advanced Scene Mode", "Unknown (0 7)")] = "4K"
-unknownTags[("Scene Mode", "Unknown (60)")] = "4K"
-unknownTags[("Scene Mode", "Unknown (54)")] = "HS"
-
 CameraModelShort = OrderedDict()
 CameraModelShort['DMC-TZ7'] = 'TZ7'
 CameraModelShort['SM-G900F'] = 'S5'

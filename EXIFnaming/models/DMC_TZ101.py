@@ -22,6 +22,9 @@ class DMC_TZ101(ModelBase):
     TagNames['Rec'] = ["Audio", "Megapixels", "Video Frame Rate", "Image Quality"]
     TagNames['Rot'] = ["Orientation", "Rotation", "Camera Orientation", "Roll Angle", "Pitch Angle"]
 
+    # Rotation: Horizontal (normal), Rotate 270 CW
+    # Camera Orientation: Normal, Rotate CCW
+
     CreativeShort = OrderedDict()
     CreativeShort['Expressive'] = "EXPS"
     CreativeShort['Retro'] = "RETR"

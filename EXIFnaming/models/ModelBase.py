@@ -95,6 +95,15 @@ class ModelBase:
         self.dir = self.get_entry("Directory")
         self.filename_new = self.get_entry("File Name new")
 
+    def fix_unknownTags(self):
+        for key in self.Tagdict:
+            val = self.get_entry(key)
+            if (key, val) in self.unknownTags:
+                self.set_entry(key, self.unknownTags[(key, val)])
+
+    def set_entry(self, key: str, val: str):
+        self.Tagdict[key][self.i] = val
+
     def get_entry(self, entry: str):
         return self.Tagdict[entry][self.i]
 

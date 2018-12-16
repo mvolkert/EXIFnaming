@@ -10,6 +10,7 @@ from EXIFnaming.helpers.constants import unknownTags
 from EXIFnaming.helpers.fileop import count_files, count_files_in, get_logger
 from EXIFnaming.helpers.measuring_tools import Clock
 from EXIFnaming.helpers.settings import includeSubdirs, encoding_format, file_types
+from EXIFnaming.models import ModelBase
 
 
 def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
@@ -171,7 +172,7 @@ def decode_exiftags(tags: str):
         key = keyval[0].strip()
         val = keyval[1].strip()
         if key in tagDict: continue
-        if (key, val) in unknownTags: val = unknownTags[(key, val)]
+        if (key, val) in ModelBase.unknownTags: val = ModelBase.unknownTags[(key, val)]
         if key == "Directory": val = val.replace("/", os.sep)
         tagDict[key] = val
     if not tagDict:
