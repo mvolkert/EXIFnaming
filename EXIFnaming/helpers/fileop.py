@@ -222,7 +222,7 @@ def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r"", start=""
     relpath = str(os.path.relpath(dirpath, inpath))
     dirnames = relpath.split(os.sep)
     if not includeSubdirs and not inpath == dirpath: return True
-    if any(dirname.startswith('.') for dirname in dirnames):  return True
+    if any(len(dirname) > 1 and dirname.startswith('.') for dirname in dirnames):  return True
     if '.EXIFnaming' in dirpath:  return True
     if balcklist and basename in balcklist: return True
     if whitelist and not basename in whitelist: return True

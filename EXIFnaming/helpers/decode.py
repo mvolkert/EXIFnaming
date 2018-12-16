@@ -7,7 +7,7 @@ from typing import List, Dict
 
 from sortedcollections import OrderedSet
 
-from EXIFnaming.helpers.fileop import count_files, count_files_in, get_logger
+from EXIFnaming.helpers.fileop import count_files, count_files_in, get_logger, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock
 from EXIFnaming.helpers.settings import includeSubdirs, encoding_format, file_types
 from EXIFnaming.models import ModelBase
@@ -25,9 +25,7 @@ def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
     clock = Clock()
     ListOfDicts = []
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: break
-        if os.path.basename(dirpath).startswith('.'): continue
-        if os.path.basename(dirpath) in skipdirs: continue
+        if is_invalid_path(dirpath, skipdirs): continue
         if count_files(filenames, selected_file_types) == 0:
             print("  No matching files in ", os.path.relpath(dirpath, inpath))
             continue
@@ -38,7 +36,7 @@ def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
         for tags in out_split:
             ListOfDicts.append(decode_exiftags(tags))
 
-    outdict = listsOfDicts_to_dictOfLists(ListOfDicts, ask)
+    outdict = listsOfDicts_to_dictOfLists(ListOfDicts)
     if not outdict: return {}
     outdict = sort_dict_by_date(outdict)
     clock.finish()
@@ -180,7 +178,7 @@ def decode_exiftags(tags: str) -> Dict[str, str]:
     return tagDict
 
 
-def listsOfDicts_to_dictOfLists(listOfDicts: List[dict], ask=True) -> Dict[str, list]:
+def listsOfDicts_to_dictOfLists(listOfDicts: List[dict], ask=False) -> Dict[str, list]:
     """
     :type listOfDicts: list
     :param ask: whether to ask for continue when keys not occur
@@ -211,9 +209,10 @@ def listsOfDicts_to_dictOfLists(listOfDicts: List[dict], ask=True) -> Dict[str, 
         for key in essential:
             if key in badkeys:
                 raise AssertionError(key + ' is essential but not in one of the files')
-        print(
-            "Following keys did not occur in every file. Number of not occurrences is listed in following dictionary:",
-            badkeys)
-        if ask: askToContinue()
+        if ask:
+            print(
+                "Following keys did not occur in every file. Number of not occurrences is listed in following dictionary:",
+                badkeys)
+            askToContinue()
 
     return DictOfLists

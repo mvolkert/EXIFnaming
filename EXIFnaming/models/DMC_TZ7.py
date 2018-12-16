@@ -54,7 +54,7 @@ class DMC_TZ7(ModelBase):
         return self.check_entry("Burst Mode", "On")
 
     def is_Bracket(self) -> bool:
-        return self.has("Burst Mode") and not self.check_entry("Burst Mode", "Auto Exposure Bracketing (AEB)")
+        return self.has("Burst Mode") and self.check_entry("Burst Mode", "Auto Exposure Bracketing (AEB)")
 
     def is_stopmotion(self) -> bool:
         return False
