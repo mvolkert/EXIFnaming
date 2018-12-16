@@ -4,7 +4,7 @@ Renaming/Ordering/Modifying Photos using EXIF tool https://sno.phy.queensu.ca/~p
 "exiftool.exe" has to be in helpers sub folder of this module.
 
 Developed for Panasonic Lumix TZ101 but other models may also work.
-You are free to contact me for verifying the support of your kamera model.
+You are free to contact me for verifying the support of your Camera model.
 
 ## Functionalities:
 * Ordering:   
@@ -47,7 +47,7 @@ The different functions can either be used via the toplevel module or via the su
     shows the number of the picture within this series.
 * PhotoMode  
     * Scene:
-        mapping between Advaned Scene names and Abrivations
+        mapping between Advaned Scene names and Abbreviations
     * Postprocessing:
         * HDR:  
             * HDR-[HDR-Algorithm-Abr.]  
@@ -76,12 +76,26 @@ The different functions can either be used via the toplevel module or via the su
     Main Tags, but can be chosen differently
 * Description:  
     Contains main Description, Tags and Processing information.  
-    Is Formated in a way that is nicely readable multiline and plain view  
-    Following Programms can read it: Flickr, FStop (Android), Google Fotos, [maybe more]
+    Is Formated in a way that is nicely readable multiline and in plain view  
+    Following Programms can read it: Flickr, FStop (Android), Google Fotos and maybe more
 * User Comment: Same as Description. Windows can display it.
-* Keywords/Subject:      
+* Keywords/Subject:
     Both are used store Tags of the pictures.
-    Following Programms can read it: Flickr, FStop (Android), Windows, [maybe more]
+    Following Programms can read it: Flickr, FStop (Android), Windows and maybe more
 * Location: xpm LocationCreated is used
+
+## EXIFnaming folder structure
+The program creates a folder ".EXIFnaming" in your photodirectory:  
+* gps: put here your gpx files for geotagging  
+* infos: information files writen by multilple functions  
+* log: logfiles  
+* saves: renaming writes saves to restore old names  
+* setexif: put here your csv files for tag writing  
+
+## Camera Models
+* Can be used basically with all camera models which are supported by https://sno.phy.queensu.ca/~phil/exiftool/  
+* To use specialties of renaming like Series type or Scene mode, there has to be an implemention of ModelBase for your Camera Model  
+* Contact me to improve the support of your Camera Model  
+
 
     
