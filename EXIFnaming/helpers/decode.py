@@ -3,10 +3,10 @@ import os
 import subprocess
 import sys
 from collections import OrderedDict
+from typing import List, Dict
 
 from sortedcollections import OrderedSet
 
-from EXIFnaming.helpers.constants import unknownTags
 from EXIFnaming.helpers.fileop import count_files, count_files_in, get_logger
 from EXIFnaming.helpers.measuring_tools import Clock
 from EXIFnaming.helpers.settings import includeSubdirs, encoding_format, file_types
@@ -64,7 +64,7 @@ def write_exiftag(tagDict: dict, inpath=os.getcwd(), filename="", options=("-Ima
     call_exiftool(inpath, filename, all_options, True)
 
 
-def tag_dict_to_options(data: dict):
+def tag_dict_to_options(data: dict) -> list:
     options = []
     for key in data:
         if not data[key]: continue
@@ -78,7 +78,7 @@ def tag_dict_to_options(data: dict):
     return options
 
 
-def has_not_keys(indict: dict, keys: list):
+def has_not_keys(indict: dict, keys: list) -> bool:
     if not keys: return True
     notContains = []
     for key in keys:
@@ -108,7 +108,7 @@ def call_exiftool(dirpath: str, name: str, options=(), override=True) -> (str, s
     return out, err
 
 
-def sort_dict_by_date(indict: OrderedDict):
+def sort_dict_by_date(indict: OrderedDict) -> Dict[str, list]:
     date_mod_name = "File Modification Date/Time"
     date_org_name = "Date/Time Original"
     date_sub_name = "Sub Sec Time Original"
@@ -122,7 +122,7 @@ def sort_dict_by_date(indict: OrderedDict):
     return sort_dict(indict, sortkeys)
 
 
-def sort_dict(indict: OrderedDict, keys: list):
+def sort_dict(indict: OrderedDict, keys: list) -> Dict[str, list]:
     """example:
     sort indict by keys
     indict={"foo": [1, 3, 2], "bar": [8, 7, 6]}
@@ -159,12 +159,12 @@ def askToContinue():
         sys.exit('aborted')
 
 
-def read_exiftag(dirpath: str, filename: str):
+def read_exiftag(dirpath: str, filename: str) -> OrderedDict[str, str]:
     out, err = call_exiftool(dirpath, filename, [], False)
     return decode_exiftags(out)
 
 
-def decode_exiftags(tags: str):
+def decode_exiftags(tags: str) -> OrderedDict[str, str]:
     tagDict = OrderedDict()
     for tag in tags.split("\r\n"):
         keyval = tag.split(": ", 1)
@@ -180,7 +180,7 @@ def decode_exiftags(tags: str):
     return tagDict
 
 
-def listsOfDicts_to_dictOfLists(listOfDicts: list, ask=True) -> OrderedDict:
+def listsOfDicts_to_dictOfLists(listOfDicts: List[dict], ask=True) -> OrderedDict[str, list]:
     """
     :type listOfDicts: list
     :param ask: whether to ask for continue when keys not occur
