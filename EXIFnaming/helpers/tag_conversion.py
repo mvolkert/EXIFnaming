@@ -6,6 +6,7 @@ from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers import constants as c
 from EXIFnaming.helpers.decode import read_exiftag
+from EXIFnaming.helpers.fileop import get_logger
 from EXIFnaming.helpers.misc import is_counter
 from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer
 from EXIFnaming.models.DMC_TZ101 import DMC_TZ101
@@ -396,10 +397,10 @@ def process_to_description(process: str) -> dict:
         if process_split[1] in c.hdr_algorithm:
             description["HDR-Algorithm"] = c.hdr_algorithm[process_split[1]]
         else:
-            print(process_split[1], "not in hdr_algorithm")
+            get_logger().info(process_split[1], "not in hdr_algorithm")
     if len(process_split) > 2:
         if process_split[2] in c.tm_preset:
             description["TM-Preset"] = c.tm_preset[process_split[2]]
         else:
-            print(process_split[1], "not in tm_preset")
+            get_logger().info(process_split[1], "not in tm_preset")
     return description

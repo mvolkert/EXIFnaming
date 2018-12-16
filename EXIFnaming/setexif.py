@@ -78,7 +78,7 @@ def add_location(country="", city="", location=""):
 
 def location_to_keywords():
     inpath = os.getcwd()
-    print("process", count_files_in(inpath, file_types, ""), "Files in ", inpath, "subdir:", includeSubdirs)
+    get_logger().info("process", count_files_in(inpath, file_types, ""), "Files in ", inpath, "subdir:", includeSubdirs)
     askToContinue()
     Tagdict = read_exiftags(inpath, ask=False)
     leng = len(list(Tagdict.values())[0])
@@ -98,7 +98,7 @@ def name_to_exif(folder=r"", additional_tags=(), startdir=None):
     """
     inpath = os.getcwd()
     clock = Clock()
-    print("process", count_files_in(inpath, file_types, ""), "Files in ", inpath, "subdir:", includeSubdirs)
+    get_logger().info("process", count_files_in(inpath, file_types, ""), "Files in ", inpath, "subdir:", includeSubdirs)
     askToContinue()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue

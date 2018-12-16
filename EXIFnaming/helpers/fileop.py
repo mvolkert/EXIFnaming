@@ -106,7 +106,7 @@ def removeIfEmtpy(dirpath: str):
 
 def renameTemp(DirectoryList: list, FileNameList: list):
     if not len(DirectoryList) == len(FileNameList):
-        print("error in renameTemp: len(DirectoryList)!=len(FileNameList)")
+        get_logger().error("error in renameTemp: len(DirectoryList)!=len(FileNameList)")
         return ""
     temppostfix = "temp"
     for i in range(len(FileNameList)):
