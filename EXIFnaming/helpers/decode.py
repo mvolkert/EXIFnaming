@@ -8,12 +8,13 @@ from typing import List, Dict
 from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers.fileop import count_files, count_files_in, is_invalid_path
-from EXIFnaming.helpers.program_dir import get_logger
 from EXIFnaming.helpers.measuring_tools import Clock
+from EXIFnaming.helpers.program_dir import get_logger
 from EXIFnaming.helpers.settings import includeSubdirs, encoding_format, file_types
 from EXIFnaming.models import ModelBase
 
 log = get_logger()
+
 
 def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
     if fileext:
@@ -21,7 +22,7 @@ def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
     else:
         selected_file_types = file_types
     log.info("process %d %s Files in %s, includeSubdirs: %r",
-                      count_files_in(inpath, selected_file_types, skipdirs), fileext, inpath, includeSubdirs)
+             count_files_in(inpath, selected_file_types, skipdirs), fileext, inpath, includeSubdirs)
     if ask: askToContinue()
 
     clock = Clock()
@@ -55,7 +56,7 @@ def write_exiftags(tagDict: dict, inpath=os.getcwd(), options=()):
             continue
         all_options = list(options) + tag_dict_to_options(tagDict)
         call_exiftool(dirpath, "*", all_options, True)
-        log.info("%4d tags written in   %s" , n, os.path.relpath(dirpath, inpath))
+        log.info("%4d tags written in   %s", n, os.path.relpath(dirpath, inpath))
     clock.finish()
 
 
@@ -92,11 +93,15 @@ def has_not_keys(indict: dict, keys: list) -> bool:
     return False
 
 
-def call_exiftool(dirpath: str, name: str, options=(), override=True) -> (str, str):
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
+def call_exiftool(dirpath: str, name: str, options: List = (), override=True) -> (str, str):
     fullname = os.path.join(dirpath, name)
+    return call_exiftool_direct(options + [fullname], override)
+
+
+def call_exiftool_direct(options: List = (), override=True) -> (str, str):
+    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
     encoding_args = ["-charset", encoding_format, "-charset", "FileName=" + encoding_format]
-    args = [path + "exiftool", fullname] + encoding_args + options
+    args = [path + "exiftool"] + encoding_args + options
     if override and options: args.append("-overwrite_original_in_place")
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()

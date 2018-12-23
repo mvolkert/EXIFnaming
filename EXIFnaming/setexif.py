@@ -8,12 +8,12 @@ import os
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
-    write_exiftag, has_not_keys
+    write_exiftag, has_not_keys, call_exiftool_direct
 from EXIFnaming.helpers.fileop import filterFiles, is_invalid_path
-from EXIFnaming.helpers.program_dir import get_gps_dir, get_setexif_dir, get_logger
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
+from EXIFnaming.helpers.program_dir import get_gps_dir, get_setexif_dir, get_logger
 from EXIFnaming.helpers.settings import includeSubdirs, file_types, image_types
-from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict
+from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict, split_filename
 from EXIFnaming.helpers.tags import create_model
 
 log = get_logger()
@@ -238,3 +238,26 @@ def _passes_restrictor(meta_data, csv_restriction):
             if meta_data.passes_restrictions(row):
                 return True
     return False
+
+
+def copy_exif_via_mainname(orgin: str, target: str):
+    inpath = os.getcwd()
+    target_dict = {}
+    exclusion_tags = ["--PreviewImage", "--ThumbnailImage", "--Rating"]
+    command = "-TagsFromFile"
+    for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, target)):
+        if is_invalid_path(dirpath): continue
+        filenames = filterFiles(filenames, file_types)
+        for filename in filenames:
+            main = "_".join(split_filename(filename)["main"])
+            target_dict.setdefault(main, []).append(os.path.join(dirpath, filename))
+    for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, orgin)):
+        if is_invalid_path(dirpath): continue
+        filenames = filterFiles(filenames, file_types)
+        for filename in filenames:
+            main = "_".join(split_filename(filename)["main"])
+            if not main in target_dict: continue
+            orgin_file = os.path.join(dirpath, filename)
+            for target_file in target_dict[main]:
+                commands = [command, orgin_file, target_file]
+                call_exiftool_direct(exclusion_tags + commands)
