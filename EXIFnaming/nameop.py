@@ -11,12 +11,14 @@ from typing import Optional, Match
 import numpy as np
 from sortedcollections import OrderedSet
 
+from EXIFnaming.helpers.constants import CameraModelShort
 from EXIFnaming.helpers.date import dateformating
-from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
-    moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, get_plain_filenames, \
+from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeries, \
+    moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, \
+    get_plain_filenames, \
     filterFiles
-from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, get_logger
 from EXIFnaming.helpers.misc import askToContinue
+from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, get_logger
 from EXIFnaming.helpers.settings import image_types
 from EXIFnaming.helpers.tag_conversion import split_filename
 
@@ -28,7 +30,8 @@ def filter_series():
     put each kind of series in its own directory
     """
     inpath = os.getcwd()
-    skipdirs = ["B" + str(i) for i in range(1, 8)] + ["S", "SM", "TL", "mp4", "HDR", "single", ".git", "tags"]
+    skipdirs = ["B" + str(i) for i in range(1, 8)]
+    skipdirs += ["S", "SM", "TL", "mp4", "HDR", "single", "Pano", "others"] + CameraModelShort.values()
 
     log.info(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -39,7 +42,7 @@ def filter_series():
         filenames = moveSeries(dirpath, filenames, "SM")
         filenames = moveSeries(dirpath, filenames, "TL")
         filenames = move_media(dirpath, filenames, ".MP4", "mp4")
-        filenames = move_media(dirpath, filenames, "HDRT", "HDR")
+        filenames = move_media(dirpath, filenames, "HDR", "HDR")
         move_media(dirpath, filenames, ".JPG", "single")
 
 
@@ -48,23 +51,21 @@ def filter_primary():
     put single and B1 in same directory
     """
     inpath = os.getcwd()
-    skipdirs = ["S", "single", "HDR", ".git", "tags"]
+    skipdirs = ["S", "SM", "TL", "mp4", "HDR", "single", "Pano", "others"] + CameraModelShort.values()
 
     log.info(inpath)
     folders_to_main(False, False, False, False, ["B" + str(i) for i in range(1, 8)])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, skipdirs): continue
         log.info("%s #dirs:%d #files:%d", dirpath, len(dirnames), len(filenames))
-        moveSeries(dirpath, filenames, "S")
-        moveSeries(dirpath, filenames, "SM")
-        moveSeries(dirpath, filenames, "TL")
-        for filename in filenames:
-            match = re.search('_([0-9]+)B1', filename)
-            if match: moveToSubpath(filename, dirpath, "primary")
-        moveSeries(dirpath, filenames, "B")
-        for filename in filenames:
-            if not ".JPG" in filename: continue
-            moveToSubpath(filename, dirpath, "primary")
+        filenames = moveSeries(dirpath, filenames, "S")
+        filenames = moveSeries(dirpath, filenames, "SM")
+        filenames = moveSeries(dirpath, filenames, "TL")
+        filenames = move_media(dirpath, filenames, ".MP4", "mp4")
+        filenames = move_media(dirpath, filenames, "HDR", "HDR")
+        filenames = moveSeries(dirpath, filenames, "B", "1")
+        filenames = moveSeries(dirpath, filenames, "B")
+        move_media(dirpath, filenames, ".JPG", "primary")
 
 
 def copy_subdirectories(dest: str, dir_names: []):

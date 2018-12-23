@@ -119,10 +119,10 @@ def moveBracketSeries(dirpath: str, filenames: list) -> list:
     return other_filenames
 
 
-def moveSeries(dirpath: str, filenames: list, series_type="S") -> list:
+def moveSeries(dirpath: str, filenames: list, series_type="S", counter_match=r'([0-9]+)') -> list:
     other_filenames = []
     for filename in filenames:
-        match = re.search('_([0-9]+)' + series_type + '([0-9]+)', filename)
+        match = re.search('_([0-9]+)' + series_type + counter_match, filename)
         if match:
             moveToSubpath(filename, dirpath, series_type)
         else:
@@ -185,7 +185,7 @@ def file_has_ext(filename: str, file_extensions: Iterable, ignore_case=True) -> 
     return False
 
 
-def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r"", start="") -> bool:
+def is_invalid_path(dirpath, blacklist=None, whitelist=None, regex=r"", start="") -> bool:
     inpath = os.getcwd()
     basename = os.path.basename(dirpath)
     relpath = str(os.path.relpath(dirpath, inpath))
@@ -193,7 +193,7 @@ def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r"", start=""
     if not includeSubdirs and not inpath == dirpath: return True
     if any(len(dirname) > 1 and dirname.startswith('.') for dirname in dirnames):  return True
     if '.EXIFnaming' in dirpath:  return True
-    if balcklist and basename in balcklist: return True
+    if blacklist and basename in blacklist: return True
     if whitelist and not basename in whitelist: return True
     if regex and not re.search(regex, basename): return True
     if start and relpath.lower() < start.lower(): return True
