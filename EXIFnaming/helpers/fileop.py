@@ -1,16 +1,17 @@
-import datetime as dt
 import os
 import re
 import shutil
 from collections import OrderedDict
-from logging import Logger
 from typing import Iterable
 
 import numpy as np
 
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.misc import askToContinue
+from EXIFnaming.helpers.program_dir import get_saves_dir, get_logger
 from EXIFnaming.helpers.settings import includeSubdirs
+
+log = get_logger()
 
 
 def moveFiles(filenames, path: str):
@@ -56,40 +57,8 @@ def isfile(*path):
     return os.path.isfile(os.path.join(*path))
 
 
-def getSavesDir(*subpath):
-    create_program_dir()
-    return os.path.join(".EXIFnaming", "saves", *subpath)
-
-
-def get_gps_dir(*subpath):
-    return os.path.join(".EXIFnaming", "gps", *subpath)
-
-
-def get_info_dir(*subpath):
-    create_program_dir()
-    return os.path.join(".EXIFnaming", "info", *subpath)
-
-
-def get_setexif_dir(*subpath):
-    create_program_dir()
-    return os.path.join(".EXIFnaming", "setexif", *subpath)
-
-
-def get_log_dir(*subpath):
-    create_program_dir()
-    return os.path.join(".EXIFnaming", "log", *subpath)
-
-
-def create_program_dir():
-    mainpath = ".EXIFnaming"
-    subdirs = ["saves", "gps", "info", "setexif", "log"]
-    for subdir in subdirs:
-        path = os.path.join(mainpath, subdir)
-        os.makedirs(path, exist_ok=True)
-
-
 def save_tagdict(fileext: str, timestring: str, Tagdict: OrderedDict):
-    np.savez_compressed(getSavesDir("Tags" + fileext + timestring), Tagdict=Tagdict)
+    np.savez_compressed(get_saves_dir("Tags" + fileext + timestring), Tagdict=Tagdict)
 
 
 def writeToFile(path: str, content: str):
@@ -106,7 +75,7 @@ def removeIfEmtpy(dirpath: str):
 
 def renameTemp(DirectoryList: list, FileNameList: list):
     if not len(DirectoryList) == len(FileNameList):
-        get_logger().error("error in renameTemp: len(DirectoryList)!=len(FileNameList)")
+        log.error("error in renameTemp: len(DirectoryList)!=len(FileNameList)")
         return ""
     temppostfix = "temp"
     for i in range(len(FileNameList)):
@@ -228,7 +197,7 @@ def is_invalid_path(dirpath, balcklist=None, whitelist=None, regex=r"", start=""
     if whitelist and not basename in whitelist: return True
     if regex and not re.search(regex, basename): return True
     if start and relpath.lower() < start.lower(): return True
-    get_logger().info(dirpath)
+    log.info(dirpath)
     return False
 
 
@@ -252,25 +221,3 @@ def get_filename_sorted_dirfiletuples(file_extensions, *path) -> list:
 def is_not_standard_camera(filename: str) -> bool:
     models = [model for model in c.CameraModelShort.values() if not model == ""]
     return any(model in filename for model in models)
-
-
-def get_logger() -> Logger:
-    if not get_logger.logger:
-        import logging
-        logFormatter = logging.Formatter("%(asctime)s  %(message)s")
-        rootLogger = logging.getLogger()
-
-        timestring = dt.datetime.now().strftime("%y%m%d%H%M")
-        fileHandler = logging.FileHandler(os.path.join(get_log_dir(), timestring + ".log"))
-        fileHandler.setFormatter(logFormatter)
-        rootLogger.addHandler(fileHandler)
-
-        consoleHandler = logging.StreamHandler()
-        consoleHandler.setFormatter(logFormatter)
-        rootLogger.addHandler(consoleHandler)
-        rootLogger.setLevel(10)
-        get_logger.logger = rootLogger
-    return get_logger.logger
-
-
-get_logger.logger = None

@@ -14,7 +14,8 @@ from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_
     find_dir_with_closest_time
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
-    copyFilesTo, getSavesDir, isfile, get_info_dir, get_filename_sorted_dirfiletuples, get_gps_dir
+    copyFilesTo, isfile, get_filename_sorted_dirfiletuples
+from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_dir
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat, getPostfix
 from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
@@ -49,7 +50,7 @@ def print_info(tagGroupNames=(), allGroups=False, fileext=".JPG"):
                 outstring += "%-30s\t" % val[i]
             outstring += "\n"
 
-        dirname = getSavesDir()
+        dirname = get_saves_dir()
         writeToFile(os.path.join(dirname, "tags_" + tagGroupName + ".txt"), outstring)
 
 
@@ -150,7 +151,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
             outstring += _write(model.dir, filename_Raw, temppostfix,
                                 changeExtension(newname, fileext_Raw), onlyprint)
 
-    dirname = getSavesDir()
+    dirname = get_saves_dir()
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
     np.savez_compressed(os.path.join(dirname, "Tags" + fileext + timestring), Tagdict=Tagdict)
     writeToFile(os.path.join(dirname, "newnames" + fileext + timestring + ".txt"), outstring)

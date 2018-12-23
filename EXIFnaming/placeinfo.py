@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 import googlemaps
 
-from EXIFnaming.helpers.fileop import get_info_dir
+from EXIFnaming.helpers.program_dir import get_info_dir
 from EXIFnaming.helpers.settings import googlemaps_api_key
 
 

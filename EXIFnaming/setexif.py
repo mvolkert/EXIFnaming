@@ -9,11 +9,14 @@ import os
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
     write_exiftag, has_not_keys
-from EXIFnaming.helpers.fileop import filterFiles, get_gps_dir, is_invalid_path, get_setexif_dir, get_logger
+from EXIFnaming.helpers.fileop import filterFiles, is_invalid_path
+from EXIFnaming.helpers.program_dir import get_gps_dir, get_setexif_dir, get_logger
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.settings import includeSubdirs, file_types, image_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict
 from EXIFnaming.helpers.tags import create_model
+
+log = get_logger()
 
 
 def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):
@@ -78,8 +81,8 @@ def add_location(country="", city="", location=""):
 
 def location_to_keywords():
     inpath = os.getcwd()
-    get_logger().info("process %d Files in %s, subdir: %r", count_files_in(inpath, file_types, ""), inpath,
-                      includeSubdirs)
+    log.info("process %d Files in %s, subdir: %r", count_files_in(inpath, file_types, ""), inpath,
+             includeSubdirs)
     askToContinue()
     Tagdict = read_exiftags(inpath, ask=False)
     leng = len(list(Tagdict.values())[0])
@@ -99,8 +102,8 @@ def name_to_exif(folder=r"", additional_tags=(), startdir=None):
     """
     inpath = os.getcwd()
     clock = Clock()
-    get_logger().info("process %d Files in %s, subdir: %r", count_files_in(inpath, file_types, ""), inpath,
-                      includeSubdirs)
+    log.info("process %d Files in %s, subdir: %r", count_files_in(inpath, file_types, ""), inpath,
+             includeSubdirs)
     askToContinue()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
@@ -140,7 +143,7 @@ def geotag(timezone=2, offset="", start_folder=""):
         for dirname in dirnames:
             if dirname.startswith("."): continue
             if dirname < start_folder: continue
-            get_logger().info(dirname)
+            log.info(dirname)
             call_exiftool(inpath, dirname, options=options)
 
 
