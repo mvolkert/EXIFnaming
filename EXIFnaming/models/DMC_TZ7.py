@@ -26,12 +26,12 @@ class DMC_TZ7(ModelBase):
 
     SceneShort = OrderedDict()
 
-    SceneShort['Scenery'] = "LAN"
+    SceneShort['Scenery'] = "LAND"
     SceneShort['Sunset'] = "SUN"
     SceneShort['Fireworks'] = "FIRE1"
     SceneShort['Candlelight'] = "FIRE2"
     SceneShort['Night Scenery'] = "NIGHT"
-    SceneShort['Panorama Assist'] = "PANOP"
+    SceneShort['Panorama Assist'] = "PANO.A"
 
     unknownTags = OrderedDict()
 

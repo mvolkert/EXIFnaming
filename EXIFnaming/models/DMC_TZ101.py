@@ -74,7 +74,7 @@ class DMC_TZ101(ModelBase):
     SceneShort['Freeze Animal Motion'] = "FAST1"
     SceneShort['Clear Sports Shot'] = "FAST2"
     SceneShort['Monochrome'] = "SMONO"
-    SceneShort['Panorama'] = "PANO"
+    SceneShort['Panorama'] = "PANO.A"
 
     unknownTags = OrderedDict()
     unknownTags[("AF Area Mode", "Unknown (0 49)")] = "49-area"
