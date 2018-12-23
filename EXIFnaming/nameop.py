@@ -14,8 +14,9 @@ from sortedcollections import OrderedSet
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import getSavesDir, renameInPlace, renameTemp, moveToSubpath, moveBracketSeries, \
     moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile, get_info_dir, \
-    is_invalid_path, get_plain_filenames, get_logger
+    is_invalid_path, get_plain_filenames, get_logger, get_setexif_dir, filterFiles
 from EXIFnaming.helpers.misc import askToContinue
+from EXIFnaming.helpers.settings import image_types
 from EXIFnaming.helpers.tag_conversion import split_filename
 
 
@@ -317,3 +318,16 @@ def extract_tags():
                 tag_set_names.add((dirname, tag))
     writer.writerows(tag_set_names)
     tags_places_file.close()
+
+
+def create_favorites_csv():
+    inpath = os.getcwd()
+    csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
+    fav_file = open(get_setexif_dir("fav.csv"), "w")
+    writer = csv.writer(fav_file, dialect="semicolon")
+    writer.writerow(["name_part", "rating"])
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if is_invalid_path(dirpath): continue
+        for filename in filterFiles(filenames, image_types):
+            writer.writerow([filename, 4])
+    fav_file.close()
