@@ -18,8 +18,8 @@ def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
         selected_file_types = (fileext,)
     else:
         selected_file_types = file_types
-        get_logger().info("process", count_files_in(inpath, selected_file_types, skipdirs), fileext, "Files in ", inpath,
-          "includeSubdirs:", includeSubdirs)
+    get_logger().info("process %d %s Files in %s, includeSubdirs: %r",
+                      count_files_in(inpath, selected_file_types, skipdirs), fileext, inpath, includeSubdirs)
     if ask: askToContinue()
 
     clock = Clock()
@@ -27,12 +27,12 @@ def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, skipdirs): continue
         if count_files(filenames, selected_file_types) == 0:
-            get_logger().info("  No matching files in ", os.path.relpath(dirpath, inpath))
+            get_logger().info("  No matching files in %s", os.path.relpath(dirpath, inpath))
             continue
         out, err = call_exiftool(dirpath, "*" + fileext, [], False)
         out = out[out.find("ExifTool Version Number"):]
         out_split = out.split("========")
-        get_logger().info("%4d tags extracted in " % len(out_split), os.path.relpath(dirpath, inpath))
+        get_logger().info("%4d tags extracted in %s", len(out_split), os.path.relpath(dirpath, inpath))
         for tags in out_split:
             ListOfDicts.append(decode_exiftags(tags))
 
@@ -49,11 +49,11 @@ def write_exiftags(tagDict: dict, inpath=os.getcwd(), options=()):
         if not includeSubdirs and not inpath == dirpath: break
         n = count_files(filenames, file_types)
         if n == 0:
-            get_logger().info("  No matching files in ", os.path.relpath(dirpath, inpath))
+            get_logger().info("  No matching files in %s", os.path.relpath(dirpath, inpath))
             continue
         all_options = list(options) + tag_dict_to_options(tagDict)
         call_exiftool(dirpath, "*", all_options, True)
-        get_logger().info("%4d tags written in   " % n, os.path.relpath(dirpath, inpath))
+        get_logger().info("%4d tags written in   %s" , n, os.path.relpath(dirpath, inpath))
     clock.finish()
 
 
@@ -82,10 +82,10 @@ def has_not_keys(indict: dict, keys: list) -> bool:
     for key in keys:
         if not key in indict:
             notContains.append(key)
-            get_logger().info(key + " not in dict")
+            get_logger().info("%s not in dict", key)
             return True
     if notContains:
-        get_logger().info("dictionary of tags doesn't contain ", notContains)
+        get_logger().info("dictionary of tags doesn't contain: %s", notContains)
         return True
     return False
 
@@ -174,7 +174,7 @@ def decode_exiftags(tags: str) -> Dict[str, str]:
         if key == "Directory": val = val.replace("/", os.sep)
         tagDict[key] = val
     if not tagDict:
-        get_logger().error("no tags extracted from: %s" % tags)
+        get_logger().error("no tags extracted from: %r", tags)
     return tagDict
 
 
@@ -211,7 +211,7 @@ def listsOfDicts_to_dictOfLists(listOfDicts: List[dict], ask=False) -> Dict[str,
                 raise AssertionError(key + ' is essential but not in one of the files')
         if ask:
             get_logger().warning(
-                "Following keys did not occur in every file. Number of not occurrences is listed in following dictionary:",
+                "Following keys did not occur in every file. Number of not occurrences is listed in following dictionary: %r",
                 badkeys)
             askToContinue()
 

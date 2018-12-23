@@ -29,7 +29,7 @@ def filter_series():
     get_logger().info(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, skipdirs): continue
-        get_logger().info(dirpath, len(dirnames), len(filenames))
+        get_logger().info("%s #dirs:%d #files:%d", dirpath, len(dirnames), len(filenames))
         filenames = moveBracketSeries(dirpath, filenames)
         filenames = moveSeries(dirpath, filenames, "S")
         filenames = moveSeries(dirpath, filenames, "SM")
@@ -50,7 +50,7 @@ def filter_primary():
     folders_to_main(False, False, False, False, ["B" + str(i) for i in range(1, 8)])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, skipdirs): continue
-        get_logger().info(dirpath, len(dirnames), len(filenames))
+        get_logger().info("%s #dirs:%d #files:%d", dirpath, len(dirnames), len(filenames))
         moveSeries(dirpath, filenames, "S")
         moveSeries(dirpath, filenames, "SM")
         moveSeries(dirpath, filenames, "TL")
@@ -102,18 +102,17 @@ def folders_to_main(all_folders=False, series=False, primary=False, blurry=False
         depth = get_relpath_depth(dirpath, inpath)
         deepest = max(deepest, depth)
     if all_folders and deepest > 1:
-        get_logger().warning("A folder structure with a depth of %2d will be flattened" % deepest)
+        get_logger().warning("A folder structure with a depth of %2d will be flattened", deepest)
         askToContinue()
     elif deepest > 3:
-        get_logger().warning("The folder structure has a depth of %2d" % deepest)
-        get_logger().info("chosen directory names:")
-        get_logger().info(reverseDirs)
+        get_logger().warning("The folder structure has a depth of %2d", deepest)
+        get_logger().info("chosen directory names: %r", reverseDirs)
         askToContinue()
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not all_folders and not os.path.basename(dirpath) in reverseDirs: continue
         if dirpath == inpath: continue
-        get_logger().info(dirpath, len(dirnames), len(filenames))
+        get_logger().info("%s #dirs:%d #files:%d", dirpath, len(dirnames), len(filenames))
         for filename in filenames:
             if not filename[-4:] in (".JPG", ".jpg", ".MP4", ".mp4"): continue
             if not_inpath and os.path.dirname(dirpath) == inpath: continue
@@ -135,14 +134,14 @@ def rename_HDR(mode="HDRT", folder=r"HDR\w*"):
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
-        get_logger().info("Folder: " + dirpath)
+        get_logger().info("Folder: %s", dirpath)
         for filename in filenames:
             if mode in filename: continue
             match = re.search(matchreg, filename)
             if match:
                 _rename_match(dirpath, filename, mode, match)
             else:
-                get_logger().info("no match:", filename)
+                get_logger().info("no match: %s", filename)
         for dirname in dirnames:
             match = re.search(matchreg, dirname)
             if match:
@@ -171,24 +170,24 @@ def rename_to_front(mode="PANO", folder=r"HDR\w*"):
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
-        get_logger().info("Folder: " + dirpath)
+        get_logger().info("Folder: %s", dirpath)
         for filename in filenames:
             match = re.search(panoOut, filename)
             if match:
                 filename_new = match.group(1) + "_" + match.group(3) + "_" + match.group(2) + match.group(4)
                 if os.path.isfile(os.path.join(dirpath, filename_new)):
-                    get_logger().info("file already exists:", filename_new)
+                    get_logger().info("file already exists: %s", filename_new)
                 else:
                     renameInPlace(dirpath, filename, filename_new)
             else:
-                get_logger().info("no match:", filename)
+                get_logger().info("no match: %s", filename)
 
 
 def rename_PANO(folder=r""):
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
-        get_logger().info("Folder: " + dirpath)
+        get_logger().info("Folder: %s", dirpath)
         for filename in filenames:
             if not "PANO" in filename: continue
             name, ext = filename.rsplit('.', 1)
@@ -202,7 +201,7 @@ def sanitize_filename(folder=r""):
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
-        get_logger().info("Folder: " + dirpath)
+        get_logger().info("Folder: %s", dirpath)
         for filename in filenames:
             name, ext = filename.rsplit('.', 1)
             name = name.replace("panorama", "PANO")
@@ -269,13 +268,13 @@ def rename_back(timestring="", fileext=".JPG"):
     :return:
     """
     dirname = getSavesDir()
-    tagFile = os.path.join(dirname, "Tags" + fileext + timestring + ".npz")
+    tagFile = os.path.join(dirname, "Tags" + fileext + "_" + timestring + ".npz")
     if not timestring or os.path.isfile(tagFile):
         tagFiles = [x for x in os.listdir(dirname) if ".npz" in x]
         tagFile = os.path.join(dirname, tagFiles[-1])
     Tagdict = np.load(tagFile)["Tagdict"].item()
     temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name new"])
-    get_logger().info(len(list(Tagdict.values())[0]))
+    get_logger().debug("length of Tagdict: %d", len(list(Tagdict.values())[0]))
     for i in range(len(list(Tagdict.values())[0])):
         filename = Tagdict["File Name new"][i] + temppostfix
         if not os.path.isfile(os.path.join(Tagdict["Directory"][i], filename)): continue
@@ -297,7 +296,7 @@ def extract_tags():
         if not inpath == dirpath: continue
         for dirname in dirnames:
             if dirname.startswith('.'): continue
-            get_logger().info("Folder: " + dirname)
+            get_logger().info("Folder: %s", dirname)
             tag_set = OrderedSet()
             plain_filenames = get_plain_filenames(inpath, dirname)
             for filename in plain_filenames:
