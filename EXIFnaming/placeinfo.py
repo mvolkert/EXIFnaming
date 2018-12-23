@@ -20,19 +20,19 @@ def write_infos():
 
     outname = get_info_dir("tags_places_gmaps.csv")
     outfile = open(outname, "w")
-    writer = csv.DictWriter(outfile, fieldnames=["dirname", "tag", "name", "gps"], dialect="semicolon")
+    writer = csv.DictWriter(outfile, fieldnames=["directory", "name_part", "Location", "gps"], dialect="semicolon")
     writer.writeheader()
     with open(filename, "r") as infile:
         reader = csv.DictReader(infile, dialect="semicolon")
         for row in reader:
-            search = row["dirname"] + " " + row["tag"]
+            search = row["directory"] + " " + row["name_part"]
             result = get_info(search.strip(" "))
             for canidate in result["candidates"]:
                 outdir = OrderedDict()
-                outdir["dirname"] = row["dirname"]
-                outdir["tag"] = row["tag"]
+                outdir["directory"] = row["directory"]
+                outdir["name_part"] = row["name_part"]
                 loc = canidate["geometry"]["location"]
                 outdir["gps"] = "%f, %f" % (loc["lat"], loc["lng"])
-                outdir["name"] = canidate["name"]
+                outdir["Location"] = canidate["name"]
                 writer.writerow(outdir)
     outfile.close()
