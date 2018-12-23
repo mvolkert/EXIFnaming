@@ -94,7 +94,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     counter = startindex - 1
     digits = _count_files_for_each_date(Tagdict, startindex, dateformat)
     number_of_files = len(list(Tagdict.values())[0])
-    NamePrefix = ""
+    daystring = ""
 
     for i in range(number_of_files):
         model = create_model(Tagdict, i)
@@ -102,8 +102,8 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
 
         if newdate(time, time_old, 'D' in dateformat or 'N' in dateformat):
             daystring = dateformating(time, dateformat)
-            NamePrefix = Prefix + daystring + model.get_model_abbr() + name
             if not i == 0: counter = 0
+        NamePrefix = Prefix + daystring + model.get_model_abbr() + name
 
         filename = model.filename
         postfix = getPostfix(filename, postfix_stay)

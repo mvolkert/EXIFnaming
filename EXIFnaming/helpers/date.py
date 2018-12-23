@@ -15,10 +15,10 @@ def giveDatetime(datestring="2000:01:01 00:00:00.000") -> dt.datetime:
     return time
 
 
-def newdate(time, time_old, use_day=True) -> bool:
+def newdate(time: dt.datetime, time_old: dt.datetime, use_day=True) -> bool:
     # adjust datebreak at midnight
     timedelta = time - time_old
-    timedelta_seconds = timedelta.days * 3600 * 24 + timedelta.seconds
+    timedelta_seconds = abs(timedelta.total_seconds())
     if not time_old.year == time.year or not time_old.month == time.month or (
             use_day and not time_old.day == time.day): newdate.dateswitch = True
     if timedelta_seconds > 3600. * 4 and newdate.dateswitch:

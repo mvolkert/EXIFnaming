@@ -78,4 +78,4 @@ class NormalFile(ModelBase):
         return 0
 
     def get_model_abbr(self) -> str:
-        return ""
+        return "_F"
