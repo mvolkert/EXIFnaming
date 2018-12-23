@@ -228,7 +228,7 @@ class ModelBase:
         return os.path.join(self.dir, self.filename)
 
     def get_model_abbr(self) -> str:
-        if self.has('Camera Model Name'): return ""
+        if not self.has('Camera Model Name'): return ""
         model = self.get_entry('Camera Model Name')
         if model in c.CameraModelShort:
             model = c.CameraModelShort[model]
