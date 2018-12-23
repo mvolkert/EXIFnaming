@@ -8,13 +8,13 @@ import os
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
-    write_exiftag, has_not_keys, call_exiftool_direct
+    write_exiftag, has_not_keys, call_exiftool_direct, read_exiftag
 from EXIFnaming.helpers.fileop import filterFiles, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.program_dir import get_gps_dir, get_setexif_dir, get_logger
 from EXIFnaming.helpers.settings import includeSubdirs, file_types, image_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict, split_filename
-from EXIFnaming.helpers.tags import create_model
+from EXIFnaming.helpers.tags import create_model, hasDateTime
 
 log = get_logger()
 
@@ -249,6 +249,8 @@ def copy_exif_via_mainname(orgin: str, target: str):
         if is_invalid_path(dirpath): continue
         filenames = filterFiles(filenames, file_types)
         for filename in filenames:
+            tagDict = read_exiftag(dirpath, filename)
+            if hasDateTime(tagDict): continue
             main = "_".join(split_filename(filename)["main"])
             target_dict.setdefault(main, []).append(os.path.join(dirpath, filename))
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, orgin)):

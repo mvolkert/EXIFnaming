@@ -10,6 +10,8 @@ from typing import Callable, Dict
 
 from EXIFnaming.models import *
 
+dateTimeKey = "Date/Time Original"
+modelKey = "Camera Model Name"
 
 def getPath(Tagdict, i: int):
     if not all([x in Tagdict for x in ["Directory", "File Name"]]):
@@ -24,8 +26,7 @@ ModelInit['DMC-TZ7'] = lambda Tagdict, i: DMC_TZ7(Tagdict, i)
 
 
 def create_model(Tagdict, i: int) -> ModelBase:
-    dateTimeKey = "Date/Time Original"
-    modelKey = "Camera Model Name"
+
     if modelKey in Tagdict:
         model = Tagdict[modelKey][i]
         if model in ModelInit:
@@ -33,3 +34,6 @@ def create_model(Tagdict, i: int) -> ModelBase:
     if dateTimeKey in Tagdict and Tagdict[dateTimeKey][i]:
         return PhotoFile(Tagdict, i)
     return NormalFile(Tagdict, i)
+
+def hasDateTime(Tagdict: dict) -> bool:
+    return dateTimeKey in Tagdict and Tagdict[dateTimeKey]
