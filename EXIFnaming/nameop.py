@@ -31,7 +31,7 @@ def filter_series():
     """
     inpath = os.getcwd()
     skipdirs = ["B" + str(i) for i in range(1, 8)]
-    skipdirs += ["S", "SM", "TL", "mp4", "HDR", "single", "Pano", "others"] + CameraModelShort.values()
+    skipdirs += ["S", "SM", "TL", "mp4", "HDR", "single", "Pano", "others"] + list(CameraModelShort.values())
 
     log.info(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -51,7 +51,7 @@ def filter_primary():
     put single and B1 in same directory
     """
     inpath = os.getcwd()
-    skipdirs = ["S", "SM", "TL", "mp4", "HDR", "single", "Pano", "others"] + CameraModelShort.values()
+    skipdirs = ["S", "SM", "TL", "mp4", "HDR", "single", "Pano", "others"] + list(CameraModelShort.values())
 
     log.info(inpath)
     folders_to_main(False, False, False, False, ["B" + str(i) for i in range(1, 8)])
