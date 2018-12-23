@@ -41,7 +41,7 @@ def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
 
     outdict = listsOfDicts_to_dictOfLists(ListOfDicts)
     if not outdict: return {}
-    outdict = sort_dict_by_date(outdict)
+    outdict = sort_dict_by_date_and_model(outdict)
     clock.finish()
     return outdict
 
@@ -113,11 +113,14 @@ def call_exiftool_direct(options: List = (), override=True) -> (str, str):
     return out, err
 
 
-def sort_dict_by_date(indict: Dict[str, list]) -> Dict[str, list]:
+def sort_dict_by_date_and_model(indict: Dict[str, list]) -> Dict[str, list]:
     date_mod_name = "File Modification Date/Time"
     date_org_name = "Date/Time Original"
     date_sub_name = "Sub Sec Time Original"
+    model_name = "Camera Model Name"
     sortkeys = []
+    if model_name in indict:
+        sortkeys.append(model_name)
     if date_org_name in indict:
         sortkeys.append(date_org_name)
         if date_sub_name in indict:
