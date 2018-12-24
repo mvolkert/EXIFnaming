@@ -81,7 +81,7 @@ class FileMetaData:
     def __init__(self, directory, filename):
         self.directory = directory
         self.filename = filename
-        self.name = filename[:filename.rfind(".")]
+        self.name, self.ext = filename.rsplit('.', 1)
         self.id = self.filename
         self.title = ""
         self.tags = []
@@ -94,11 +94,11 @@ class FileMetaData:
         self.gps = ()
         self.gps_exif = False
         self.tagDict = None
-        self.main_name, self.counter = get_main_and_counter(self.name)
+        self.main_name, self.counter = get_main_and_counter(self.name, self.ext)
         self.has_changed = False
 
     def import_filename(self):
-        filename_dict = split_filename(self.name)
+        filename_dict = split_filename(self.name, self.ext)
         self.id, self.tags, self.tags2 = filedict_to_tag(filename_dict)
         match = FileMetaData.secondary_regex.search(self.id)
         if match:
@@ -309,7 +309,7 @@ def filedict_to_tag(filename_dict: dict):
     return image_id, image_tags, image_tags_p
 
 
-def split_filename(filename: str):
+def split_filename(filename: str, ext: str = ".JPG"):
     filename_splited = filename.split('_')
     if len(filename_splited) == 0: return
     filename_dict = {"main": [], "tags": [], "scene": [], "process": [], "p_tags": []}
@@ -327,16 +327,16 @@ def split_filename(filename: str):
                 filename_dict["tags"].append(subname)
         else:
             filename_dict["main"].append(subname)
-            if is_counter(subname): counter_complete = True
+            if is_counter(subname, ext): counter_complete = True
     return filename_dict
 
 
-def get_main_and_counter(filename: str):
+def get_main_and_counter(filename: str, ext: str = ".JPG"):
     filename_splited = filename.split('_')
     counter = None
     for entry in filename_splited:
         if not entry: continue
-        if is_counter(entry):
+        if is_counter(entry, ext):
             match = get_main_and_counter.regex.search(entry)
             counter = match.group(1)
     return filename_splited[0], counter

@@ -196,7 +196,7 @@ def rename_PANO(folder=r""):
         for filename in filenames:
             if not "PANO" in filename: continue
             name, ext = filename.rsplit('.', 1)
-            filename_dict = split_filename(name)
+            filename_dict = split_filename(name, ext)
             _sanitize_pano(filename_dict)
             filename_new = _get_new_filename_from_dict(filename_dict) + "." + ext
             renameInPlace(dirpath, filename, filename_new)
@@ -210,7 +210,7 @@ def sanitize_filename(folder=r""):
         for filename in filenames:
             name, ext = filename.rsplit('.', 1)
             name = name.replace("panorama", "PANO")
-            filename_dict = split_filename(name)
+            filename_dict = split_filename(name, ext)
             _sanitize_process_counter(filename_dict)
             _sanitize_pano(filename_dict)
             filename_new = _get_new_filename_from_dict(filename_dict) + "." + ext
@@ -306,7 +306,7 @@ def extract_tags():
             plain_filenames = get_plain_filenames(inpath, dirname)
             for filename in plain_filenames:
                 name, ext = filename.rsplit('.', 1)
-                filename_dict = split_filename(name)
+                filename_dict = split_filename(name, ext)
                 for tag in filename_dict["tags"]:
                     if not tag: continue
                     tag_set.add(tag)
