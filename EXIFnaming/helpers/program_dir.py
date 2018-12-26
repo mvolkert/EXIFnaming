@@ -35,8 +35,8 @@ def create_program_dir():
         os.makedirs(path, exist_ok=True)
 
 
-def get_logger() -> Logger:
-    if not get_logger.logger:
+def log() -> Logger:
+    if not log.logger:
         import logging
         logFormatter = logging.Formatter("%(asctime)s  %(message)s")
         rootLogger = logging.getLogger()
@@ -50,8 +50,8 @@ def get_logger() -> Logger:
         consoleHandler.setFormatter(logFormatter)
         rootLogger.addHandler(consoleHandler)
         rootLogger.setLevel(10)
-        get_logger.logger = rootLogger
-    return get_logger.logger
+        log.logger = rootLogger
+    return log.logger
 
 
-get_logger.logger = None
+log.logger = None

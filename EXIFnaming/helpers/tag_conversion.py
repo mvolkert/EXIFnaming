@@ -7,11 +7,9 @@ from sortedcollections import OrderedSet
 from EXIFnaming.helpers import constants as c
 from EXIFnaming.helpers.decode import read_exiftag
 from EXIFnaming.helpers.misc import is_counter
-from EXIFnaming.helpers.program_dir import get_logger
+from EXIFnaming.helpers.program_dir import log
 from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer
 from EXIFnaming.models.DMC_TZ101 import DMC_TZ101
-
-log = get_logger()
 
 
 class Location:
@@ -327,9 +325,11 @@ def split_filename(filename: str, ext: str = ".JPG"):
                 filename_dict["tags"].append(subname)
         else:
             filename_dict["main"].append(subname)
-            if i>0:
-                if is_counter(subname, ext): counter_complete = True
-                else: filename_dict["tags"].append(subname)
+            if i > 0:
+                if is_counter(subname, ext):
+                    counter_complete = True
+                else:
+                    filename_dict["tags"].append(subname)
     return filename_dict
 
 
@@ -401,10 +401,10 @@ def process_to_description(process: str) -> dict:
         if process_split[1] in c.hdr_algorithm:
             description["HDR-Algorithm"] = c.hdr_algorithm[process_split[1]]
         else:
-            log.info("%s not in hdr_algorithm", process_split[1])
+            log().info("%s not in hdr_algorithm", process_split[1])
     if len(process_split) > 2:
         if process_split[2] in c.tm_preset:
             description["TM-Preset"] = c.tm_preset[process_split[2]]
         else:
-            log.info("%s not in tm_preset", process_split[1])
+            log().info("%s not in tm_preset", process_split[1])
     return description

@@ -8,10 +8,8 @@ import numpy as np
 
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.misc import askToContinue
-from EXIFnaming.helpers.program_dir import get_saves_dir, get_logger
+from EXIFnaming.helpers.program_dir import get_saves_dir, log
 from EXIFnaming.helpers.settings import includeSubdirs
-
-log = get_logger()
 
 
 def moveFiles(filenames, path: str):
@@ -75,7 +73,7 @@ def removeIfEmtpy(dirpath: str):
 
 def renameTemp(DirectoryList: list, FileNameList: list):
     if not len(DirectoryList) == len(FileNameList):
-        log.error("error in renameTemp: len(DirectoryList)!=len(FileNameList)")
+        log().error("error in renameTemp: len(DirectoryList)!=len(FileNameList)")
         return ""
     temppostfix = "temp"
     for i in range(len(FileNameList)):
@@ -197,7 +195,7 @@ def is_invalid_path(dirpath, blacklist=None, whitelist=None, regex=r"", start=""
     if whitelist and not basename in whitelist: return True
     if regex and not re.search(regex, basename): return True
     if start and relpath.lower() < start.lower(): return True
-    log.info(dirpath)
+    log().info(dirpath)
     return False
 
 
