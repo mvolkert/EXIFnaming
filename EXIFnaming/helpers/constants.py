@@ -4,7 +4,10 @@ from EXIFnaming.helpers.settings import standard_kamera
 
 CameraModelShort = OrderedDict()
 CameraModelShort['DMC-TZ7'] = 'TZ7'
+# CameraModelShort['DMC-TZ101'] = 'TZ101'
 CameraModelShort['SM-G900F'] = 'S5'
+CameraModelShort['DCR-TRV25E'] = 'VS'
+CameraModelShort['HDC-SD300'] = 'V'
 CameraModelShort[standard_kamera] = ''
 
 RecModes = ["4KB", "4K", "HS", "FHD"]
