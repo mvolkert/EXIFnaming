@@ -247,19 +247,22 @@ def copy_exif_via_mainname(orgin: str, target: str):
     command = "-TagsFromFile"
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, target)):
         if is_invalid_path(dirpath): continue
-        filenames = filterFiles(filenames, file_types)
+        filenames = filterFiles(filenames, image_types)
         for filename in filenames:
             tagDict = read_exiftag(dirpath, filename)
             if hasDateTime(tagDict): continue
-            main = "_".join(split_filename(filename)["main"])
+            name, ext = filename.rsplit('.', 1)
+            main = "_".join(split_filename(name, ext)["main"])
             target_dict.setdefault(main, []).append(os.path.join(dirpath, filename))
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, orgin)):
         if is_invalid_path(dirpath): continue
-        filenames = filterFiles(filenames, file_types)
+        filenames = filterFiles(filenames, image_types)
         for filename in filenames:
-            main = "_".join(split_filename(filename)["main"])
+            name, ext = filename.rsplit('.', 1)
+            main = "_".join(split_filename(name, ext)["main"])
             if not main in target_dict: continue
             orgin_file = os.path.join(dirpath, filename)
             for target_file in target_dict[main]:
                 commands = [command, orgin_file, target_file]
                 call_exiftool_direct(exclusion_tags + commands)
+            del target_dict[main]
