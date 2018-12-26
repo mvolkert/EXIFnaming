@@ -15,12 +15,13 @@ from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
     copyFilesTo, isfile, get_filename_sorted_dirfiletuples
-from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_dir
+from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_dir, get_logger
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat, getPostfix
 from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
 from EXIFnaming.helpers.tags import create_model, getPath
 
+log = get_logger()
 
 def print_info(tagGroupNames=(), allGroups=False, fileext=".JPG"):
     """
@@ -88,7 +89,6 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     # initialize
     if name: name = "_" + name
     outstring = ""
-    lastnewname = ""
     Tagdict["File Name new"] = []
     time_old = giveDatetime()
     counter = startindex - 1
@@ -131,19 +131,17 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
         else:
             newpostfix += postfix
 
-        newname = NamePrefix + counterString + sequenceString + newpostfix
-        if newname == lastnewname: newname = NamePrefix + counterString + sequenceString + "_K" + newpostfix
+        ext = filename[filename.rfind("."):]
+        newname = NamePrefix + counterString + sequenceString + newpostfix + ext
+        if newname == Tagdict["File Name new"][-1]:
+            log.warning("%s already exists - assume it is an unknown creative mode", os.path.join(model.dir, newname))
+            newname = NamePrefix + counterString + sequenceString + "_K" + newpostfix + ext
 
         if newname in Tagdict["File Name new"]:
-            print(os.path.join(model.dir, newname + postfix),
-                  "already exists - counted further up - time:", time, "time_old: ", time_old)
-            counter += 1
-            newname = NamePrefix + ("_%0" + digits + "d") % counter + sequenceString + newpostfix
+            log.warning("%s already exists - postfix it with V2", os.path.join(model.dir, newname))
+            newname = NamePrefix + counterString + sequenceString + "_V2" + newpostfix + ext
 
         time_old = time
-        lastnewname = newname
-
-        newname += filename[filename.rfind("."):]
         Tagdict["File Name new"].append(newname)
         outstring += _write(model.dir, filename, temppostfix, newname, onlyprint)
         filename_Raw = changeExtension(filename, fileext_Raw)
