@@ -95,21 +95,21 @@ def renameEveryTemp(inpath: str):
 
 
 def moveBracketSeries(dirpath: str, filenames: list) -> list:
-    counter_old = "000"
+    main_old = "000"
     counter2_old = "0"
     BList = []
     other_filenames = []
     for filename in filenames:
         # example: filename="MS17-4_552B2.JPG"
         if not ".JPG" in filename: continue
-        match = re.search('_([0-9]+)B([1-7])', filename)
+        match = re.search('(\w+_[0-9]+)B([1-7])', filename)
         if match:
-            counter, counter2 = match.groups()
-            if not counter == counter_old:
+            main, counter2 = match.groups()
+            if not main == main_old:
                 moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
                 BList = []
             BList.append(filename)
-            counter_old = counter
+            main_old = main
             counter2_old = counter2
         else:
             moveFilesToSubpath(BList, dirpath, "B" + counter2_old)
