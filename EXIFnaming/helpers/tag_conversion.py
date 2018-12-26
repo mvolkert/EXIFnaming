@@ -314,7 +314,7 @@ def split_filename(filename: str, ext: str = ".JPG"):
     if len(filename_splited) == 0: return
     filename_dict = {"main": [], "tags": [], "scene": [], "process": [], "p_tags": []}
     counter_complete = False
-    for subname in filename_splited:
+    for i, subname in enumerate(filename_splited):
         if not subname: continue
         if counter_complete:
             if is_process_tag(subname):
@@ -327,7 +327,9 @@ def split_filename(filename: str, ext: str = ".JPG"):
                 filename_dict["tags"].append(subname)
         else:
             filename_dict["main"].append(subname)
-            if is_counter(subname, ext): counter_complete = True
+            if i>0:
+                if is_counter(subname, ext): counter_complete = True
+                else: filename_dict["tags"].append(subname)
     return filename_dict
 
 
