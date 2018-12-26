@@ -23,6 +23,7 @@ from EXIFnaming.helpers.tags import create_model, getPath
 
 log = get_logger()
 
+
 def print_info(tagGroupNames=(), allGroups=False, fileext=".JPG"):
     """
     write tag info of tagGroupNames to a file in saves dir
@@ -133,7 +134,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
 
         ext = filename[filename.rfind("."):]
         newname = NamePrefix + counterString + sequenceString + newpostfix + ext
-        if newname == Tagdict["File Name new"][-1]:
+        if len(Tagdict["File Name new"]) > 0 and newname == Tagdict["File Name new"][-1]:
             log.warning("%s already exists - assume it is an unknown creative mode", os.path.join(model.dir, newname))
             newname = NamePrefix + counterString + sequenceString + "_K" + newpostfix + ext
 
