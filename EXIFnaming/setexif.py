@@ -5,6 +5,7 @@ Writes to Tags
 import csv
 import datetime as dt
 import os
+import re
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
@@ -259,7 +260,13 @@ def copy_exif_via_mainname(orgin: str, target: str):
         filenames = filterFiles(filenames, image_types)
         for filename in filenames:
             name, ext = filename.rsplit('.', 1)
-            main = "_".join(split_filename(name, ext)["main"])
+            main_arr = split_filename(name, ext)["main"]
+            # cut off counter suffix
+            match = re.search('([0-9]+)[a-zA-Z]', main_arr[-1])
+            if match:
+                main_arr[-1] = match.group(1)
+
+            main = "_".join(main_arr)
             if not main in target_dict: continue
             orgin_file = os.path.join(dirpath, filename)
             for target_file in target_dict[main]:
