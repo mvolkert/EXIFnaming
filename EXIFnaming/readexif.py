@@ -14,7 +14,7 @@ from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_
     find_dir_with_closest_time
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
-    copyFilesTo, isfile, get_filename_sorted_dirfiletuples
+    copyFilesTo, isfile, get_filename_sorted_dirfiletuples, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat, getPostfix
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_dir, log
@@ -285,8 +285,7 @@ def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask=True):
     clock = Clock()
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: continue
-        if not folder == "" and not re.search(folder, os.path.basename(dirpath)): continue
+        if is_invalid_path(dirpath, regex=folder): continue
         if len(filenames) == 0: continue
         print(dirpath)
         Tagdict = read_exiftags(dirpath, ".jpg", ask=ask)
