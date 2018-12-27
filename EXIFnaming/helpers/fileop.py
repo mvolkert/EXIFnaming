@@ -9,7 +9,7 @@ import numpy as np
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, log
-from EXIFnaming.helpers.settings import includeSubdirs
+from EXIFnaming.helpers.settings import includeSubdirs, image_types
 
 
 def moveFiles(filenames, path: str):
@@ -99,7 +99,9 @@ def moveBracketSeries(dirpath: str, filenames: list) -> list:
     other_filenames = []
     for filename in filenames:
         # example: filename="MS17-4_552B2.JPG"
-        if not ".JPG" in filename: continue
+        if not file_has_ext(filename, image_types):
+            other_filenames.append(filename)
+            continue
         match = re.search('(\w+_[0-9]+)B([1-7])', filename)
         if match:
             main, counter2 = match.groups()
