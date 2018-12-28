@@ -159,12 +159,14 @@ def geotag_single(lat: float, lon: float):
 
 
 def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setexif_dir(), csv_restriction="",
-             import_filename=True, import_exif=True, only_when_changed=False):
+             import_filename=True, import_exif=True, only_when_changed=False, overwrite_gps = False):
     """
     csv files are used for setting tags
     the csv files have to be separated by semicolon
     empty values in a column or not present columns are not evaluated
     each '' in the following is a possible column name
+
+    can also be used without csv files at all just to import filename to tags
 
     following restrictions to files are possible:
         'directory': checks if value is part of directory
@@ -193,7 +195,9 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
     :param start_folder: directories before this name will be ignored, does not needs to be a full directory name
     :param import_filename: whether to extract tags from filename
     :param import_exif: whether to extract tags from exif
-    :param only_when_changed: whether to update only when csv entry changes it
+    :param overwrite_gps: modifier for import_exif, overwrites gps data with information of csv
+    :param only_when_changed: when true filename is not imported to tags for files without matching entries in csv
+        useless if csv_restriction is set
     :return:
     """
     inpath = os.getcwd()
@@ -214,7 +218,7 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
             meta_data = FileMetaData(dirpath, filename)
             if not _passes_restrictor(meta_data, csv_restriction): continue
             if import_filename: meta_data.import_filename()
-            if import_exif: meta_data.import_exif()
+            if import_exif: meta_data.import_exif(overwrite_gps)
 
             for csv_filename in csv_filenames:
                 with open(csv_filename, "r") as csvfile:

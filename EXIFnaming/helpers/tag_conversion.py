@@ -110,13 +110,13 @@ class FileMetaData:
     def import_fullname(self, startdir: str):
         self.id, self.tags = fullname_to_tag(self.directory, self.name, startdir)
 
-    def import_exif(self):
+    def import_exif(self, overwrite_gps = False):
         self.tagDict = read_exiftag(self.directory, self.filename)
         self.location.update(self.tagDict)
         if "Rating" in self.tagDict and int(self.tagDict["Rating"]) > 0:
             self.rating = self.tagDict["Rating"]
 
-        if "GPS Latitude" in self.tagDict and self.tagDict["GPS Latitude"]:
+        if not overwrite_gps and "GPS Latitude" in self.tagDict and self.tagDict["GPS Latitude"]:
             self.gps_exif = True
 
         if "User Comment" in self.tagDict:
