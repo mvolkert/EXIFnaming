@@ -163,43 +163,6 @@ def _rename_match(dirpath: str, filename: str, mode: str, match: Optional[Match[
     renameInPlace(dirpath, filename, filename_new)
 
 
-def rename_to_front(mode="PANO", folder=r"HDR\w*"):
-    """
-    move the underscore entry matching the mode to the front after counter
-    :param mode: name of underscore entry
-    :param folder: only files in folders of this name are renamed
-    """
-    panoOut = r"^([-\w]+_[0-9]+[A-Z0-9]*)_(.*)_(%s[-0-9]*)(.*)" % mode
-    inpath = os.getcwd()
-    for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if is_invalid_path(dirpath, regex=folder): continue
-        log().info("Folder: %s", dirpath)
-        for filename in filenames:
-            match = re.search(panoOut, filename)
-            if match:
-                filename_new = match.group(1) + "_" + match.group(3) + "_" + match.group(2) + match.group(4)
-                if os.path.isfile(os.path.join(dirpath, filename_new)):
-                    log().info("file already exists: %s", filename_new)
-                else:
-                    renameInPlace(dirpath, filename, filename_new)
-            else:
-                log().info("no match: %s", filename)
-
-
-def rename_PANO(folder=r""):
-    inpath = os.getcwd()
-    for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if is_invalid_path(dirpath, regex=folder): continue
-        log().info("Folder: %s", dirpath)
-        for filename in filenames:
-            if not "PANO" in filename: continue
-            name, ext = filename.rsplit('.', 1)
-            filename_dict = split_filename(name, ext)
-            _sanitize_pano(filename_dict)
-            filename_new = _get_new_filename_from_dict(filename_dict) + "." + ext
-            renameInPlace(dirpath, filename, filename_new)
-
-
 def sanitize_filename(folder=r""):
     """
     sanitize order of Scene and Process tags
