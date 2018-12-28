@@ -17,7 +17,7 @@ from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtensio
     copyFilesTo, isfile, get_filename_sorted_dirfiletuples, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat, getPostfix
-from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_dir, log
+from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_dir, log, log_function_call
 from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
 from EXIFnaming.helpers.tags import create_model, getPath
 
@@ -75,6 +75,8 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     :param fileext_Raw: file extension for raw image that is to get same name as the normal one
     :param name: optional name between date and filenumber, seldom used
     """
+    log_function_call(rename.__name__, Prefix, dateformat, startindex, onlyprint, postfix_stay, fileext, fileext_Raw,
+                      name)
     inpath = os.getcwd()
     Tagdict = read_exiftags(inpath, fileext)
     if not Tagdict: return
@@ -180,6 +182,7 @@ def _count_files_for_each_date(Tagdict, startindex, dateformat):
 
 
 def order():
+    log_function_call(order.__name__)
     inpath = os.getcwd()
 
     Tagdict = read_exiftags(inpath)
@@ -278,7 +281,7 @@ def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask=True):
     :param override: override file with rotated one
     :param ask: if should ask for user confirmation
     """
-
+    log_function_call(rotate.__name__, subname, folder, sign, override, ask)
     from PIL import Image
 
     NFiles = 0

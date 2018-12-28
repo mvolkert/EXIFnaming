@@ -55,3 +55,9 @@ def log() -> Logger:
 
 
 log.logger = None
+
+
+def log_function_call(function_name: str, *parameters):
+    parameters = [str(parameter) for parameter in parameters]
+    parameter_str = ", ".join(parameters)
+    log().info("call %s(%s)", function_name, parameter_str)

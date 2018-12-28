@@ -18,7 +18,7 @@ from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeri
     get_plain_filenames, \
     filterFiles
 from EXIFnaming.helpers.misc import askToContinue
-from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log
+from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log, log_function_call
 from EXIFnaming.helpers.settings import image_types
 from EXIFnaming.helpers.tag_conversion import split_filename
 
@@ -27,6 +27,7 @@ def filter_series():
     """
     put each kind of series in its own directory
     """
+    log_function_call(filter_series.__name__)
     inpath = os.getcwd()
     skipdirs = ["B" + str(i) for i in range(1, 8)]
     skipdirs += ["S", "SM", "TL", "mp4", "HDR", "single", "Pano", "others"] + list(CameraModelShort.values())
@@ -48,6 +49,7 @@ def filter_primary():
     """
     put single and B1 in same directory
     """
+    log_function_call(filter_primary.__name__)
     inpath = os.getcwd()
     skipdirs = ["S", "SM", "TL", "mp4", "HDR", "single", "Pano", "others"] + list(CameraModelShort.values())
 
@@ -91,6 +93,7 @@ def folders_to_main(all_folders=False, series=False, primary=False, blurry=False
     :param one_level: reverse only one directory up
     :param not_inpath: leave all directories in inpath as they are, only change subdirectories
     """
+    log_function_call(folders_to_main.__name__, all_folders, series, primary, blurry, dirs, one_level, not_inpath)
     inpath = os.getcwd()
     if dirs is None:
         reverseDirs = []
@@ -133,6 +136,7 @@ def rename_HDR(mode="HDRT", folder=r"HDR\w*"):
     :param mode: name for HDR-Mode written to file
     :param folder: only files in folders of this name are renamed
     """
+    log_function_call(rename_HDR.__name__, mode, folder)
     matchreg = r"^([-\w]+_[0-9]+)B\d(.*)_(?:\d+B)?\d\2"
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -240,6 +244,7 @@ def rename_back(timestring="", fileext=".JPG"):
     :param fileext: file extension
     :return:
     """
+    log_function_call(rename_back.__name__)
     dirname = get_saves_dir()
     tagFile = os.path.join(dirname, "Tags" + fileext + "_" + timestring + ".npz")
     if not timestring or os.path.isfile(tagFile):
@@ -263,6 +268,7 @@ def extract_tags_per_dir():
     extract tags from the file name
     write a csv file with those tags and group them by toplevel directory
     """
+    log_function_call(extract_tags_per_dir.__name__)
     inpath = os.getcwd()
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
     tag_set_names = OrderedSet()

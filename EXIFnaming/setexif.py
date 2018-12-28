@@ -12,7 +12,7 @@ from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinu
     write_exiftag, has_not_keys, call_exiftool_direct, read_exiftag
 from EXIFnaming.helpers.fileop import filterFiles, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
-from EXIFnaming.helpers.program_dir import get_gps_dir, get_setexif_dir, log
+from EXIFnaming.helpers.program_dir import get_gps_dir, get_setexif_dir, log, log_function_call
 from EXIFnaming.helpers.settings import includeSubdirs, file_types, image_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict, split_filename
 from EXIFnaming.helpers.tags import create_model, hasDateTime
@@ -22,6 +22,7 @@ def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):
     """
     for example to adjust time zone by one: hours=-1
     """
+    log_function_call(shift_time.__name__, hours, minutes, seconds, fileext)
     inpath = os.getcwd()
     delta_t = dt.timedelta(hours=hours, minutes=minutes, seconds=seconds)
     Tagdict = read_exiftags(inpath, fileext)
@@ -52,6 +53,7 @@ def fake_date(start='2000:01:01'):
     each dir is one day later
     :param start: the date on which to start generate fake dates
     """
+    log_function_call(fake_date.__name__, start)
     inpath = os.getcwd()
     start += ' 00:00:00.000'
     start_time = giveDatetime(start)
@@ -134,6 +136,7 @@ def geotag(timezone=2, offset="", start_folder=""):
     :param offset: offset in minutes and seconds, has to be in format +/-mm:ss e.g. -03:02
     :param start_folder: directories before this name will be ignored, does not needs to be a full directory name
     """
+    log_function_call(geotag.__name__, offset, start_folder)
     inpath = os.getcwd()
     gpxDir = get_gps_dir()
     options = ["-r", "-geotime<${DateTimeOriginal}%+03d:00" % timezone]
@@ -169,7 +172,7 @@ def geotag_single(lat: float, lon: float):
 
 
 def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setexif_dir(), csv_restriction="",
-             import_filename=True, import_exif=True, only_when_changed=False, overwrite_gps = False):
+             import_filename=True, import_exif=True, only_when_changed=False, overwrite_gps=False):
     """
     csv files are used for setting tags
     the csv files have to be separated by semicolon
@@ -210,6 +213,8 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
         useless if csv_restriction is set
     :return:
     """
+    log_function_call(read_csv.__name__, csv_filenames, folder, start_folder, csv_folder, csv_restriction,
+                      import_filename, import_exif, only_when_changed, overwrite_gps)
     inpath = os.getcwd()
     clock = Clock()
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\r\n')
@@ -260,6 +265,7 @@ def copy_exif_via_mainname(origin: str, target: str):
     :param origin:
     :param target:
     """
+    log_function_call(copy_exif_via_mainname.__name__, origin, target)
     inpath = os.getcwd()
     target_dict = {}
     exclusion_tags = ["--PreviewImage", "--ThumbnailImage", "--Rating"]
