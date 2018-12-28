@@ -71,6 +71,7 @@ def fake_date(start='2000:01:01'):
 
 def add_location(country="", city="", location=""):
     """
+    deprecated: try to use read_csv() instead
     :param country: example:"Germany"
     :param city: example:"Nueremberg"
     :param location: additional location info
@@ -79,6 +80,11 @@ def add_location(country="", city="", location=""):
 
 
 def location_to_keywords():
+    """
+    import location exif information to put into Keywords
+
+    deprecated: try to use read_csv() instead
+    """
     inpath = os.getcwd()
     log().info("process %d Files in %s, subdir: %r", count_files_in(inpath, file_types, ""), inpath,
                includeSubdirs)
@@ -98,6 +104,8 @@ def location_to_keywords():
 def name_to_exif(folder=r"", additional_tags=(), startdir=None):
     """
     extract title, description and mode from name and write them to exif
+
+    deprecated: try to use read_csv() instead
     """
     inpath = os.getcwd()
     clock = Clock()
@@ -151,6 +159,8 @@ def geotag_single(lat: float, lon: float):
     adds gps information to all pictures in all sub directories of current directory
     :param lat: GPSLatitude
     :param lon: GPSLongitude
+
+    deprecated: try to use read_csv() instead
     """
     inpath = os.getcwd()
     options = ["-GPSLatitudeRef=%f" % lat, "-GPSLatitude=%f" % lat, "-GPSLongitudeRef=%f" % lon,
@@ -243,7 +253,13 @@ def _passes_restrictor(meta_data, csv_restriction):
     return False
 
 
-def copy_exif_via_mainname(orgin: str, target: str):
+def copy_exif_via_mainname(origin: str, target: str):
+    """
+    copy exif information from files in directory origin to target
+    files are matched via main name -> processed files can get exif information of original files
+    :param origin:
+    :param target:
+    """
     inpath = os.getcwd()
     target_dict = {}
     exclusion_tags = ["--PreviewImage", "--ThumbnailImage", "--Rating"]
@@ -257,7 +273,7 @@ def copy_exif_via_mainname(orgin: str, target: str):
             name, ext = filename.rsplit('.', 1)
             main = "_".join(split_filename(name, ext)["main"])
             target_dict.setdefault(main, []).append(os.path.join(dirpath, filename))
-    for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, orgin)):
+    for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, origin)):
         if is_invalid_path(dirpath): continue
         filenames = filterFiles(filenames, image_types)
         for filename in filenames:
