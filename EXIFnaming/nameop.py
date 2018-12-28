@@ -289,6 +289,9 @@ def rename_back(timestring="", fileext=".JPG"):
 
 
 def extract_tags_per_dir():
+    """
+
+    """
     inpath = os.getcwd()
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
     tag_set_names = OrderedSet()
@@ -311,10 +314,8 @@ def extract_tags_per_dir():
             writeToFile(get_info_dir("tags.txt"), dirname + "\n\t" + "\n\t".join(tag_set) + "\n")
 
             dirname_split = dirname.split("_")
-            if len(dirname_split) > 3:
-                dirname = ""
-            else:
-                dirname = dirname_split[-1]
+            subnames = [subname for subname in dirname_split if not subname.isnumeric()]
+            dirname = "_".join(subnames)
             for tag in tag_set:
                 if not tag[0].isupper(): continue
                 tag_set_names.add((dirname, tag))
