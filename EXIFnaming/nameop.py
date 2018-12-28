@@ -201,6 +201,13 @@ def rename_PANO(folder=r""):
 
 
 def sanitize_filename(folder=r""):
+    """
+    sanitize order of Scene and Process tags
+    sanitize counter to be split by $
+    sanitize sub process names added by a external program to by concat to main processname (only Hugin)
+    :param folder:
+    :return:
+    """
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
@@ -290,7 +297,8 @@ def rename_back(timestring="", fileext=".JPG"):
 
 def extract_tags_per_dir():
     """
-
+    extract tags from the file name
+    write a csv file with those tags and group them by toplevel directory
     """
     inpath = os.getcwd()
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
@@ -324,6 +332,12 @@ def extract_tags_per_dir():
 
 
 def extract_tags(location=""):
+    """
+    extract tags from the file name
+    write a csv file with those tags
+    :param location: optional content of directory column
+    :return:
+    """
     inpath = os.getcwd()
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
     tag_set_names = OrderedSet()
@@ -347,6 +361,10 @@ def extract_tags(location=""):
 
 
 def create_favorites_csv():
+    """
+    creates a csv file with all files in the directory
+    the rating column is filled with "4"
+    """
     inpath = os.getcwd()
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
     fav_file = open(get_setexif_dir("fav.csv"), "w")
