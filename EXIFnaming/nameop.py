@@ -6,7 +6,7 @@ import csv
 import datetime as dt
 import os
 import re
-from typing import Optional, Match
+from typing import Optional, Match, Iterable
 
 import numpy as np
 from sortedcollections import OrderedSet
@@ -16,7 +16,7 @@ from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeries, \
     moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, \
     get_plain_filenames, \
-    filterFiles
+    filterFiles, isfile
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log, log_function_call
 from EXIFnaming.helpers.settings import image_types
@@ -344,3 +344,23 @@ def create_favorites_csv():
         for filename in filterFiles(filenames, image_types):
             writer.writerow([filename, 4])
     fav_file.close()
+
+
+def create_example_csvs():
+    """
+    creates some examples for csv files
+    """
+    _create_empty_csv("fav", ["name_part", "rating"])
+    _create_empty_csv("gps", ["directory", "name_part", "Location", "gps", "City", "State", "Country", "tags3"])
+    _create_empty_csv("tags", ["name_main", "first", "last", "tags", "tags3"])
+    _create_empty_csv("processing", ["directory", "name_part", "tags2", "HDR-ghosting", "HDR-strength"])
+
+
+def _create_empty_csv(name: str, columns: Iterable):
+    csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
+    filename = get_setexif_dir(name + ".csv")
+    if isfile(filename): return
+    csv_file = open(filename, "w")
+    writer = csv.writer(csv_file, dialect="semicolon")
+    writer.writerow(columns)
+    csv_file.close()

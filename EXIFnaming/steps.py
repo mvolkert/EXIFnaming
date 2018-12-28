@@ -2,13 +2,13 @@
 """
 Steps combine multiple functions
 """
-
-from EXIFnaming.nameop import filter_series, rename_HDR, sanitize_filename
+from EXIFnaming.nameop import filter_series, rename_HDR, sanitize_filename, create_example_csvs
 from EXIFnaming.readexif import order, rename, rotate
 from EXIFnaming.setexif import geotag, read_csv
 
 
 def step1_prepare():
+    create_example_csvs()
     order()
 
 
