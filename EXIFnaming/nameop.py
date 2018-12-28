@@ -288,7 +288,7 @@ def rename_back(timestring="", fileext=".JPG"):
     np.savez_compressed(os.path.join(dirname, "Tags" + fileext + timestring), Tagdict=Tagdict)
 
 
-def extract_tags():
+def extract_tags_per_dir():
     inpath = os.getcwd()
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
     tag_set_names = OrderedSet()
@@ -318,6 +318,29 @@ def extract_tags():
             for tag in tag_set:
                 if not tag[0].isupper(): continue
                 tag_set_names.add((dirname, tag))
+    writer.writerows(tag_set_names)
+    tags_places_file.close()
+
+
+def extract_tags(location=""):
+    inpath = os.getcwd()
+    csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
+    tag_set_names = OrderedSet()
+    tags_places_file = open(get_info_dir("tags_places.csv"), "w")
+    writer = csv.writer(tags_places_file, dialect="semicolon")
+    writer.writerow(["directory", "name_part"])
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        tag_set = OrderedSet()
+        for filename in filenames:
+            name, ext = filename.rsplit('.', 1)
+            filename_dict = split_filename(name, ext)
+            for tag in filename_dict["tags"]:
+                if not tag: continue
+                tag_set.add(tag)
+        writeToFile(get_info_dir("tags.txt"), location + "\n\t" + "\n\t".join(tag_set) + "\n")
+        for tag in tag_set:
+            if not tag[0].isupper(): continue
+            tag_set_names.add((location, tag))
     writer.writerows(tag_set_names)
     tags_places_file.close()
 
