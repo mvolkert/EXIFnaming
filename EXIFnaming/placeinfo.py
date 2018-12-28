@@ -8,6 +8,11 @@ from EXIFnaming.helpers.settings import googlemaps_api_key
 
 
 def get_info(search: str):
+    """
+    get infos for place
+    :param search: place search string
+    :return: result dict representing json
+    """
     gmaps = googlemaps.Client(key=googlemaps_api_key)
     params = {"input": search, "inputtype": "textquery", "fields": "geometry/location,name"}
     result = gmaps._request("/maps/api/place/findplacefromtext/json", params)
@@ -15,6 +20,11 @@ def get_info(search: str):
 
 
 def write_infos():
+    """
+    use google maps to get gps infos of places
+    uses tags_places.csv as input and fills it with gps and location name
+    output: tags_places_gmaps.csv
+    """
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
     filename = get_info_dir("tags_places.csv")
 

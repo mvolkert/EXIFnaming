@@ -182,6 +182,9 @@ def _count_files_for_each_date(Tagdict, startindex, dateformat):
 
 
 def order():
+    """
+    order by date using exif info
+    """
     log_function_call(order.__name__)
     inpath = os.getcwd()
 
@@ -357,6 +360,12 @@ def _get_time(dirfile: tuple) -> str:
 
 
 def order_with_timetable(timefile=get_info_dir("timetable.txt"), fileexts=(".JPG", ".MP4")):
+    """
+    use timetable to create folder structure
+    :param timefile: timetable file
+    :param fileexts: extensions
+    :return:
+    """
     inpath = os.getcwd()
     dirNameDict_firsttime, dirNameDict_lasttime = _read_timetable(timefile)
     for fileext in fileexts:
@@ -391,6 +400,15 @@ _read_timetable.timeformat = "%y%m%d %H:%M"
 
 
 def better_gpx_via_timetable(gpxfilename: str):
+    """
+    crossmatch gpx file with timetable and take only entries for which photos exist
+    :param gpxfilename: input gpx file
+    output: _new1.gpx containing only usefull locations
+            _new2.gpx containing only not usefull locations
+
+    does not uses exif infos
+    """
+
     def write(dirName_last, gpxfile_out):
         if dirName != dirName_last:
             if not dirName_last == "": gpxfile_out.write("</trkseg></trk>\r\n")
