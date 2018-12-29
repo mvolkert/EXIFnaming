@@ -1,4 +1,4 @@
 *.exe
 __pycache__
 .idea/*
-**/settings.py
+.EXIFnaming/*
