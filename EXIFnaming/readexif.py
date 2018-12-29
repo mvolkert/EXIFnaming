@@ -64,19 +64,19 @@ def rename_pm(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, po
 
 
 def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
-           postfix_stay=True, fileext=".JPG", fileext_Raw=".Raw", name=""):
+           keeptags=True, fileext=".JPG", fileext_Raw=".Raw", name=""):
     """
     Rename into Format: [Prefix][dateformat](_[name])_[Filenumber][SeriesType][SeriesSubNumber]_[PhotoMode]
     :param Prefix: prefix has to fulfil regex [-a-zA-Z]*
     :param dateformat: Y:Year,M:Month,D:Day,N:DayCounter; Number of occurrences determine number of digits
     :param startindex: minimal counter
     :param onlyprint: do not rename; only output file of proposed renaming into saves directory
-    :param postfix_stay: if you put a postfix after PhotoMode with an other program and call this function again, the postfix will be preserved
+    :param keeptags: any tags - name or postfixes will be preserved
     :param fileext: file extension
     :param fileext_Raw: file extension for raw image that is to get same name as the normal one
     :param name: optional name between date and filenumber, seldom used
     """
-    log_function_call(rename.__name__, Prefix, dateformat, startindex, onlyprint, postfix_stay, fileext, fileext_Raw,
+    log_function_call(rename.__name__, Prefix, dateformat, startindex, onlyprint, keeptags, fileext, fileext_Raw,
                       name)
     inpath = os.getcwd()
     Tagdict = read_exiftags(inpath, fileext)
@@ -127,7 +127,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
 
         filenameBuilder.add_main(counterString)
         filenameBuilder.add_post(model.get_mode())
-        if postfix_stay: filenameBuilder.use_old_tags()
+        if keeptags: filenameBuilder.use_old_tags()
 
         newname = filenameBuilder.build()
 
@@ -136,7 +136,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
             if newname == Tagdict["File Name new"][-1] and Tagdict["Directory"][i] == Tagdict["Directory"][i - 1]:
                 log().warning("%s already exists - assume it is an unknown creative mode",
                               os.path.join(model.dir, newname))
-                newname = filenameBuilder.add_main("CRTV").build()
+                newname = filenameBuilder.set_version("CRTV").build()
 
             for version in range(2, 100):
                 if newname in Tagdict["File Name new"]:
@@ -144,7 +144,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
                     if Tagdict["Directory"][i] == Tagdict["Directory"][index]:
                         log().warning("%s already exists - postfix it with V%d", os.path.join(model.dir, newname),
                                       version)
-                        newname = filenameBuilder.add_main("V%d" % version).build()
+                        newname = filenameBuilder.set_version("V%d" % version).build()
                     else:
                         break
                 else:

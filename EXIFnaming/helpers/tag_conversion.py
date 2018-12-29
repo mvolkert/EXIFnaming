@@ -459,6 +459,7 @@ class FilenameBuilder:
     def __init__(self, old_filename: str):
         self.main = []
         self.post = []
+        self.version = ""
         self.accessor = FilenameAccessor(old_filename)
 
     def add_main(self, part):
@@ -471,9 +472,18 @@ class FilenameBuilder:
             self.post.append(part)
         return self
 
+    def set_version(self, version):
+        self.version = version
+        return self
+
     def use_old_tags(self):
+        self.post += [tag for tag in self.accessor.processes if not tag in self.post]
         self.post += [tag for tag in self.accessor.primtags if not tag in self.main]
         self.post += [tag for tag in self.accessor.posttags if not tag in self.post]
 
     def build(self) -> str:
-        return "_".join(self.main + self.post) + self.accessor.ext
+        if self.version:
+            arr = self.main + [self.version] + self.post
+        else:
+            arr = self.main + self.post
+        return "_".join(arr) + self.accessor.ext
