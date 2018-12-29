@@ -19,6 +19,7 @@ from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat, getPostfix
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_dir, log, log_function_call
 from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
+from EXIFnaming.helpers.tag_conversion import FilenameBuilder
 from EXIFnaming.helpers.tags import create_model, getPath
 
 
@@ -88,7 +89,6 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
         temppostfix = ""
 
     # initialize
-    if name: name = "_" + name
     outstring = ""
     Tagdict["File Name new"] = []
     time_old = giveDatetime()
@@ -100,47 +100,43 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     for i in range(number_of_files):
         model = create_model(Tagdict, i)
         time = giveDatetime(model.get_date())
+        filename = model.filename
 
         if newdate(time, time_old, 'D' in dateformat or 'N' in dateformat):
             daystring = dateformating(time, dateformat)
             if not i == 0: counter = 0
-        NamePrefix = Prefix + daystring + model.get_model_abbr() + name
 
-        filename = model.filename
-        postfix = getPostfix(filename, postfix_stay)
+        filenameBuilder = FilenameBuilder(filename)
+        filenameBuilder.add_main(Prefix + daystring)
+        filenameBuilder.add_main(model.get_model_abbr())
+        filenameBuilder.add_main(name)
+
         counterString = ""
-        sequenceString = ""
-        newpostfix = ""
 
         if fileext in image_types:
             # SequenceNumber
             sequence_number = model.get_sequence_number()
             if sequence_number < 2 and not time == time_old: counter += 1
-            if not "HDR" in filename: sequenceString = model.get_sequence_string()
-
-            counterString = ("_%0" + digits + "d") % counter
+            counterString = ("%0" + digits + "d") % counter
+            if not "HDR" in filename: counterString += model.get_sequence_string()
 
         elif fileext in video_types:
             counter += 1
-            counterString = "_M" + "%02d" % counter
-            newpostfix += model.get_recMode()
+            counterString = "M%02d" % counter
+            filenameBuilder.add_post(model.get_recMode())
 
-        # Name Scene Modes
-        newpostfix += model.get_mode()
-        if newpostfix in postfix:
-            newpostfix = postfix
-        else:
-            newpostfix += postfix
+        filenameBuilder.add_main(counterString)
+        filenameBuilder.add_post(model.get_mode())
+        if postfix_stay: filenameBuilder.use_old_tags()
 
-        ext = filename[filename.rfind("."):]
-        newname = NamePrefix + counterString + sequenceString + newpostfix + ext
+        newname = filenameBuilder.build()
         if len(Tagdict["File Name new"]) > 0 and newname == Tagdict["File Name new"][-1]:
             log().warning("%s already exists - assume it is an unknown creative mode", os.path.join(model.dir, newname))
-            newname = NamePrefix + counterString + sequenceString + "_K" + newpostfix + ext
+            newname = filenameBuilder.add_main("K").build()
 
         if newname in Tagdict["File Name new"]:
             log().warning("%s already exists - postfix it with V2", os.path.join(model.dir, newname))
-            newname = NamePrefix + counterString + sequenceString + "_V2" + newpostfix + ext
+            newname = filenameBuilder.add_main("V2").build()
 
         time_old = time
         Tagdict["File Name new"].append(newname)

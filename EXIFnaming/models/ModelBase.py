@@ -180,13 +180,13 @@ class ModelBase:
 
     def get_recMode(self) -> str:
         if self.is_4KBurst():
-            return "_4KB"
+            return "4KB"
         elif self.is_4KFilm():
-            return "_4K"
+            return "4K"
         elif self.is_HighSpeed():
-            return "_HS"
+            return "HS"
         elif self.is_FullHD():
-            return "_FHD"
+            return "FHD"
         else:
             return ""
 
@@ -201,11 +201,11 @@ class ModelBase:
 
     def get_mode(self) -> str:
         if self.is_scene():
-            return "_" + self.get_printable_scene()
+            return  self.get_printable_scene()
         elif self.is_creative():
-            return "_" + self.get_printable_creative()
+            return self.get_printable_creative()
         elif self.is_HDR():
-            return "_HDR"
+            return "HDR"
         return ""
 
     def get_date(self) -> str:
@@ -231,6 +231,5 @@ class ModelBase:
         if not self.has('Camera Model Name'): return ""
         model = self.get_entry('Camera Model Name')
         if model in c.CameraModelShort:
-            model = c.CameraModelShort[model]
-        if model: model = "_" + model
+            return c.CameraModelShort[model]
         return model

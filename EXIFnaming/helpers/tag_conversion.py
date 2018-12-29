@@ -451,13 +451,13 @@ class FilenameBuilder:
         self.accessor = FilenameAccessor(old_filename)
 
     def add_main(self, part):
-        if not part: return self
-        self.main.append(part)
+        if part:
+            self.main.append(part)
         return self
 
     def add_post(self, part):
-        if not part: return self
-        self.post.append(part)
+        if part:
+            self.post.append(part)
         return self
 
     def use_old_tags(self):
