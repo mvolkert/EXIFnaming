@@ -81,7 +81,6 @@ class FileMetaData:
     def __init__(self, directory, filename):
         self.directory = directory
         self.filename = filename
-        self.name, self.ext = filename.rsplit('.', 1)
         self.id = self.filename
         self.title = ""
         self.tags = []
@@ -94,23 +93,26 @@ class FileMetaData:
         self.gps = ()
         self.gps_exif = False
         self.tagDict = None
-        self.main_name, self.counter = get_main_and_counter(self.name, self.ext)
+        self.filenameAccessor = FilenameAccessor(filename)
+        self.main_name = self.filenameAccessor.pre
+        self.counter = self.filenameAccessor.counter_without_suffix()
         self.has_changed = False
 
     def import_filename(self):
-        filename_dict = split_filename(self.name, self.ext)
-        self.id, self.tags, self.tags2 = filedict_to_tag(filename_dict)
+        self.id = self.filenameAccessor.identifier()
+        self.tags = self.filenameAccessor.tags()
+        self.tags2 = self.filenameAccessor.modes()
         match = FileMetaData.secondary_regex.search(self.id)
         if match:
             self.rating = 2
         else:
             self.rating = 3
-        for process in filename_dict["process"]:
+        for process in self.filenameAccessor.processes:
             des = process_to_description(process)
             add_dict(self.description_tree, des)
 
     def import_fullname(self, startdir: str):
-        self.id, self.tags = fullname_to_tag(self.directory, self.name, startdir)
+        self.id, self.tags = fullname_to_tag(self.directory, self.filenameAccessor.name, startdir)
 
     def import_exif(self, overwrite_gps=False):
         self.tagDict = read_exiftag(self.directory, self.filename)
@@ -209,7 +211,7 @@ class FileMetaData:
             self._write_description_tree()
         full_description = (FileMetaData.linesep + "\n\n").join(self.descriptions)
 
-        tagDict = {'Label': self.name, 'Title': self.title,
+        tagDict = {'Label': self.filenameAccessor.name, 'Title': self.title,
                    'Keywords': self.tags, 'Subject': list(self.tags),
                    'Description': full_description, 'UserComment': full_description,
                    'Identifier': self.id, 'Rating': self.rating, 'Artist': photographer}
@@ -297,58 +299,6 @@ def set_path(data: dict, path, value=None):
         sub_data[path[-1]] = OrderedDict()
 
 
-def filename_to_tag(filename: str):
-    return filedict_to_tag(split_filename(filename))
-
-
-def filedict_to_tag(filename_dict: dict):
-    image_id = "_".join(filename_dict["main"] + filename_dict["p_tags"])
-    image_tags = filename_dict["tags"]
-    image_tags_p = [tag2 for tag in filename_dict["scene"] for tag2 in scene_to_tag(tag)]
-    image_tags_p += [tag2 for tag in filename_dict["process"] for tag2 in process_to_tag(tag)]
-    return image_id, image_tags, image_tags_p
-
-
-def split_filename(filename: str, ext: str = ".JPG"):
-    filename_splited = filename.split('_')
-    if len(filename_splited) == 0: return
-    filename_dict = {"main": [], "tags": [], "scene": [], "process": [], "p_tags": []}
-    counter_complete = False
-    for i, subname in enumerate(filename_splited):
-        if not subname: continue
-        if counter_complete:
-            if is_process_tag(subname):
-                filename_dict["process"].append(subname)
-                filename_dict["p_tags"].append(subname)
-            elif is_scene_abbreviation(subname):
-                filename_dict["scene"].append(subname)
-                filename_dict["p_tags"].append(subname)
-            else:
-                filename_dict["tags"].append(subname)
-        else:
-            filename_dict["main"].append(subname)
-            if i > 0:
-                if is_counter(subname, ext):
-                    counter_complete = True
-                else:
-                    filename_dict["tags"].append(subname)
-    return filename_dict
-
-
-def get_main_and_counter(filename: str, ext: str = ".JPG"):
-    filename_splited = filename.split('_')
-    counter = None
-    for entry in filename_splited:
-        if not entry: continue
-        if is_counter(entry, ext):
-            match = get_main_and_counter.regex.search(entry)
-            counter = match.group(1)
-    return filename_splited[0], counter
-
-
-get_main_and_counter.regex = re.compile(r"(M?\d*)")
-
-
 def fullname_to_tag(dirpath: str, filename: str, startdir=""):
     relpath = os.path.relpath(dirpath, startdir)
     if relpath == ".": relpath = ""
@@ -412,10 +362,13 @@ def process_to_description(process: str) -> dict:
     return description
 
 
-class FileNameAccessor:
+class FilenameAccessor:
+    main_counter_regex = re.compile(r'(M?\d+)')
 
     def __init__(self, filename):
-        self.filename, self.ext = filename.rsplit('.', 1)
+        self.filename = filename
+        self.name, self.ext = filename.rsplit('.', 1)
+        self.ext = "." + self.ext
         self.main = []
         self.pre = ""
         self.primmodes = []
@@ -427,7 +380,7 @@ class FileNameAccessor:
         self._split_filename()
 
     def _split_filename(self):
-        filename_splited = self.filename.split('_')
+        filename_splited = self.name.split('_')
         if len(filename_splited) == 0: return
         counter_complete = False
         for i, subname in enumerate(filename_splited):
@@ -471,10 +424,10 @@ class FileNameAccessor:
 
     def get_sorted_filename(self):
         arr = self.main + self.scenes + self.processes + self.posttags
-        return "_".join(arr)
+        return "_".join(arr) + self.ext
 
     def counter_without_suffix(self) -> str:
-        match = re.search('([0-9]+)[a-zA-Z]', self.counter)
+        match = FilenameAccessor.main_counter_regex.search(self.counter)
         if match:
             return match.group(1)
         return self.counter
@@ -484,18 +437,18 @@ class FileNameAccessor:
         return "_".join(arr)
 
     def _index_of_counter(self):
-        filename_splited = self.filename.split('_')
+        filename_splited = self.name.split('_')
         # index of counter with longest item that looks like a counter
         indeces = [(i, len(e)) for i, e in enumerate(filename_splited) if is_counter(e, self.ext)]
         return indeces.sort(key=operator.itemgetter(1))[-1]
 
 
-class FileNameBuilder:
+class FilenameBuilder:
 
     def __init__(self, old_filename: str):
         self.main = []
         self.post = []
-        self.accessor = FileNameAccessor(old_filename)
+        self.accessor = FilenameAccessor(old_filename)
 
     def add_main(self, part):
         if not part: return self

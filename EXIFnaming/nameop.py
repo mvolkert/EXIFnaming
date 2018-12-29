@@ -20,7 +20,7 @@ from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeri
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log, log_function_call
 from EXIFnaming.helpers.settings import image_types
-from EXIFnaming.helpers.tag_conversion import split_filename
+from EXIFnaming.helpers.tag_conversion import FilenameAccessor
 
 
 def filter_series():
@@ -180,41 +180,40 @@ def sanitize_filename(folder=r""):
         if is_invalid_path(dirpath, regex=folder): continue
         log().info("Folder: %s", dirpath)
         for filename in filenames:
-            name, ext = filename.rsplit('.', 1)
-            name = name.replace("panorama", "PANO")
-            filename_dict = split_filename(name, ext)
-            _sanitize_process_counter(filename_dict)
-            _sanitize_pano(filename_dict)
-            filename_new = _get_new_filename_from_dict(filename_dict) + "." + ext
+            filename = filename.replace("panorama", "PANO")
+            filenameAccessor = FilenameAccessor(filename)
+            _sanitize_process_counter(filenameAccessor)
+            _sanitize_pano(filenameAccessor)
+            filename_new = filenameAccessor.get_sorted_filename()
             renameInPlace(dirpath, filename, filename_new)
 
 
-def _sanitize_pano(filename_dict: dict):
-    matches = [tag for tag in filename_dict["process"] if tag.startswith("PANO")]
+def _sanitize_pano(filenameAccessor: FilenameAccessor):
+    matches = [tag for tag in filenameAccessor.processes if tag.startswith("PANO")]
     if not matches: return
     pano_name = matches[0]
     pano_split = pano_name.split("$")
     pano_newname = pano_split[0]
     pano_modi = ["blended", "fused", "hdr"]
     for pano_modus in pano_modi:
-        if pano_modus in filename_dict["tags"]:
+        if pano_modus in filenameAccessor.posttags:
             pano_newname += "-" + pano_modus
-            filename_dict["tags"].remove(pano_modus)
+            filenameAccessor.posttags.remove(pano_modus)
     if len(pano_split) > 0:
         pano_newname = "$".join([pano_newname] + pano_split[1:])
-    filename_dict["process"].remove(matches[0])
-    filename_dict["process"] = [pano_newname] + filename_dict["process"]
+    filenameAccessor.processes.remove(matches[0])
+    filenameAccessor.processes = [pano_newname] + filenameAccessor.processes
 
 
-def _sanitize_process_counter(filename_dict: dict):
+def _sanitize_process_counter(filenameAccessor: FilenameAccessor):
     processes_new = []
-    for process_mode in filename_dict["process"]:
+    for process_mode in filenameAccessor.processes:
         if not "$" in process_mode:
             match = re.search(r'([^\d]+)(\d.*)', process_mode)
             if match:
                 process_mode = match.group(1) + "$" + match.group(2)
         processes_new.append(process_mode)
-    filename_dict["process"] = processes_new
+        filenameAccessor.processes = processes_new
 
 
 def _get_new_filename_from_dict(filename_dict: dict):
@@ -283,10 +282,8 @@ def extract_tags_per_dir():
             tag_set = OrderedSet()
             plain_filenames = get_plain_filenames(inpath, dirname)
             for filename in plain_filenames:
-                name, ext = filename.rsplit('.', 1)
-                filename_dict = split_filename(name, ext)
-                for tag in filename_dict["tags"]:
-                    if not tag: continue
+                fileNameAccessor = FilenameAccessor(filename)
+                for tag in fileNameAccessor.tags():
                     tag_set.add(tag)
             writeToFile(get_info_dir("tags.txt"), dirname + "\n\t" + "\n\t".join(tag_set) + "\n")
 
@@ -316,10 +313,8 @@ def extract_tags(location=""):
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         tag_set = OrderedSet()
         for filename in filenames:
-            name, ext = filename.rsplit('.', 1)
-            filename_dict = split_filename(name, ext)
-            for tag in filename_dict["tags"]:
-                if not tag: continue
+            fileNameAccessor = FilenameAccessor(filename)
+            for tag in fileNameAccessor.tags():
                 tag_set.add(tag)
         writeToFile(get_info_dir("tags.txt"), location + "\n\t" + "\n\t".join(tag_set) + "\n")
         for tag in tag_set:

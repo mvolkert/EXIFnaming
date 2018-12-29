@@ -5,7 +5,6 @@ Writes to Tags
 import csv
 import datetime as dt
 import os
-import re
 
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
@@ -14,7 +13,7 @@ from EXIFnaming.helpers.fileop import filterFiles, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.program_dir import get_gps_dir, get_setexif_dir, log, log_function_call
 from EXIFnaming.helpers.settings import includeSubdirs, file_types, image_types
-from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict, split_filename
+from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict, FilenameAccessor
 from EXIFnaming.helpers.tags import create_model, hasDateTime
 
 
@@ -276,21 +275,13 @@ def copy_exif_via_mainname(origin: str, target: str):
         for filename in filenames:
             tagDict = read_exiftag(dirpath, filename)
             if hasDateTime(tagDict): continue
-            name, ext = filename.rsplit('.', 1)
-            main = "_".join(split_filename(name, ext)["main"])
+            main = FilenameAccessor(filename).mainname()
             target_dict.setdefault(main, []).append(os.path.join(dirpath, filename))
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, origin)):
         if is_invalid_path(dirpath): continue
         filenames = filterFiles(filenames, image_types)
         for filename in filenames:
-            name, ext = filename.rsplit('.', 1)
-            main_arr = split_filename(name, ext)["main"]
-            # cut off counter suffix
-            match = re.search('([0-9]+)[a-zA-Z]', main_arr[-1])
-            if match:
-                main_arr[-1] = match.group(1)
-
-            main = "_".join(main_arr)
+            main = FilenameAccessor(filename).mainname()
             if not main in target_dict: continue
             orgin_file = os.path.join(dirpath, filename)
             for target_file in target_dict[main]:
