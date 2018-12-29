@@ -107,7 +107,8 @@ class DMC_TZ101(ModelBase):
         return self.check_entry("Burst Mode", "On")
 
     def is_Bracket(self) -> bool:
-        return self.has("Bracket Settings") and not self.check_entry("Bracket Settings", "No Bracket")
+        return self.has("Bracket Settings") and not self.check_entry("Bracket Settings", "No Bracket") \
+               and self.get_sequence_number() > 0
 
     def is_stopmotion(self) -> bool:
         return self.check_entry("Timer Recording", "Stop-motion Animation")

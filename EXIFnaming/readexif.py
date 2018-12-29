@@ -130,13 +130,25 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
         if postfix_stay: filenameBuilder.use_old_tags()
 
         newname = filenameBuilder.build()
-        if len(Tagdict["File Name new"]) > 0 and newname == Tagdict["File Name new"][-1]:
-            log().warning("%s already exists - assume it is an unknown creative mode", os.path.join(model.dir, newname))
-            newname = filenameBuilder.add_main("K").build()
 
-        if newname in Tagdict["File Name new"]:
-            log().warning("%s already exists - postfix it with V2", os.path.join(model.dir, newname))
-            newname = filenameBuilder.add_main("V2").build()
+        # handle already exiting filename - its ok when they are in different directories
+        if len(Tagdict["File Name new"]) > 0:
+            if newname == Tagdict["File Name new"][-1] and Tagdict["Directory"][i] == Tagdict["Directory"][i - 1]:
+                log().warning("%s already exists - assume it is an unknown creative mode",
+                              os.path.join(model.dir, newname))
+                newname = filenameBuilder.add_main("CRTV").build()
+
+            for version in range(2, 100):
+                if newname in Tagdict["File Name new"]:
+                    index = Tagdict["File Name new"].index(newname)
+                    if Tagdict["Directory"][i] == Tagdict["Directory"][index]:
+                        log().warning("%s already exists - postfix it with V%d", os.path.join(model.dir, newname),
+                                      version)
+                        newname = filenameBuilder.add_main("V%d" % version).build()
+                    else:
+                        break
+                else:
+                    break
 
         time_old = time
         Tagdict["File Name new"].append(newname)
