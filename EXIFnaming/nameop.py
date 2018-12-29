@@ -184,7 +184,7 @@ def sanitize_filename(folder=r""):
             filenameAccessor = FilenameAccessor(filename)
             _sanitize_process_counter(filenameAccessor)
             _sanitize_pano(filenameAccessor)
-            filename_new = filenameAccessor.get_sorted_filename()
+            filename_new = filenameAccessor.sorted_filename()
             renameInPlace(dirpath, filename, filename_new)
 
 

@@ -4,13 +4,13 @@ import re
 from collections import OrderedDict
 from typing import List
 
+import numpy as np
 from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers import constants as c
 from EXIFnaming.helpers.decode import read_exiftag
-from EXIFnaming.helpers.misc import is_counter
 from EXIFnaming.helpers.program_dir import log
-from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer
+from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer, video_types
 from EXIFnaming.helpers.tags import SceneModeAbbreviations
 
 
@@ -95,7 +95,7 @@ class FileMetaData:
         self.tagDict = None
         self.filenameAccessor = FilenameAccessor(filename)
         self.main_name = self.filenameAccessor.pre
-        self.counter = self.filenameAccessor.counter_without_suffix()
+        self.counter = self.filenameAccessor.counter_main()
         self.has_changed = False
 
     def import_filename(self):
@@ -363,7 +363,7 @@ def process_to_description(process: str) -> dict:
 
 
 class FilenameAccessor:
-    main_counter_regex = re.compile(r'(M?\d+)')
+    counter_main_regex = re.compile(r'(M?\d+)')
 
     def __init__(self, filename):
         self.filename = filename
@@ -382,10 +382,11 @@ class FilenameAccessor:
     def _split_filename(self):
         filename_splited = self.name.split('_')
         if len(filename_splited) == 0: return
-        counter_complete = False
+        counter_index = self._counter_index()
+        if counter_index < 0: return
         for i, subname in enumerate(filename_splited):
             if not subname: continue
-            if counter_complete:
+            if i > counter_index:
                 if is_process_tag(subname):
                     self.processes.append(subname)
                 elif is_scene_abbreviation(subname):
@@ -394,16 +395,14 @@ class FilenameAccessor:
                     self.posttags.append(subname)
             else:
                 self.main.append(subname)
-                if i > 0:
-                    if is_counter(subname, self.ext):
-                        self.counter = subname
-                        counter_complete = True
-                    elif subname.isupper():
-                        self.primmodes.append(subname)
-                    else:
-                        self.primtags.append(subname)
-                else:
+                if i == 0:
                     self.pre = subname
+                elif i == counter_index:
+                    self.counter = subname
+                elif subname.isupper() or subname.isnumeric():
+                    self.primmodes.append(subname)
+                else:
+                    self.primtags.append(subname)
 
     def tags(self) -> List[str]:
         return self.primtags + self.posttags
@@ -422,25 +421,37 @@ class FilenameAccessor:
     def has_tag(self, tag) -> bool:
         return tag in self.primtags or tag in self.posttags
 
-    def get_sorted_filename(self):
+    def sorted_filename(self):
         arr = self.main + self.scenes + self.processes + self.posttags
         return "_".join(arr) + self.ext
 
-    def counter_without_suffix(self) -> str:
-        match = FilenameAccessor.main_counter_regex.search(self.counter)
+    def counter_main(self) -> str:
+        match = FilenameAccessor.counter_main_regex.search(self.counter)
         if match:
             return match.group(1)
         return self.counter
 
     def mainname(self) -> str:
-        arr = self.main[:-1] + [self.counter_without_suffix()]
+        arr = self.main[:-1] + [self.counter_main()]
         return "_".join(arr)
 
-    def _index_of_counter(self):
+    def _counter_index(self) -> int:
         filename_splited = self.name.split('_')
-        # index of counter with longest item that looks like a counter
-        indeces = [(i, len(e)) for i, e in enumerate(filename_splited) if is_counter(e, self.ext)]
-        return indeces.sort(key=operator.itemgetter(1))[-1]
+        if len(filename_splited) == 0: return -1
+        # get index of counter via longest item that looks like a counter
+        indeces = [(i, len(e)) for i, e in enumerate(filename_splited) if self._is_counter(e)]
+        if len(indeces) == 0:
+            return -1
+        if len(indeces) == 1:
+            return indeces[0][0]
+        indeces.sort(key=operator.itemgetter(1))
+        return indeces[-1][0]
+
+    def _is_counter(self, subname) -> bool:
+        if self.ext in video_types:
+            return subname[0] == "M" and np.chararray.isdigit(subname[-1])
+        starts_and_ends_with_digit = (np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1]))
+        return starts_and_ends_with_digit
 
 
 class FilenameBuilder:

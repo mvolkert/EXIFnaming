@@ -16,7 +16,7 @@ from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
     copyFilesTo, isfile, get_filename_sorted_dirfiletuples, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
-from EXIFnaming.helpers.misc import tofloat, getPostfix
+from EXIFnaming.helpers.misc import tofloat
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_dir, log, log_function_call
 from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
 from EXIFnaming.helpers.tag_conversion import FilenameBuilder
