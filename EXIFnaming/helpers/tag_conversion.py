@@ -11,7 +11,7 @@ from EXIFnaming.helpers.decode import read_exiftag
 from EXIFnaming.helpers.misc import is_counter
 from EXIFnaming.helpers.program_dir import log
 from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer
-from EXIFnaming.models.DMC_TZ101 import DMC_TZ101
+from EXIFnaming.helpers.tags import SceneModeAbbreviations
 
 
 class Location:
@@ -335,7 +335,7 @@ process_to_tag.map = {"HDR": ["HDR"], "HDRT": ["HDR", "Tone Mapping"], "PANO": [
 
 
 def is_scene_abbreviation(name: str):
-    return name in DMC_TZ101.SceneShort.values() or name in DMC_TZ101.CreativeShort.values() or name in c.RecModes
+    return name in SceneModeAbbreviations or name in c.RecModes
 
 
 def is_process_tag(name: str):

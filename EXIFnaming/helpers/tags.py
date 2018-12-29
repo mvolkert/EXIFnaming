@@ -13,6 +13,7 @@ from EXIFnaming.models import *
 dateTimeKey = "Date/Time Original"
 modelKey = "Camera Model Name"
 
+
 def getPath(Tagdict, i: int):
     if not all([x in Tagdict for x in ["Directory", "File Name"]]):
         print("Directory or File Name is not in Tagdict")
@@ -24,9 +25,13 @@ ModelInit: Dict[str, Callable[[dict, int], ModelBase]] = OrderedDict()
 ModelInit['DMC-TZ101'] = lambda Tagdict, i: DMC_TZ101(Tagdict, i)
 ModelInit['DMC-TZ7'] = lambda Tagdict, i: DMC_TZ7(Tagdict, i)
 
+SceneModeAbbreviations = set()
+SceneModeAbbreviations.update(DMC_TZ101.SceneShort.values())
+SceneModeAbbreviations.update(DMC_TZ101.CreativeShort.values())
+SceneModeAbbreviations.update(DMC_TZ7.SceneShort.values())
+
 
 def create_model(Tagdict, i: int) -> ModelBase:
-
     if modelKey in Tagdict:
         model = Tagdict[modelKey][i]
         if model in ModelInit:
@@ -34,6 +39,7 @@ def create_model(Tagdict, i: int) -> ModelBase:
     if dateTimeKey in Tagdict and Tagdict[dateTimeKey][i]:
         return PhotoFile(Tagdict, i)
     return NormalFile(Tagdict, i)
+
 
 def hasDateTime(Tagdict: dict) -> bool:
     return dateTimeKey in Tagdict and Tagdict[dateTimeKey]
