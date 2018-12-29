@@ -1,6 +1,8 @@
+import operator
 import os
 import re
 from collections import OrderedDict
+from typing import List
 
 from sortedcollections import OrderedSet
 
@@ -110,7 +112,7 @@ class FileMetaData:
     def import_fullname(self, startdir: str):
         self.id, self.tags = fullname_to_tag(self.directory, self.name, startdir)
 
-    def import_exif(self, overwrite_gps = False):
+    def import_exif(self, overwrite_gps=False):
         self.tagDict = read_exiftag(self.directory, self.filename)
         self.location.update(self.tagDict)
         if "Rating" in self.tagDict and int(self.tagDict["Rating"]) > 0:
@@ -408,3 +410,106 @@ def process_to_description(process: str) -> dict:
         else:
             log().info("%s not in tm_preset", process_split[1])
     return description
+
+
+class FileNameAccessor:
+
+    def __init__(self, filename):
+        self.filename, self.ext = filename.rsplit('.', 1)
+        self.main = []
+        self.pre = ""
+        self.primmodes = []
+        self.primtags = []
+        self.counter = ""
+        self.scenes = []
+        self.processes = []
+        self.posttags = []
+        self._split_filename()
+
+    def _split_filename(self):
+        filename_splited = self.filename.split('_')
+        if len(filename_splited) == 0: return
+        counter_complete = False
+        for i, subname in enumerate(filename_splited):
+            if not subname: continue
+            if counter_complete:
+                if is_process_tag(subname):
+                    self.processes.append(subname)
+                elif is_scene_abbreviation(subname):
+                    self.scenes.append(subname)
+                else:
+                    self.posttags.append(subname)
+            else:
+                self.main.append(subname)
+                if i > 0:
+                    if is_counter(subname, self.ext):
+                        self.counter = subname
+                        counter_complete = True
+                    elif subname.isupper():
+                        self.primmodes.append(subname)
+                    else:
+                        self.primtags.append(subname)
+                else:
+                    self.pre = subname
+
+    def tags(self) -> List[str]:
+        return self.primtags + self.posttags
+
+    def modes(self) -> List[str]:
+        return self.scenes + self.processes
+
+    def mapped_modes(self) -> List[str]:
+        modes = [tag2 for tag in self.scenes for tag2 in scene_to_tag(tag)]
+        modes += [tag2 for tag in self.processes for tag2 in process_to_tag(tag)]
+        return modes
+
+    def identifier(self) -> str:
+        return "_".join(self.main + self.modes())
+
+    def has_tag(self, tag) -> bool:
+        return tag in self.primtags or tag in self.posttags
+
+    def get_sorted_filename(self):
+        arr = self.main + self.scenes + self.processes + self.posttags
+        return "_".join(arr)
+
+    def counter_without_suffix(self) -> str:
+        match = re.search('([0-9]+)[a-zA-Z]', self.counter)
+        if match:
+            return match.group(1)
+        return self.counter
+
+    def mainname(self) -> str:
+        arr = self.main[:-1] + [self.counter_without_suffix()]
+        return "_".join(arr)
+
+    def _index_of_counter(self):
+        filename_splited = self.filename.split('_')
+        # index of counter with longest item that looks like a counter
+        indeces = [(i, len(e)) for i, e in enumerate(filename_splited) if is_counter(e, self.ext)]
+        return indeces.sort(key=operator.itemgetter(1))[-1]
+
+
+class FileNameBuilder:
+
+    def __init__(self, old_filename: str):
+        self.main = []
+        self.post = []
+        self.accessor = FileNameAccessor(old_filename)
+
+    def add_main(self, part):
+        if not part: return self
+        self.main.append(part)
+        return self
+
+    def add_post(self, part):
+        if not part: return self
+        self.post.append(part)
+        return self
+
+    def use_old_tags(self):
+        self.post += [tag for tag in self.accessor.primtags if not tag in self.main]
+        self.post += [tag for tag in self.accessor.posttags if not tag in self.post]
+
+    def build(self) -> str:
+        return "_".join(self.main + self.post) + self.accessor.ext
