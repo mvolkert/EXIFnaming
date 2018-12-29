@@ -257,10 +257,11 @@ def _passes_restrictor(meta_data, csv_restriction):
     return False
 
 
-def copy_exif_via_mainname(origin: str, target: str):
+def copy_exif_via_mainname(origin: str, target: str, overwriteDateTime=False):
     """
     copy exif information from files in directory origin to target
     files are matched via main name -> processed files can get exif information of original files
+    :param overwriteDateTime: whether to overwrite already exiting "Date/Time Original"
     :param origin:
     :param target:
     """
@@ -273,8 +274,9 @@ def copy_exif_via_mainname(origin: str, target: str):
         if is_invalid_path(dirpath): continue
         filenames = filterFiles(filenames, image_types)
         for filename in filenames:
-            tagDict = read_exiftag(dirpath, filename)
-            if hasDateTime(tagDict): continue
+            if not overwriteDateTime:
+                tagDict = read_exiftag(dirpath, filename)
+                if hasDateTime(tagDict): continue
             main = FilenameAccessor(filename).mainname()
             target_dict.setdefault(main, []).append(os.path.join(dirpath, filename))
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, origin)):
