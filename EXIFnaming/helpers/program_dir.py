@@ -36,25 +36,33 @@ def create_program_dir():
 
 
 def log() -> Logger:
-    if not log.logger:
+    directory = os.getcwd()
+    if not log.logger or not log.dir == directory:
+        log.dir = directory
+
         import logging
         logFormatter = logging.Formatter("%(asctime)s  %(message)s")
         rootLogger = logging.getLogger()
+
+        if log.logger:
+            log.logger.handlers.pop()
+        else:
+            consoleHandler = logging.StreamHandler()
+            consoleHandler.setFormatter(logFormatter)
+            rootLogger.addHandler(consoleHandler)
 
         timestring = dt.datetime.now().strftime("%y%m%d%H%M")
         fileHandler = logging.FileHandler(get_log_dir(timestring + ".log"))
         fileHandler.setFormatter(logFormatter)
         rootLogger.addHandler(fileHandler)
 
-        consoleHandler = logging.StreamHandler()
-        consoleHandler.setFormatter(logFormatter)
-        rootLogger.addHandler(consoleHandler)
         rootLogger.setLevel(10)
         log.logger = rootLogger
     return log.logger
 
 
 log.logger = None
+log.dir = None
 
 
 def log_function_call(function_name: str, *parameters):
