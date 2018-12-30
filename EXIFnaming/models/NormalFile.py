@@ -54,6 +54,9 @@ class NormalFile(ModelBase):
     def is_sun(self) -> bool:
         return False
 
+    def is_upward(self) -> bool:
+        return False
+
     def get_scene_abbr_dict(self) -> OrderedDict:
         return NormalFile.SceneShort
 

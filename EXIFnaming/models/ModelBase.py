@@ -160,6 +160,11 @@ class ModelBase:
             return self.check_entry("Rotation", "Rotate 270 CW")
         return False
 
+    def is_upward(self) -> bool:
+        width = self.get_entry("Image Width")
+        height = self.get_entry("Image Height")
+        return width < height
+
     def is_printable_scene(self) -> bool:
         return self.get_entry("Advanced Scene Mode") in self.get_scene_abbr_dict()
 

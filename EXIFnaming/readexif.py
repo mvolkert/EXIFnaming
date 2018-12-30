@@ -268,9 +268,13 @@ def searchby_exiftag_interval(tag_name: str, min_value: float, max_value: float)
     copyFilesTo(files, os.path.join(inpath, "matches"))
 
 
-def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask=True):
+def rotate(subname="", folder=r"", sign=1, override=True, ask=True):
     """
     rotate back according to tag information (Rotate 90 CW or Rotate 270 CW)
+    Some programs like franzis hdr projects rotate the resolution of the picture -> picture gets upward resolution and
+    shown as rotated two times. This function reverses the resolution rotation according to exif info.
+    Pictures that either have no rotation according to exif or have a normal resolution ratio are not modified.
+    So calling it a second time wont change anything.
     :param subname: only files that contain this name are rotated, empty string: no restriction
     :param sign: direction of rotation
     :param folder: only files in directories that match this regex are rotated, empty string: no restriction
@@ -286,7 +290,6 @@ def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask=True):
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
         if len(filenames) == 0: continue
-        print(dirpath)
         Tagdict = read_exiftags(dirpath, image_types, ask=ask)
         if has_not_keys(Tagdict, keys=["Rotation"]): return
         leng = len(list(Tagdict.values())[0])
@@ -294,21 +297,20 @@ def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask=True):
             # Load the original image:
             model = create_model(Tagdict, i)
             if not subname in model.filename: continue
-            if model.is_rotated_by(0):
+            if model.is_rotated_by(0) or not model.is_upward():
                 continue
+            name = model.get_path()
+            log().info("rotate %s", model.filename)
+            img = Image.open(name)
+            if model.is_rotated_by(90):
+                img_rot = img.rotate(90 * sign, expand=True)
+            elif model.is_rotated_by(-90):
+                img_rot = img.rotate(-90 * sign, expand=True)
             else:
-                name = model.get_path()
-                print(model.filename)
-                img = Image.open(name)
-                if model.is_rotated_by(90):
-                    img_rot = img.rotate(90 * sign, expand=True)
-                elif model.is_rotated_by(-90):
-                    img_rot = img.rotate(-90 * sign, expand=True)
-                else:
-                    continue
-                NFiles += 1
-                if not override: name = name[:name.rfind(".")] + "_rot" + name[name.rfind("."):]
-                img_rot.save(name, 'JPEG', quality=99, exif=img.info['exif'])
+                continue
+            NFiles += 1
+            if not override: name = name[:name.rfind(".")] + "_ROTATED" + name[name.rfind("."):]
+            img_rot.save(name, 'JPEG', quality=99, exif=img.info['exif'])
     clock.finish()
 
 
