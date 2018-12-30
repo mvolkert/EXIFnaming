@@ -11,8 +11,8 @@ class DMC_TZ101(ModelBase):
                         "Photo Style", "Scene Capture Type", "Scene Mode", "Scene Type", "Self Timer",
                         "Sensitivity Type", "Shooting Mode", "Shutter Type", "Sweep Panorama Direction",
                         "Sweep Panorama Field Of View", "Timer Recording"]
-    TagNames['Series'] = ["Bracket Settings", "Burst Mode", "Burst Speed", "Sequence Number"]
-    TagNames['Series'] += ["Dependent Image 1 Entry Number", "Dependent Image 2 Entry Number", "Number Of Images"]
+    TagNames['Series'] = ["Bracket Settings", "Burst Mode", "Burst Speed", "Sequence Number",
+                          "Dependent Image 1 Entry Number", "Dependent Image 2 Entry Number", "Number Of Images"]
     TagNames['Exposure'] = ["Exposure Compensation", "Exposure Mode", "Exposure Program", "Exposure Time"]
     TagNames['Flash'] = ["Flash", "Flash Bias", "Flash Curtain", "Flash Fired"]
     TagNames['Zoom'] = ["Field Of View", "Focal Length In 35mm Format", "F Number", "Hyperfocal Distance"]
@@ -21,6 +21,8 @@ class DMC_TZ101(ModelBase):
     TagNames['Time'] = ["Date/Time Original", "Sub Sec Time Original"]
     TagNames['Rec'] = ["Audio", "Megapixels", "Video Frame Rate", "Image Quality"]
     TagNames['Rot'] = ["Orientation", "Rotation", "Camera Orientation", "Roll Angle", "Pitch Angle"]
+    TagNames['Resolution'] = ["Megapixels", "Image Quality", "Image Size", "Image Width", "Image Height",
+                              "Digital Zoom Ratio", "Exif Image Width", "Exif Image Height"]
 
     # Rotation: Horizontal (normal), Rotate 270 CW
     # Camera Orientation: Normal, Rotate CCW

@@ -35,14 +35,14 @@ def print_info(tagGroupNames=(), allGroups=False):
     if allGroups: tagGroupNames = tagnames.keys()
     for tagGroupName in tagnames:
         if not tagGroupNames == [] and not tagGroupName in tagGroupNames: continue
-        outstring = ""
-        for entry in ["File Name"] + tagnames[tagGroupName]:
+        outstring = "%-80s\t" % "File Name"
+        for entry in tagnames[tagGroupName]:
             if not entry in tagdict: continue
             outstring += "%-30s\t" % entry
         outstring += "\n"
 
         for i in range(len(tagdict["File Name"])):
-            outstring += "%-40s\t" % tagdict["File Name"][i]
+            outstring += "%-80s\t" % tagdict["File Name"][i]
             for entry in tagnames[tagGroupName]:
                 if not entry in tagdict: continue
                 val = tagdict[entry]
