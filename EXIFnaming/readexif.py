@@ -18,20 +18,18 @@ from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtensio
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_dir, log, log_function_call
-from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types, file_types
+from EXIFnaming.helpers.settings import image_types, video_types
 from EXIFnaming.helpers.tag_conversion import FilenameBuilder
 from EXIFnaming.helpers.tags import create_model, getPath
 
 
-def print_info(tagGroupNames=(), allGroups=False, fileext=".JPG"):
+def print_info(tagGroupNames=(), allGroups=False):
     """
     write tag info of tagGroupNames to a file in saves dir
     :param tagGroupNames: selectable groups (look into constants)
     :param allGroups: take all tagGroupNames
-    :param fileext: file extension
     """
-    inpath = os.getcwd()
-    tagdict = read_exiftags(inpath, fileext)
+    tagdict = read_exiftags()
     model = create_model(tagdict, 0)
     tagnames = model.TagNames
     if allGroups: tagGroupNames = tagnames.keys()
@@ -59,12 +57,12 @@ def rename_pm(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, po
     """
     rename for JPG and MP4
     """
-    rename(Prefix, dateformat, startindex, onlyprint, postfix_stay, ".JPG", name)
-    rename(Prefix, dateformat, 1, onlyprint, postfix_stay, ".MP4", name)
+    rename(Prefix, dateformat, startindex, onlyprint, postfix_stay, False, name)
+    rename(Prefix, dateformat, 1, onlyprint, postfix_stay, True, name)
 
 
 def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
-           keeptags=True, fileext=".JPG", fileext_Raw=".Raw", name=""):
+           keeptags=True, is_video=False, fileext_Raw=".Raw", name=""):
     """
     Rename into Format: [Prefix][dateformat](_[name])_[Filenumber][SeriesType][SeriesSubNumber]_[PhotoMode]
     :param Prefix: prefix has to fulfil regex [-a-zA-Z]*
@@ -72,14 +70,13 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     :param startindex: minimal counter
     :param onlyprint: do not rename; only output file of proposed renaming into saves directory
     :param keeptags: any tags - name or postfixes will be preserved
-    :param fileext: file extension
+    :param is_video: is video file extension
     :param fileext_Raw: file extension for raw image that is to get same name as the normal one
     :param name: optional name between date and filenumber, seldom used
     """
-    log_function_call(rename.__name__, Prefix, dateformat, startindex, onlyprint, keeptags, fileext, fileext_Raw,
+    log_function_call(rename.__name__, Prefix, dateformat, startindex, onlyprint, keeptags, is_video, fileext_Raw,
                       name)
-    inpath = os.getcwd()
-    Tagdict = read_exiftags(inpath, fileext)
+    Tagdict = read_exiftags(file_types=video_types if is_video else image_types)
     if not Tagdict: return
 
     # rename temporary
@@ -111,19 +108,16 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
         filenameBuilder.add_main(model.get_model_abbr())
         filenameBuilder.add_main(name)
 
-        counterString = ""
-
-        if fileext in image_types:
+        if is_video:
+            counter += 1
+            counterString = "M%02d" % counter
+            filenameBuilder.add_post(model.get_recMode())
+        else:
             # SequenceNumber
             sequence_number = model.get_sequence_number()
             if sequence_number < 2 and not time == time_old: counter += 1
             counterString = ("%0" + digits + "d") % counter
             if not "HDR" in filename: counterString += model.get_sequence_string()
-
-        elif fileext in video_types:
-            counter += 1
-            counterString = "M%02d" % counter
-            filenameBuilder.add_post(model.get_recMode())
 
         filenameBuilder.add_main(counterString)
         filenameBuilder.add_post(model.get_mode())
@@ -160,8 +154,9 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
 
     dirname = get_saves_dir()
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
-    np.savez_compressed(os.path.join(dirname, "Tags" + fileext + timestring), Tagdict=Tagdict)
-    writeToFile(os.path.join(dirname, "newnames" + fileext + timestring + ".txt"), outstring)
+    video_str = "_video" if is_video else ""
+    np.savez_compressed(os.path.join(dirname, "Tags" + video_str + timestring), Tagdict=Tagdict)
+    writeToFile(os.path.join(dirname, "newnames" + video_str + timestring + ".txt"), outstring)
 
 
 def _write(directory, filename, temppostfix, newname, onlyprint):
@@ -196,7 +191,7 @@ def order():
     log_function_call(order.__name__)
     inpath = os.getcwd()
 
-    Tagdict = read_exiftags(inpath)
+    Tagdict = read_exiftags(file_types=image_types)
     timeJumpDetector = TimeJumpDetector()
     time_old = giveDatetime()
     dircounter = 1
@@ -233,7 +228,7 @@ def order():
 
     print_firstlast_of_dirname(dirNameDict_firsttime, dirNameDict_lasttime)
 
-    Tagdict_mp4 = read_exiftags(inpath, fileext=".MP4")
+    Tagdict_mp4 = read_exiftags(file_types=video_types)
     leng = len(list(Tagdict_mp4.values())[0])
     print('Number of mp4: %d' % leng)
     for i in range(leng):
@@ -245,34 +240,31 @@ def order():
             move(model.filename, model.dir, os.path.join(inpath, dirName, "mp4"))
 
 
-def searchby_exiftag_equality(tag_name: str, value: str, fileext=".JPG"):
+def searchby_exiftag_equality(tag_name: str, value: str):
     """
     searches for files where the value of the exiftag equals the input value
     :param tag_name: exiftag key
     :param value: exiftag value
-    :param fileext: file extension
     """
-    inpath = os.getcwd()
-    Tagdict = read_exiftags(inpath, fileext)
+    Tagdict = read_exiftags()
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original", tag_name]): return
     leng = len(list(Tagdict.values())[0])
     files = []
     for i in range(leng):
         if not Tagdict[tag_name][i] == value: continue
         files.append(getPath(Tagdict, i))
-    copyFilesTo(files, os.path.join(inpath, "matches"))
+    copyFilesTo(files, os.path.join(os.getcwd(), "matches"))
 
 
-def searchby_exiftag_interval(tag_name: str, min_value: float, max_value: float, fileext=".JPG"):
+def searchby_exiftag_interval(tag_name: str, min_value: float, max_value: float):
     """
     searches for files where the value of the exiftag is in the specified interval
     :param tag_name: exiftag key
     :param min_value: interval start
     :param max_value: interval end
-    :param fileext: file extension
     """
     inpath = os.getcwd()
-    Tagdict = read_exiftags(inpath, fileext)
+    Tagdict = read_exiftags(inpath)
     if has_not_keys(Tagdict, keys=[tag_name]): return
     leng = len(list(Tagdict.values())[0])
     files = []
@@ -302,7 +294,7 @@ def rotate(subname="HDR", folder=r"HDR\w*", sign=1, override=True, ask=True):
         if is_invalid_path(dirpath, regex=folder): continue
         if len(filenames) == 0: continue
         print(dirpath)
-        Tagdict = read_exiftags(dirpath, ".jpg", ask=ask)
+        Tagdict = read_exiftags(dirpath, image_types, ask=ask)
         if has_not_keys(Tagdict, keys=["Rotation"]): return
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):
@@ -331,14 +323,15 @@ def exif_to_name():
     """
     reverse exif_to_name()
     """
-    inpath = os.getcwd()
-    for fileext in file_types:
-        Tagdict = read_exiftags(inpath, includeSubdirs, fileext)
-        if has_not_keys(Tagdict, keys=["Label"]): return
-        temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
-        leng = len(list(Tagdict.values())[0])
-        for i in range(leng):
-            renameInPlace(Tagdict["Directory"][i], Tagdict["File Name"][i] + temppostfix, Tagdict["Label"][i] + fileext)
+    Tagdict = read_exiftags()
+    if has_not_keys(Tagdict, keys=["Label"]): return
+
+    temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name"])
+    leng = len(list(Tagdict.values())[0])
+    for i in range(leng):
+        filename = Tagdict["File Name"][i]
+        ext = filename[filename.rfind('.'):]
+        renameInPlace(Tagdict["Directory"][i], filename + temppostfix, Tagdict["Label"][i] + ext)
 
 
 def print_timetable():
@@ -374,19 +367,17 @@ def order_with_timetable(timefile=get_info_dir("timetable.txt"), fileexts=(".JPG
     :param fileexts: extensions
     :return:
     """
-    inpath = os.getcwd()
     dirNameDict_firsttime, dirNameDict_lasttime = _read_timetable(timefile)
-    for fileext in fileexts:
-        Tagdict = read_exiftags(inpath, fileext=fileext)
-        leng = len(list(Tagdict.values())[0])
-        print('Number of jpg: %d' % leng)
-        for i in range(leng):
-            model = create_model(Tagdict, i)
-            time = giveDatetime(model.get_date())
-            dirName = find_dir_with_closest_time(dirNameDict_firsttime, dirNameDict_lasttime, time)
+    Tagdict = read_exiftags()
+    leng = len(list(Tagdict.values())[0])
+    print('Number of jpg: %d' % leng)
+    for i in range(leng):
+        model = create_model(Tagdict, i)
+        time = giveDatetime(model.get_date())
+        dirName = find_dir_with_closest_time(dirNameDict_firsttime, dirNameDict_lasttime, time)
 
-            if dirName:
-                move(model.filename, model.dir, os.path.join(inpath, dirName))
+        if dirName:
+            move(model.filename, model.dir, os.path.join(os.getcwd(), dirName))
 
 
 def _read_timetable(filename=get_info_dir("timetable.txt")):

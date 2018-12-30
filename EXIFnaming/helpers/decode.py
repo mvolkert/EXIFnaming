@@ -3,39 +3,42 @@ import os
 import subprocess
 import sys
 from collections import OrderedDict
-from typing import List, Dict
+from typing import List, Dict, Set
 
 from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers.fileop import count_files, count_files_in, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock
 from EXIFnaming.helpers.program_dir import log
-from EXIFnaming.helpers.settings import includeSubdirs, encoding_format, file_types
+from EXIFnaming.helpers.settings import includeSubdirs, encoding_format, image_types, video_types
 from EXIFnaming.models import ModelBase
 
 
-def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
-    if fileext:
-        selected_file_types = (fileext,)
-    else:
-        selected_file_types = file_types
+def read_exiftags(inpath="", file_types=image_types, skipdirs=(), ask=True):
+    if not inpath:
+        inpath = os.getcwd()
+    file_types = _get_distinct_filestypes(file_types)
     log().info("process %d %s Files in %s, includeSubdirs: %r",
-               count_files_in(inpath, selected_file_types, skipdirs), fileext, inpath, includeSubdirs)
+               count_files_in(inpath, file_types, skipdirs), file_types, inpath, includeSubdirs)
     if ask: askToContinue()
 
     clock = Clock()
     ListOfDicts = []
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, skipdirs): continue
-        if count_files(filenames, selected_file_types) == 0:
+        if count_files(filenames, file_types) == 0:
             log().info("  No matching files in %s", os.path.relpath(dirpath, inpath))
             continue
-        out, err = call_exiftool(dirpath, "*" + fileext, [], False)
-        out = out[out.find("ExifTool Version Number"):]
-        out_split = out.split("========")
-        log().info("%4d tags extracted in %s", len(out_split), os.path.relpath(dirpath, inpath))
-        for tags in out_split:
-            ListOfDicts.append(decode_exiftags(tags))
+        for filetype in file_types:
+            if count_files(filenames, [filetype]) == 0:
+                continue
+            out, err = call_exiftool(dirpath, "*" + filetype, [], False)
+            out = out[out.find("ExifTool Version Number"):]
+            out_split = out.split("========")
+            log().info("%4d tags of %s files extracted in %s", len(out_split), filetype,
+                       os.path.relpath(dirpath, inpath))
+            for tags in out_split:
+                ListOfDicts.append(decode_exiftags(tags))
 
     outdict = listsOfDicts_to_dictOfLists(ListOfDicts)
     if not outdict: return {}
@@ -44,11 +47,15 @@ def read_exiftags(inpath=os.getcwd(), fileext=".JPG", skipdirs=(), ask=True):
     return outdict
 
 
+def _get_distinct_filestypes(types: List[str]) -> Set[str]:
+    return set([filetype.lower() for filetype in types])
+
+
 def write_exiftags(tagDict: dict, inpath=os.getcwd(), options=()):
     clock = Clock()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
-        n = count_files(filenames, file_types)
+        n = count_files(filenames, image_types + video_types)
         if n == 0:
             log().info("  No matching files in %s", os.path.relpath(dirpath, inpath))
             continue

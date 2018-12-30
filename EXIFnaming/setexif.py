@@ -12,19 +12,19 @@ from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinu
 from EXIFnaming.helpers.fileop import filterFiles, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.program_dir import get_gps_dir, get_setexif_dir, log, log_function_call
-from EXIFnaming.helpers.settings import includeSubdirs, file_types, image_types
+from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict, FilenameAccessor
 from EXIFnaming.helpers.tags import create_model, hasDateTime
 
 
-def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):
+def shift_time(hours=0, minutes=0, seconds=0, is_video=False):
     """
     for example to adjust time zone by one: hours=-1
     """
-    log_function_call(shift_time.__name__, hours, minutes, seconds, fileext)
+    log_function_call(shift_time.__name__, hours, minutes, seconds, is_video)
     inpath = os.getcwd()
     delta_t = dt.timedelta(hours=hours, minutes=minutes, seconds=seconds)
-    Tagdict = read_exiftags(inpath, fileext)
+    Tagdict = read_exiftags(inpath, video_types if is_video else image_types)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     time_tags = ["DateTimeOriginal", "CreateDate", "ModifyDate"]
@@ -38,7 +38,7 @@ def shift_time(hours=0, minutes=0, seconds=0, fileext=".JPG"):
         outTagDict = {}
         for time_tag in time_tags:
             outTagDict[time_tag] = timestring
-        if fileext in (".MP4", ".mp4"):
+        if is_video:
             for time_tag in time_tags_mp4:
                 outTagDict[time_tag] = timestring
         write_exiftags(outTagDict, model.dir, model.filename)
@@ -59,7 +59,7 @@ def fake_date(start='2000:01:01'):
     dir_counter = -1
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath): continue
-        filenames = filterFiles(filenames, file_types)
+        filenames = filterFiles(filenames, image_types + video_types)
         if not filenames: continue
         print(dirpath)
         dir_counter += 1
@@ -87,7 +87,7 @@ def location_to_keywords():
     deprecated: try to use read_csv() instead
     """
     inpath = os.getcwd()
-    log().info("process %d Files in %s, subdir: %r", count_files_in(inpath, file_types, ""), inpath,
+    log().info("process %d Files in %s, subdir: %r", count_files_in(inpath, image_types + video_types, ""), inpath,
                includeSubdirs)
     askToContinue()
     Tagdict = read_exiftags(inpath, ask=False)
@@ -110,6 +110,7 @@ def name_to_exif(folder=r"", additional_tags=(), startdir=None):
     """
     inpath = os.getcwd()
     clock = Clock()
+    file_types = image_types + video_types
     log().info("process %d Files in %s, subdir: %r", count_files_in(inpath, file_types, ""), inpath,
                includeSubdirs)
     askToContinue()

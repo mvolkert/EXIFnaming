@@ -16,8 +16,8 @@ def step2_rename(Prefix="", dateformat='YYMMDD', startindex=1, onlyprint=False, 
     """
     rename for JPG and MP4
     """
-    rename(Prefix, dateformat, startindex, onlyprint, postfix_stay, ".JPG", name)
-    rename(Prefix, dateformat, 1, onlyprint, postfix_stay, ".MP4", name)
+    rename(Prefix, dateformat, startindex, onlyprint, postfix_stay, False, name)
+    rename(Prefix, dateformat, 1, onlyprint, postfix_stay, True, name)
 
 
 def step3_filter():
