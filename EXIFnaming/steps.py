@@ -12,12 +12,12 @@ def step1_prepare():
     order()
 
 
-def step2_rename(Prefix="", dateformat='YYMMDD', startindex=1, onlyprint=False, postfix_stay=True, name=""):
+def step2_rename(Prefix="", dateformat='YYMMDD', startindex=1, onlyprint=False, keeptags=True, name=""):
     """
     rename for JPG and MP4
     """
-    rename(Prefix, dateformat, startindex, onlyprint, postfix_stay, False, name)
-    rename(Prefix, dateformat, 1, onlyprint, postfix_stay, True, name)
+    rename(Prefix, dateformat, startindex, onlyprint, keeptags, False, name)
+    rename(Prefix, dateformat, 1, onlyprint, keeptags, True, name)
 
 
 def step3_filter():

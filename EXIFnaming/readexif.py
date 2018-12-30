@@ -13,8 +13,8 @@ import numpy as np
 from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_firstlast_of_dirname, \
     find_dir_with_closest_time
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
-from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, changeExtension, moveFiles, renameTemp, move, \
-    copyFilesTo, isfile, get_filename_sorted_dirfiletuples, is_invalid_path
+from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, moveFiles, renameTemp, move, \
+    copyFilesTo, get_filename_sorted_dirfiletuples, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_dir, log, log_function_call
@@ -53,16 +53,15 @@ def print_info(tagGroupNames=(), allGroups=False):
         writeToFile(os.path.join(dirname, "tags_" + tagGroupName + ".txt"), outstring)
 
 
-def rename_pm(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, postfix_stay=True, name=""):
+def rename_pm(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keeptags=True, name=""):
     """
     rename for JPG and MP4
     """
-    rename(Prefix, dateformat, startindex, onlyprint, postfix_stay, False, name)
-    rename(Prefix, dateformat, 1, onlyprint, postfix_stay, True, name)
+    rename(Prefix, dateformat, startindex, onlyprint, keeptags, False, name)
+    rename(Prefix, dateformat, 1, onlyprint, keeptags, True, name)
 
 
-def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
-           keeptags=True, is_video=False, fileext_Raw=".Raw", name=""):
+def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keeptags=True, is_video=False, name=""):
     """
     Rename into Format: [Prefix][dateformat](_[name])_[Filenumber][SeriesType][SeriesSubNumber]_[PhotoMode]
     :param Prefix: prefix has to fulfil regex [-a-zA-Z]*
@@ -71,11 +70,9 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
     :param onlyprint: do not rename; only output file of proposed renaming into saves directory
     :param keeptags: any tags - name or postfixes will be preserved
     :param is_video: is video file extension
-    :param fileext_Raw: file extension for raw image that is to get same name as the normal one
     :param name: optional name between date and filenumber, seldom used
     """
-    log_function_call(rename.__name__, Prefix, dateformat, startindex, onlyprint, keeptags, is_video, fileext_Raw,
-                      name)
+    log_function_call(rename.__name__, Prefix, dateformat, startindex, onlyprint, keeptags, is_video, name)
     Tagdict = read_exiftags(file_types=video_types if is_video else image_types)
     if not Tagdict: return
 
@@ -147,10 +144,6 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False,
         time_old = time
         Tagdict["File Name new"].append(newname)
         outstring += _write(model.dir, filename, temppostfix, newname, onlyprint)
-        filename_Raw = changeExtension(filename, fileext_Raw)
-        if not fileext_Raw == "" and isfile(model.dir, filename_Raw):
-            outstring += _write(model.dir, filename_Raw, temppostfix,
-                                changeExtension(newname, fileext_Raw), onlyprint)
 
     dirname = get_saves_dir()
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
