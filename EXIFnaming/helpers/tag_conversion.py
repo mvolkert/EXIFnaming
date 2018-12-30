@@ -101,7 +101,7 @@ class FileMetaData:
     def import_filename(self):
         self.id = self.filenameAccessor.identifier()
         self.tags = self.filenameAccessor.tags()
-        self.tags2 = self.filenameAccessor.modes()
+        self.tags2 = self.filenameAccessor.mapped_modes()
         match = FileMetaData.secondary_regex.search(self.id)
         if match:
             self.rating = 2
