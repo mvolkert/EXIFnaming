@@ -435,7 +435,7 @@ class FilenameAccessor:
         arr = self.main[:-1] + [self.counter_main()]
         return "_".join(arr)
 
-    def _counter_index(self) -> int:
+    def _counter_index_longest(self) -> int:
         filename_splited = self.name.split('_')
         if len(filename_splited) == 0: return -1
         # get index of counter via longest item that looks like a counter
@@ -446,6 +446,14 @@ class FilenameAccessor:
             return indeces[0][0]
         indeces.sort(key=operator.itemgetter(1))
         return indeces[-1][0]
+
+    def _counter_index(self) -> int:
+        filename_splited = self.name.split('_')
+        if len(filename_splited) == 0: return -1
+        indeces = [i for i, e in enumerate(filename_splited) if self._is_counter(e)]
+        if len(indeces) == 0:
+            return -1
+        return indeces[-1]
 
     def _is_counter(self, subname) -> bool:
         if self.ext in video_types:
