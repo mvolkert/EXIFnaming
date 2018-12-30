@@ -456,6 +456,8 @@ class FilenameAccessor:
         return indeces[-1]
 
     def _is_counter(self, subname) -> bool:
+        if not subname:
+            return False
         if self.ext in video_types:
             return subname[0] == "M" and np.chararray.isdigit(subname[-1])
         starts_and_ends_with_digit = (np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1]))
