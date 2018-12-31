@@ -51,7 +51,9 @@ def _get_distinct_filestypes(types: List[str]) -> Set[str]:
     return set([filetype.lower() for filetype in types])
 
 
-def write_exiftags(tagDict: dict, inpath=os.getcwd(), options=()):
+def write_exiftags(tagDict: dict, inpath="", options=()):
+    if not inpath:
+        inpath = os.getcwd()
     clock = Clock()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not includeSubdirs and not inpath == dirpath: break
@@ -65,7 +67,9 @@ def write_exiftags(tagDict: dict, inpath=os.getcwd(), options=()):
     clock.finish()
 
 
-def write_exiftag(tagDict: dict, inpath=os.getcwd(), filename="", options=("-ImageDescription=", "-XPComment=")):
+def write_exiftag(tagDict: dict, inpath="", filename="", options=("-ImageDescription=", "-XPComment=")):
+    if not inpath:
+        inpath = os.getcwd()
     all_options = list(options) + tag_dict_to_options(tagDict)
     call_exiftool(inpath, filename, all_options, True)
 
