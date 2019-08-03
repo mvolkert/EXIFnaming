@@ -37,7 +37,7 @@ def moveToSubpath(filename, dirpath, subpath):
 
 def move(filename, oldpath, newpath):
     os.makedirs(newpath, exist_ok=True)
-    if not os.path.isfile(os.path.join(oldpath, filename)): return
+    if not isfile(oldpath, filename): return
     if isfile(newpath, filename): return
     rename_join((oldpath, filename), (newpath, filename))
 
