@@ -225,7 +225,7 @@ def order():
     leng = len(list(Tagdict_mp4.values())[0])
     print('Number of mp4: %d' % leng)
     for i in range(leng):
-        model = create_model(Tagdict, i)
+        model = create_model(Tagdict_mp4, i)
         time = giveDatetime(model.get_date())
         dirName = find_dir_with_closest_time(dirNameDict_firsttime, dirNameDict_lasttime, time)
 
