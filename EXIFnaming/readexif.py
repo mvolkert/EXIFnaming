@@ -231,6 +231,8 @@ def order():
 
         if dirName:
             move(model.filename, model.dir, os.path.join(inpath, dirName, "mp4"))
+        else:
+            log().warning("Did not move %s to %s" % (model.filename, dirName))
 
 
 def searchby_exiftag_equality(tag_name: str, value: str):
