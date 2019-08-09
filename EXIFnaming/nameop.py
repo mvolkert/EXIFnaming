@@ -6,7 +6,7 @@ import csv
 import datetime as dt
 import os
 import re
-from typing import Optional, Match, Iterable
+from typing import Optional, Match, Iterable, Any, IO, Tuple
 
 import numpy as np
 from sortedcollections import OrderedSet
@@ -269,11 +269,9 @@ def extract_tags_per_dir():
     """
     log_function_call(extract_tags_per_dir.__name__)
     inpath = os.getcwd()
-    csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
     tag_set_names = OrderedSet()
-    tags_places_file = open(get_info_dir("tags_places.csv"), "w")
-    writer = csv.writer(tags_places_file, dialect="semicolon")
-    writer.writerow(["directory", "name_part"])
+    out_filename = get_info_dir("tags_places.csv")
+    tags_places_file, writer = _create_writer(out_filename, ["directory", "name_part"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not inpath == dirpath: continue
         for dirname in dirnames:
@@ -305,23 +303,28 @@ def extract_tags(location=""):
     :return:
     """
     inpath = os.getcwd()
-    csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
+    tag_set = OrderedSet()
     tag_set_names = OrderedSet()
-    tags_places_file = open(get_info_dir("tags_places.csv"), "w")
-    writer = csv.writer(tags_places_file, dialect="semicolon")
-    writer.writerow(["directory", "name_part"])
+    out_filename = get_info_dir("tags_places.csv")
+    tags_places_file, writer = _create_writer(out_filename, ["directory", "name_part"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        tag_set = OrderedSet()
         for filename in filenames:
             fileNameAccessor = FilenameAccessor(filename)
             for tag in fileNameAccessor.tags():
                 tag_set.add(tag)
-        writeToFile(get_info_dir("tags.txt"), location + "\n\t" + "\n\t".join(tag_set) + "\n")
-        for tag in tag_set:
-            if not tag[0].isupper(): continue
-            tag_set_names.add((location, tag))
+    writeToFile(get_info_dir("tags.txt"),  "\n\t".join(tag_set) + "\n")
+    for tag in tag_set:
+        if tag[0].isupper(): continue
+        tag_set_names.add((location, tag))
     writer.writerows(tag_set_names)
     tags_places_file.close()
+
+def _create_writer(filename: str, titles: Iterable) -> Tuple[IO, Any]:
+    file = open(filename, "w")
+    csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
+    writer = csv.writer(file, dialect="semicolon")
+    writer.writerow(titles)
+    return file, writer
 
 
 def create_favorites_csv():
@@ -330,10 +333,8 @@ def create_favorites_csv():
     the rating column is filled with "4"
     """
     inpath = os.getcwd()
-    csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
-    fav_file = open(get_setexif_dir("fav.csv"), "w")
-    writer = csv.writer(fav_file, dialect="semicolon")
-    writer.writerow(["name_part", "rating"])
+    out_filename = get_setexif_dir("fav.csv")
+    fav_file, writer = _create_writer(out_filename, ["name_part", "rating"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath): continue
         for filename in filterFiles(filenames, image_types):
@@ -352,10 +353,7 @@ def create_example_csvs():
 
 
 def _create_empty_csv(name: str, columns: Iterable):
-    csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
     filename = get_setexif_dir(name + ".csv")
     if isfile(filename): return
-    csv_file = open(filename, "w")
-    writer = csv.writer(csv_file, dialect="semicolon")
-    writer.writerow(columns)
+    csv_file, writer = _create_writer(filename, columns)
     csv_file.close()
