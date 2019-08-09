@@ -80,6 +80,21 @@ def copy_subdirectories(dest: str, dir_names: []):
         if is_invalid_path(dirpath, whitelist=dir_names): continue
         copyFilesTo(filenames, dest, False)
 
+def copy_files(dest: str, sub_name: str):
+    """
+    copy files which have names containing sub_name to dest without directory structure
+    :param dest: copy destination
+    :param sub_name: name part to search
+    """
+    inpath = os.getcwd()
+    log().info(inpath)
+    found_files = []
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        for filename in filenames:
+            if sub_name in filename:
+                found_files.append(os.path.join(dirpath,filename))
+    copyFilesTo(found_files, dest, False)
+
 
 def folders_to_main(all_folders=False, series=False, primary=False, blurry=False, dirs=None, one_level=True,
                     not_inpath=True):
