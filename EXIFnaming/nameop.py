@@ -19,7 +19,7 @@ from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeri
     filterFiles, isfile
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log, log_function_call
-from EXIFnaming.helpers.settings import image_types
+from EXIFnaming.helpers.settings import image_types, video_types
 from EXIFnaming.helpers.tag_conversion import FilenameAccessor
 
 
@@ -40,9 +40,9 @@ def filter_series():
         filenames = moveSeries(dirpath, filenames, "S")
         filenames = moveSeries(dirpath, filenames, "SM")
         filenames = moveSeries(dirpath, filenames, "TL")
-        filenames = move_media(dirpath, filenames, ".MP4", "mp4")
-        filenames = move_media(dirpath, filenames, "HDR", "HDR")
-        move_media(dirpath, filenames, ".JPG", "single")
+        filenames = move_media(dirpath, filenames, video_types, "mp4")
+        filenames = move_media(dirpath, filenames, ["HDR"], "HDR")
+        move_media(dirpath, filenames, image_types, "single")
 
 
 def filter_primary():
@@ -61,11 +61,11 @@ def filter_primary():
         filenames = moveSeries(dirpath, filenames, "S")
         filenames = moveSeries(dirpath, filenames, "SM")
         filenames = moveSeries(dirpath, filenames, "TL")
-        filenames = move_media(dirpath, filenames, ".MP4", "mp4")
-        filenames = move_media(dirpath, filenames, "HDR", "HDR")
+        filenames = move_media(dirpath, filenames, video_types, "mp4")
+        filenames = move_media(dirpath, filenames, ["HDR"], "HDR")
         filenames = moveSeries(dirpath, filenames, "B", "1")
         filenames = moveSeries(dirpath, filenames, "B")
-        move_media(dirpath, filenames, ".JPG", "primary")
+        move_media(dirpath, filenames, image_types, "primary")
 
 
 def copy_subdirectories(dest: str, dir_names: []):

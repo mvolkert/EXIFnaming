@@ -130,10 +130,10 @@ def moveSeries(dirpath: str, filenames: list, series_type="S", counter_match=r'(
     return other_filenames
 
 
-def move_media(dirpath: str, filenames: list, name_search=".MP4", dest="mp4") -> list:
+def move_media(dirpath: str, filenames: list, name_searches: list, dest: str) -> list:
     other_filenames = []
     for filename in filenames:
-        if name_search in filename:
+        if any(name_search in filename for name_search in name_searches):
             moveToSubpath(filename, dirpath, dest)
         else:
             other_filenames.append(filename)
