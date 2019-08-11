@@ -96,6 +96,28 @@ def copy_files(dest: str, sub_name: str):
     copyFilesTo(found_files, dest, False)
 
 
+def replace_in_file(search: str, replace: str, fileext: str):
+    """
+    replace search with replace in files ending with fileext
+    :param search: string to search for
+    :param replace: string to replace
+    :param fileext: type of file to search in
+    """
+    inpath = os.getcwd()
+    log().info(inpath)
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        for filename in filenames:
+            if filename.endswith(fileext):
+                log().info(filename)
+                fullfilename = os.path.join(dirpath, filename)
+                content = ""
+                with open(fullfilename, 'r') as file:
+                    content = file.read()
+                    content = content.replace(search, replace)
+                with open(fullfilename, 'w') as file:
+                    file.write(content)
+
+
 def folders_to_main(all_folders=False, series=False, primary=False, blurry=False, dirs=None, one_level=True,
                     not_inpath=True):
     """
