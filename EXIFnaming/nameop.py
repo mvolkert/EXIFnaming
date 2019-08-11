@@ -16,7 +16,7 @@ from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeries, \
     moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, \
     get_plain_filenames, \
-    filterFiles, isfile
+    filterFiles, isfile, file_has_ext
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log, log_function_call
 from EXIFnaming.helpers.settings import image_types, video_types
@@ -158,7 +158,7 @@ def folders_to_main(all_folders=False, series=False, primary=False, blurry=False
         if dirpath == inpath: continue
         log().info("%s #dirs:%d #files:%d", dirpath, len(dirnames), len(filenames))
         for filename in filenames:
-            if not filename[-4:] in (".JPG", ".jpg", ".MP4", ".mp4"): continue
+            if not file_has_ext(filename, image_types + video_types): continue
             if not_inpath and os.path.dirname(dirpath) == inpath: continue
             if one_level:
                 destination = os.path.dirname(dirpath)
