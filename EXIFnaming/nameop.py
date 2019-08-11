@@ -80,6 +80,7 @@ def copy_subdirectories(dest: str, dir_names: []):
         if is_invalid_path(dirpath, whitelist=dir_names): continue
         copyFilesTo(filenames, dest, False)
 
+
 def copy_files(dest: str, sub_name: str):
     """
     copy files which have names containing sub_name to dest without directory structure
@@ -92,7 +93,7 @@ def copy_files(dest: str, sub_name: str):
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         for filename in filenames:
             if sub_name in filename:
-                found_files.append(os.path.join(dirpath,filename))
+                found_files.append(os.path.join(dirpath, filename))
     copyFilesTo(found_files, dest, False)
 
 
@@ -349,12 +350,13 @@ def extract_tags(location=""):
             fileNameAccessor = FilenameAccessor(filename)
             for tag in fileNameAccessor.tags():
                 tag_set.add(tag)
-    writeToFile(get_info_dir("tags.txt"),  "\n\t".join(tag_set) + "\n")
+    writeToFile(get_info_dir("tags.txt"), "\n\t".join(tag_set) + "\n")
     for tag in tag_set:
         if tag[0].isupper(): continue
         tag_set_names.add((location, tag))
     writer.writerows(tag_set_names)
     tags_places_file.close()
+
 
 def _create_writer(filename: str, titles: Iterable) -> Tuple[IO, Any]:
     file = open(filename, "w")
