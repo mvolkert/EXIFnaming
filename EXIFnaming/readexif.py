@@ -296,7 +296,7 @@ def rotate(subname="", folder=r"", sign=1, override=True, ask=True):
         if is_invalid_path(dirpath, regex=folder): continue
         if len(filenames) == 0: continue
         Tagdict = read_exiftags(dirpath, image_types, ask=ask)
-        if has_not_keys(Tagdict, keys=["Rotation"]): return
+        if has_not_keys(Tagdict, keys=["Rotation"]): continue
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):
             # Load the original image:
