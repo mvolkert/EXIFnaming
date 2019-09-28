@@ -2,6 +2,7 @@
 """
 Does not uses Tags at all
 """
+import codecs
 import csv
 import datetime as dt
 import os
@@ -16,7 +17,7 @@ from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeries, \
     moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, \
     get_plain_filenames, \
-    filterFiles, isfile, file_has_ext
+    filterFiles, isfile, file_has_ext, remove_ext
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log, log_function_call
 from EXIFnaming.helpers.settings import image_types, video_types
@@ -95,6 +96,32 @@ def copy_files(dest: str, sub_name: str):
             if sub_name in filename:
                 found_files.append(os.path.join(dirpath, filename))
     copyFilesTo(found_files, dest, False)
+
+
+def copy_new_files(dest: str, playlist: str):
+    """
+    sorting music files - FIXME maybe not the right place here
+    :param dest: copy destination
+    :param playlist: name part to search
+    """
+    csv.register_dialect('tab', delimiter='\t', lineterminator='\r\n')
+    with codecs.open(playlist, "rb", "utf-16") as csvfile:
+        reader = csv.DictReader(csvfile, dialect="tab")
+        places = [remove_ext(row["Ort"]) for row in reader if row is not None]
+        places = [os.path.basename(place) for place in places if place is not ""]
+    inpath = os.getcwd()
+    mp3_files = []
+    m4a_files = []
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        for filename in filenames:
+            fullname = os.path.join(dirpath, filename)
+            if not remove_ext(filename) in places:
+                if file_has_ext(filename,[".mp3"]):
+                    mp3_files.append(fullname)
+                if file_has_ext(filename, [".m4a"]):
+                    m4a_files.append(fullname)
+    copyFilesTo(mp3_files, os.path.join(dest, "mp3", remove_ext(playlist)), False)
+    copyFilesTo(m4a_files, os.path.join(dest, "m4a", remove_ext(playlist)), False)
 
 
 def replace_in_file(search: str, replace: str, fileext: str):

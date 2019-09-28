@@ -185,6 +185,11 @@ def file_has_ext(filename: str, file_extensions: Iterable, ignore_case=True) -> 
     return False
 
 
+def remove_ext(filename: str):
+    if filename is None:
+        return ""
+    return filename[:filename.rfind(".")]
+
 def is_invalid_path(dirpath, blacklist=None, whitelist=None, regex=r"", start="") -> bool:
     inpath = os.getcwd()
     basename = os.path.basename(dirpath)
