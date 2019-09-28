@@ -2,7 +2,7 @@
 """
 Steps combine multiple functions
 """
-from EXIFnaming.nameop import filter_series, rename_HDR, sanitize_filename, create_example_csvs
+from EXIFnaming.nameop import filter_series, rename_HDR, sanitize_filename, create_example_csvs, create_favorites_csv
 from EXIFnaming.readexif import order, rename, rotate
 from EXIFnaming.setexif import geotag, read_csv
 
@@ -45,3 +45,10 @@ def step5_write_exif(csv_restriction="fav"):
     """
     read_csv("*", csv_restriction=csv_restriction)
     geotag(timezone=2, offset="")
+
+
+def make_fav(timezone=2):
+    sanitize_filename()
+    create_favorites_csv()
+    geotag(timezone=timezone, offset="")
+    read_csv("*", csv_restriction="", import_exif=False, overwrite_gps=False)
