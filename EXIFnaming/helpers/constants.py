@@ -9,6 +9,8 @@ CameraModelShort['E4800'] = 'N'
 CameraModelShort['SM-G900F'] = 'S5'
 CameraModelShort['DCR-TRV25E'] = 'VS'
 CameraModelShort['HDC-SD300'] = 'V'
+#CameraModelShort['Canon EOS 450D'] = 'F'
+#CameraModelShort['Canon EOS 5D Mark II'] = 'F'
 CameraModelShort[standard_kamera] = ''
 
 RecModes = ["4KB", "4K", "HS", "FHD"]
