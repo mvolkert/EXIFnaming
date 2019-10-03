@@ -35,7 +35,7 @@ def step4_sanitize(subname="HDRT", folder="HDR"):
     :return:
     """
     rename_HDR(mode=subname, folder=folder)
-    rotate(subname=subname, folder=folder, sign=1, override=True)
+    rotate(subname=subname, folder=folder, sign=1, override=True, ask=False)
     sanitize_filename()
 
 
