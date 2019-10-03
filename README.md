@@ -1,7 +1,7 @@
 # EXIFnaming
 
 Renaming/Ordering/Modifying Photos using EXIF tool https://sno.phy.queensu.ca/~phil/exiftool/.
-"exiftool.exe" has to be in helpers sub folder of this module.
+"exiftool.exe" has to be copied to "EXIFnaming/helpers/exiftool.exe".
 
 Developed for Panasonic Lumix TZ101 but other models may also work.
 You are free to contact me for verifying the support of your Camera model.
