@@ -115,7 +115,8 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keept
         else:
             # SequenceNumber
             sequence_number = model.get_sequence_number()
-            if sequence_number < 2 and not time == time_old: counter += 1
+            if sequence_number < 2 and not time == time_old or model.ignore_same_date():
+                counter += 1
             counterString = ("%0" + digits + "d") % counter
             if not "HDR" in filename: counterString += model.get_sequence_string()
 

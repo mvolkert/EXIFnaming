@@ -238,3 +238,6 @@ class ModelBase:
         if model in c.CameraModelShort:
             return c.CameraModelShort[model]
         return model
+
+    def ignore_same_date(self) -> bool:
+        return False

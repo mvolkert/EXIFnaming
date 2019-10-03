@@ -82,3 +82,6 @@ class NormalFile(ModelBase):
 
     def get_model_abbr(self) -> str:
         return "F"
+
+    def ignore_same_date(self) -> bool:
+        return True
