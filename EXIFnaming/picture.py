@@ -7,6 +7,8 @@ import os
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
 from EXIFnaming.helpers.fileop import moveToSubpath, isfile, is_invalid_path
 
+__all__ = ["detectBlurry", "detectSimilar"]
+
 
 def detectBlurry():
     """

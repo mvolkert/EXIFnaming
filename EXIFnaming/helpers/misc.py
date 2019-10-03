@@ -1,5 +1,7 @@
 import sys
 
+__all__ = ["askToContinue", "tofloat"]
+
 
 def askToContinue():
     response = input("Do you want to continue ?")

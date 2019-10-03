@@ -13,6 +13,8 @@ from EXIFnaming.helpers.program_dir import log
 from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer, video_types
 from EXIFnaming.helpers.tags import SceneModeAbbreviations
 
+__all__ = ["FileMetaData", "Location", "add_dict", "FilenameAccessor", "FilenameBuilder"]
+
 
 class Location:
     location_keys = ['Country', 'State', 'City', 'Location']

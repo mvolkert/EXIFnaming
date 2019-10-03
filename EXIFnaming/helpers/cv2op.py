@@ -7,6 +7,7 @@ import numpy as np
 # import the necessary packages
 from skimage.measure import compare_ssim as ssim
 
+__all__ = ["is_blurry", "are_similar"]
 
 def is_blurry(directory, filename, threshold=100):
     image = read_picture(directory, filename)

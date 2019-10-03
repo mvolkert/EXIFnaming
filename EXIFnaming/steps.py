@@ -6,6 +6,8 @@ from EXIFnaming.nameop import filter_series, rename_HDR, sanitize_filename, crea
 from EXIFnaming.readexif import order, rename, rotate
 from EXIFnaming.setexif import geotag, read_csv
 
+__all__ = ["step1_prepare", "step2_rename", "step3_filter", "step4_sanitize", "step5_write_exif", "make_fav"]
+
 
 def step1_prepare():
     create_example_csvs()

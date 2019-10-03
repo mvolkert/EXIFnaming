@@ -2,6 +2,8 @@ from collections import OrderedDict
 
 from EXIFnaming.helpers.settings import standard_kamera
 
+__all__ = ["CameraModelShort", "RecModes", "hdr_algorithm", "tm_preset"]
+
 CameraModelShort = OrderedDict()
 CameraModelShort['DMC-TZ7'] = 'TZ7'
 # CameraModelShort['DMC-TZ101'] = 'TZ101'

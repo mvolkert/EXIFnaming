@@ -16,6 +16,9 @@ from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict, FilenameAccessor
 from EXIFnaming.helpers.tags import create_model, hasDateTime
 
+__all__ = ["shift_time", "fake_date", "add_location", "location_to_keywords", "name_to_exif", "geotag", "geotag_single",
+           "read_csv", "copy_exif_via_mainname"]
+
 
 def shift_time(hours=0, minutes=0, seconds=0, is_video=False):
     """

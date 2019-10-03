@@ -5,6 +5,7 @@ import numpy as np
 
 import EXIFnaming.helpers.constants as c
 
+__all__ = ["ModelBase"]
 
 class ModelBase:
     TagNames = OrderedDict()

@@ -14,14 +14,17 @@ from sortedcollections import OrderedSet
 
 from EXIFnaming.helpers.constants import CameraModelShort
 from EXIFnaming.helpers.date import dateformating
-from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeries, \
-    moveSeries, move, removeIfEmtpy, get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, \
-    get_plain_filenames, \
-    filterFiles, isfile, file_has_ext, remove_ext
+from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeries, moveSeries, move, removeIfEmtpy, \
+    get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, get_plain_filenames, filterFiles, isfile, \
+    file_has_ext, remove_ext
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log, log_function_call
 from EXIFnaming.helpers.settings import image_types, video_types
 from EXIFnaming.helpers.tag_conversion import FilenameAccessor
+
+__all__ = ["filter_series", "filter_primary", "copy_subdirectories", "copy_files", "copy_new_files", "replace_in_file",
+           "folders_to_main", "rename_HDR", "sanitize_filename", "rename_temp_back", "rename_back", "extract_tags",
+           "extract_tags_per_dir", "create_example_csvs", "create_favorites_csv"]
 
 
 def filter_series():
@@ -116,7 +119,7 @@ def copy_new_files(dest: str, playlist: str):
         for filename in filenames:
             fullname = os.path.join(dirpath, filename)
             if not remove_ext(filename) in places:
-                if file_has_ext(filename,[".mp3"]):
+                if file_has_ext(filename, [".mp3"]):
                     mp3_files.append(fullname)
                 if file_has_ext(filename, [".m4a"]):
                     m4a_files.append(fullname)

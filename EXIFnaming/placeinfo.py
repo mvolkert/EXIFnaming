@@ -6,6 +6,8 @@ import googlemaps
 from EXIFnaming.helpers.program_dir import get_info_dir
 from EXIFnaming.helpers.settings import googlemaps_api_key
 
+__all__ = ["get_info", "write_infos"]
+
 
 def get_info(search: str):
     """

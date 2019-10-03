@@ -13,6 +13,9 @@ from EXIFnaming.helpers.program_dir import log
 from EXIFnaming.helpers.settings import includeSubdirs, encoding_format, image_types, video_types
 from EXIFnaming.models import ModelBase
 
+__all__ = ["read_exiftags", "call_exiftool", "askToContinue", "write_exiftags", "count_files_in", "write_exiftag",
+           "has_not_keys", "call_exiftool_direct", "read_exiftag"]
+
 
 def read_exiftags(inpath="", file_types=image_types, skipdirs=(), ask=True):
     if not inpath:

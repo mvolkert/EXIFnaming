@@ -2,6 +2,8 @@ from collections import OrderedDict
 
 from EXIFnaming.models.ModelBase import ModelBase
 
+__all__ = ["PhotoFile"]
+
 
 class PhotoFile(ModelBase):
     TagNames = OrderedDict()

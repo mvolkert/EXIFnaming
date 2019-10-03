@@ -2,6 +2,8 @@ from collections import OrderedDict
 
 from EXIFnaming.models.ModelBase import ModelBase
 
+__all__ = ["DMC_TZ7"]
+
 
 class DMC_TZ7(ModelBase):
     TagNames = OrderedDict()

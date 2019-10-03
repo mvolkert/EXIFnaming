@@ -2,6 +2,8 @@ import datetime as dt
 import os
 from logging import Logger
 
+__all__ = ["log", "get_saves_dir", "get_gps_dir", "get_info_dir", "get_setexif_dir", "get_log_dir", "log_function_call"]
+
 
 def get_saves_dir(*subpath):
     create_program_dir()
