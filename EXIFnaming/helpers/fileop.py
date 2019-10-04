@@ -204,7 +204,7 @@ def is_invalid_path(dirpath, blacklist=None, whitelist=None, regex=r"", start=""
     if not includeSubdirs and not inpath == dirpath: return True
     if any(len(dirname) > 1 and dirname.startswith('.') for dirname in dirnames):  return True
     if '.EXIFnaming' in dirpath:  return True
-    if blacklist and basename in blacklist: return True
+    if blacklist and any(basename.startswith(blacklistEntry) for blacklistEntry in blacklist): return True
     if whitelist and not basename in whitelist: return True
     if regex and not re.search(regex, basename): return True
     if start and relpath.lower() < start.lower(): return True
