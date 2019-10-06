@@ -361,13 +361,16 @@ def _get_time(dirfile: tuple) -> str:
     return time.strftime(_read_timetable.timeformat)
 
 
-def order_with_timetable(timefile=get_info_dir("timetable.txt"), fileexts=(".JPG", ".MP4")):
+def order_with_timetable(timefile: str = None):
     """
     use timetable to create folder structure
     :param timefile: timetable file
     :param fileexts: extensions
     :return:
     """
+    if not timefile:
+        timefile = get_info_dir("timetable.txt")
+
     dirNameDict_firsttime, dirNameDict_lasttime = _read_timetable(timefile)
     Tagdict = read_exiftags()
     leng = len(list(Tagdict.values())[0])
@@ -381,7 +384,10 @@ def order_with_timetable(timefile=get_info_dir("timetable.txt"), fileexts=(".JPG
             move(model.filename, model.dir, os.path.join(os.getcwd(), dirName))
 
 
-def _read_timetable(filename=get_info_dir("timetable.txt")):
+def _read_timetable(filename: str = None):
+    if not filename:
+        filename = get_info_dir("timetable.txt")
+
     file = open(filename, 'r')
     dirNameDict_firsttime = OrderedDict()
     dirNameDict_lasttime = OrderedDict()

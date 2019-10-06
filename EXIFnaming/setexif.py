@@ -174,7 +174,7 @@ def geotag_single(lat: float, lon: float):
     call_exiftool(inpath, "*", options=options)
 
 
-def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setexif_dir(), csv_restriction="",
+def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder: str = None, csv_restriction="",
              import_filename=True, import_exif=True, only_when_changed=False, overwrite_gps=False):
     """
     csv files are used for setting tags
@@ -216,6 +216,9 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder=get_setex
         useless if csv_restriction is set
     :return:
     """
+    if not csv_folder:
+        csv_folder = get_setexif_dir()
+
     log_function_call(read_csv.__name__, csv_filenames, folder, start_folder, csv_folder, csv_restriction,
                       import_filename, import_exif, only_when_changed, overwrite_gps)
     inpath = os.getcwd()
