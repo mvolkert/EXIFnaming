@@ -243,8 +243,8 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder: str = No
 
             for csv_filename in csv_filenames:
                 with open(csv_filename, "r") as csvfile:
-                    spamreader = csv.DictReader(csvfile, dialect='semicolon')
-                    for row in spamreader:
+                    reader = csv.DictReader(csvfile, dialect='semicolon')
+                    for row in reader:
                         meta_data.update(row)
 
             if not only_when_changed or meta_data.has_changed:
@@ -257,8 +257,8 @@ def _passes_restrictor(meta_data, csv_restriction):
     if not csv_restriction:
         return True
     with open(csv_restriction, "r") as csvfile:
-        spamreader = csv.DictReader(csvfile, dialect='semicolon')
-        for row in spamreader:
+        reader = csv.DictReader(csvfile, dialect='semicolon')
+        for row in reader:
             if meta_data.passes_restrictions(row):
                 return True
     return False
