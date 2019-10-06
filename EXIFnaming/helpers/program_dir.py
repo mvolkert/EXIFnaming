@@ -6,35 +6,44 @@ __all__ = ["log", "get_saves_dir", "get_gps_dir", "get_info_dir", "get_setexif_d
 
 
 def get_saves_dir(*subpath):
-    create_program_dir()
-    return os.path.join(".EXIFnaming", "saves", *subpath)
+    program_dir = create_program_dir()
+    return os.path.join(program_dir, "saves", *subpath)
 
 
 def get_gps_dir(*subpath):
-    return os.path.join(".EXIFnaming", "gps", *subpath)
+    program_dir = create_program_dir()
+    return os.path.join(program_dir, "gps", *subpath)
 
 
 def get_info_dir(*subpath):
-    create_program_dir()
-    return os.path.join(".EXIFnaming", "info", *subpath)
+    program_dir = create_program_dir()
+    return os.path.join(program_dir, "info", *subpath)
 
 
 def get_setexif_dir(*subpath):
-    create_program_dir()
-    return os.path.join(".EXIFnaming", "setexif", *subpath)
+    program_dir = create_program_dir()
+    return os.path.join(program_dir, "setexif", *subpath)
 
 
 def get_log_dir(*subpath):
-    create_program_dir()
-    return os.path.join(".EXIFnaming", "log", *subpath)
+    program_dir = create_program_dir()
+    return os.path.join(program_dir, "log", *subpath)
 
 
 def create_program_dir():
-    mainpath = ".EXIFnaming"
-    subdirs = ["saves", "gps", "info", "setexif", "log"]
-    for subdir in subdirs:
-        path = os.path.join(mainpath, subdir)
-        os.makedirs(path, exist_ok=True)
+    if not create_program_dir.dir:
+        mainpath = ".EXIFnaming"
+        program_path = os.path.join(os.getcwd(), mainpath)
+
+        subdirs = ["saves", "gps", "info", "setexif", "log"]
+        for subdir in subdirs:
+            path = os.path.join(mainpath, subdir)
+            os.makedirs(path, exist_ok=True)
+        create_program_dir.dir = program_path
+    return create_program_dir.dir
+
+
+create_program_dir.dir = None
 
 
 def log() -> Logger:
