@@ -371,6 +371,8 @@ def order_with_timetable(timefile: str = None):
     if not timefile:
         timefile = get_info_dir("timetable.txt")
 
+    log_function_call(order_with_timetable.__name__, timefile)
+
     dirNameDict_firsttime, dirNameDict_lasttime = _read_timetable(timefile)
     Tagdict = read_exiftags()
     leng = len(list(Tagdict.values())[0])
