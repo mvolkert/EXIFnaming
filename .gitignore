@@ -2,3 +2,6 @@
 __pycache__
 .idea/*
 .EXIFnaming/*
+build/*
+dist/*
+*.egg-info/*
