@@ -7,10 +7,11 @@ from typing import List, Dict, Set
 
 from sortedcollections import OrderedSet
 
-from EXIFnaming.helpers.fileop import count_files, count_files_in, is_invalid_path
+from EXIFnaming.helpers.fileop import count_files, count_files_in, is_invalid_path, isfile
 from EXIFnaming.helpers.measuring_tools import Clock
 from EXIFnaming.helpers.program_dir import log
 from EXIFnaming.helpers.settings import includeSubdirs, encoding_format, image_types, video_types
+from EXIFnaming.helpers import settings
 from EXIFnaming.models import ModelBase
 
 __all__ = ["read_exiftags", "call_exiftool", "askToContinue", "write_exiftags", "count_files_in", "write_exiftag",
@@ -111,7 +112,7 @@ def call_exiftool(dirpath: str, name: str, options: List = (), override=True) ->
 
 
 def call_exiftool_direct(options: List = (), override=True) -> (str, str):
-    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
+    path = getExiftoolPath()
     encoding_args = ["-charset", encoding_format, "-charset", "FileName=" + encoding_format]
     args = [path + "exiftool"] + encoding_args + options
     if override and options: args.append("-overwrite_original_in_place")
@@ -123,6 +124,16 @@ def call_exiftool_direct(options: List = (), override=True) -> (str, str):
         if not line: continue
         log().warning(line)
     return out, err
+
+
+def getExiftoolPath() -> str:
+    if settings.exiftool_directory:
+        path =  os.path.join(settings.exiftool_directory, '')
+    else:
+        path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '')
+    if not isfile(path + "exiftool.exe"):
+        raise FileNotFoundError(path + "exiftool.exe can not be found, please correct the directory of exiftool.exe")
+    return path
 
 
 def sort_dict_by_date_and_model(indict: Dict[str, list]) -> Dict[str, list]:

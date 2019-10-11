@@ -7,3 +7,5 @@ panorama_program = "Hugin"
 photographer = "Marco Volkert"
 standard_kamera = "DMC-TZ101"
 googlemaps_api_key = ""
+## if unset is same directory as settings
+exiftool_directory = r""
