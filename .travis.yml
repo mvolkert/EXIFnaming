@@ -11,4 +11,6 @@ deploy:
   provider: pypi
   user: "__token__"
   password:
-    secure: $PYPI_API_KEY
+    secure: $PYPI_TEST_API_KEY
+  server:
+     https://test.pypi.org/legacy/
