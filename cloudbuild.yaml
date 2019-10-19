@@ -1,0 +1,18 @@
+image: python:3.7-alpine
+
+stages:
+  - deploy
+
+before_script:
+   - pip install twine
+   - python setup.py sdist
+
+deploy_staging:
+  stage: deploy
+  variables:
+    TWINE_USERNAME: $STAGING_USERNAME
+    TWINE_PASSWORD: $STAGING_PASSWORD
+  script:
+    - twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+  except:
+    - tags
