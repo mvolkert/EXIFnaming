@@ -4,11 +4,11 @@ steps:
   args: ['-c','virtualenv /workspace/venv' ]
   # Creates a Python virtualenv stored in /workspace/venv that will persist across container runs.  
 - name: 'gcr.io/$PROJECT_ID/python-cloudbuild'
-  entrypoint: 'venv/bin/pip'
+  entrypoint: 'venv/bin/pip3'
   args: ['install', '-V', '-r', 'requirements.txt']
   # Installs any dependencies listed in the project's requirements.txt.  
 - name: 'gcr.io/$PROJECT_ID/python-cloudbuild'
-  entrypoint: 'venv/bin/python'
+  entrypoint: 'venv/bin/python3'
   args: ['-m', 'pytest', '-v']
   # Runs pytest from the virtual environment (with all requirements)  
   # using the verbose flag so you can see each individual test.  
