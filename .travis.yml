@@ -12,11 +12,6 @@ script:
 deploy:
   skip_cleanup: true
   provider: pypi
-  on:
-    tags: true
-    branch:
-      - master
-      - /(\d+\.)(\d+\.)(\d+)$/
   user: "__token__"
     password:
       secure: $PYPI_API_KEY
