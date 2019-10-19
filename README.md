@@ -1,10 +1,10 @@
 # EXIFnaming
 
-[![Build Status](https://travis-ci.com/MarcoVolkert/EXIFnaming.svg?branch=master)](https://travis-ci.com/MarcoVolkert/EXIFnaming)
+[![Build Status](https://travis-ci.com/mvolkert/EXIFnaming.svg?branch=master)](https://travis-ci.com/mvolkert/EXIFnaming)
 [![PyPI version](https://badge.fury.io/py/EXIFnaming.svg)](https://badge.fury.io/py/EXIFnaming)
-<!---[![codecov](https://codecov.io/gh/MarcoVolkert/EXIFnaming/branch/master/graph/badge.svg)](https://codecov.io/gh/MarcoVolkert/EXIFnaming)--->
+<!---[![codecov](https://codecov.io/gh/mvolkert/EXIFnaming/branch/master/graph/badge.svg)](https://codecov.io/gh/mvolkert/EXIFnaming)--->
 <!---![PyPI - Downloads](https://img.shields.io/pypi/dm/EXIFnaming)--->
-<!---![GitHub contributors](https://img.shields.io/github/contributors/MarcoVolkert/EXIFnaming)--->
+<!---![GitHub contributors](https://img.shields.io/github/contributors/mvolkert/EXIFnaming)--->
 
 Renaming/Ordering/Modifying Photos using EXIF tool https://sno.phy.queensu.ca/~phil/exiftool/.
 "exiftool.exe" has to be copied to "EXIFnaming/helpers/exiftool.exe".
