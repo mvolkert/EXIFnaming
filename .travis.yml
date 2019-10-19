@@ -13,4 +13,4 @@ deploy:
   password:
     secure: $PYPI_TEST_API_KEY
   server:
-     https://test.pypi.org/legacy/
+     https://test.pypi.org/index/
