@@ -1,18 +1,18 @@
-image: python:3.7-alpine
-
-stages:
-  - deploy
-
-before_script:
-   - pip install twine
-   - python setup.py sdist
-
-deploy_staging:
-  stage: deploy
-  variables:
-    TWINE_USERNAME: $STAGING_USERNAME
-    TWINE_PASSWORD: $STAGING_PASSWORD
-  script:
-    - twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-  except:
-    - tags
+steps:
+- name: 'gcr.io/$PROJECT_ID/python-cloudbuild' # Cloud Build automatically substitutes $PROJECT_ID for your Project ID.  
+  entrypoint: '/bin/bash'
+  args: ['-c','virtualenv /workspace/venv' ]
+  # Creates a Python virtualenv stored in /workspace/venv that will persist across container runs.  
+- name: 'gcr.io/$PROJECT_ID/python-cloudbuild'
+  entrypoint: 'venv/bin/pip'
+  args: ['install', '-V', '-r', 'requirements.txt']
+  # Installs any dependencies listed in the project's requirements.txt.  
+- name: 'gcr.io/$PROJECT_ID/python-cloudbuild'
+  entrypoint: 'venv/bin/python'
+  args: ['-m', 'pytest', '-v']
+  # Runs pytest from the virtual environment (with all requirements)  
+  # using the verbose flag so you can see each individual test.  
+- name: 'gcr.io/$PROJECT_ID/python-cloudbuild'
+  entrypoint: 'venv/bin/pylint'
+  args: ['my_module/']
+  # Runs pylint against the module my_module contained one folder under the project root.  
