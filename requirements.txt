@@ -1,6 +1,6 @@
-sortedcollections
+numpy=1.15
+sortedcollections=1.1.2
 scikit-image
 opencv-python
-numpy
 Pillow
 googlemaps
