@@ -10,4 +10,5 @@ script:
 deploy:
   provider: pypi
   user: "__token__"
-  password: $PYPI-API-KEY
+  password:
+    secure: $PYPI_API_KEY
