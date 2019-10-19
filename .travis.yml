@@ -15,8 +15,7 @@ deploy:
   on:
     tags: true
     branch:
-      - master
-      - /(\d+\.)(\d+\.)(\d+)$/
+      master
   user: "__token__"
     password:
       secure: $PYPI_API_KEY
