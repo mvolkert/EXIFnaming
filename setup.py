@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="EXIFnaming",
-    version="0.0.1",
+    version="PYPIVERSION",
     author="Marco Volkert",
     author_email="marco.volkert24@gmx.de",
     description="collection of Tag operations",

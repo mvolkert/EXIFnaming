@@ -4,13 +4,13 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
+  - chmod 777 setversion.sh
 # command to run tests
 script:
   - pytest
+  - ./setversion.sh
 deploy:
   provider: pypi
   user: "__token__"
   password:
-    secure: $PYPI_TEST_API_KEY
-  server:
-     https://test.pypi.org/index/
+    secure: $PYPI_API_KEY
