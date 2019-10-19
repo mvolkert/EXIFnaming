@@ -6,7 +6,6 @@
 <!---![PyPI - Downloads](https://img.shields.io/pypi/dm/EXIFnaming)--->
 <!---![GitHub contributors](https://img.shields.io/github/contributors/MarcoVolkert/EXIFnaming)--->
 
-
 Renaming/Ordering/Modifying Photos using EXIF tool https://sno.phy.queensu.ca/~phil/exiftool/.
 "exiftool.exe" has to be copied to "EXIFnaming/helpers/exiftool.exe".
 
