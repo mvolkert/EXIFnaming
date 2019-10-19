@@ -11,7 +11,7 @@ setuptools.setup(
     description="collection of Tag operations",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/MarcoVolkert/EXIFnaming",
+    url="https://github.com/mvolkert/EXIFnaming",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
