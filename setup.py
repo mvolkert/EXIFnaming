@@ -3,9 +3,6 @@ import setuptools
 with open("README.md", "r") as file:
     long_description = file.read()
 
-with open("requirements.txt", "r") as file:
-    requirements = file.readlines()
-
 setuptools.setup(
     name="EXIFnaming",
     version="PYPIVERSION",
@@ -14,6 +11,7 @@ setuptools.setup(
     description="Tools for organizing and tagging photos",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    license='MIT License',
     url="https://github.com/mvolkert/EXIFnaming",
     packages=setuptools.find_packages(),
     classifiers=[
@@ -35,5 +33,5 @@ setuptools.setup(
              'lumix panasonic camera digital-camera photos camera-model TZ101 organizing',
     python_requires='>=3.6',
     dependency_links=['https://sno.phy.queensu.ca/~phil/exiftool/'],
-    install_requires=requirements,
+    install_requires=['numpy', 'sortedcollections', 'scikit-image', 'opencv-python', 'Pillow', 'googlemaps'],
 )
