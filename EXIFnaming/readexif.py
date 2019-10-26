@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 Reads Tags to use them, but not write to them
+
+dependencies: exiftool, Pillow
 """
 
 import datetime as dt

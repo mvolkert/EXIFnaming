@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-collection of Tag operations
-works with: www.sno.phy.queensu.ca/~phil/exiftool/
-exiftool.exe has to be in the helpers folder
+Tools for organizing and tagging photos
+
+works with exiftool: www.sno.phy.queensu.ca/~phil/exiftool/
+exiftool.exe has to be in the helpers folder or path to it configured in settings
 """
 
 __author__ = "Marco Volkert"
@@ -19,5 +20,4 @@ from EXIFnaming.nameop import filter_series, rename_back, filter_primary, rename
     copy_subdirectories
 from EXIFnaming.picture import detectBlurry, detectSimilar
 from EXIFnaming.setexif import shift_time, add_location, geotag, name_to_exif, fake_date, read_csv
-from EXIFnaming.helpers.decode import read_exiftags, write_exiftags
 from EXIFnaming.steps import step1_prepare, step2_rename, step3_filter, step4_sanitize, step5_write_exif, make_fav

@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+get information about places from googlemaps
+
+dependencies: googlemaps
+"""
 import csv
 from collections import OrderedDict
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-Does not uses Tags at all
+Picture processing, no usage of exif infos
+
+dependencies: scikit-image, opencv-python
 """
 import os
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-Does not uses Tags at all
+Organizing fotos according to naming conventions definied by readexif.rename and external programs
+
+dependencies: -
 """
 import codecs
 import csv

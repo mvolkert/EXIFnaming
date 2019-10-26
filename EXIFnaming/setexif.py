@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 Writes to Tags
+
+dependencies: exiftool
 """
 import csv
 import datetime as dt

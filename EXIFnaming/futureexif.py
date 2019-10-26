@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Just ideas
+Just ideas - not intended to be used
 """
 
 import os
