@@ -2,8 +2,8 @@
 
 [![Build Status](https://travis-ci.com/mvolkert/EXIFnaming.svg?branch=master)](https://travis-ci.com/mvolkert/EXIFnaming)
 [![PyPI version](https://badge.fury.io/py/EXIFnaming.svg)](https://badge.fury.io/py/EXIFnaming)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/EXIFnaming)
 <!---[![codecov](https://codecov.io/gh/mvolkert/EXIFnaming/branch/master/graph/badge.svg)](https://codecov.io/gh/mvolkert/EXIFnaming)--->
-<!---![PyPI - Downloads](https://img.shields.io/pypi/dm/EXIFnaming)--->
 <!---![GitHub contributors](https://img.shields.io/github/contributors/mvolkert/EXIFnaming)--->
 
 Renaming/Ordering/Modifying Photos using EXIF tool https://sno.phy.queensu.ca/~phil/exiftool/.
