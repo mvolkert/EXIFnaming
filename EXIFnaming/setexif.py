@@ -6,13 +6,13 @@ import csv
 import datetime as dt
 import os
 
+from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
     write_exiftag, has_not_keys, call_exiftool_direct, read_exiftag
 from EXIFnaming.helpers.fileop import filterFiles, is_invalid_path
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.program_dir import get_gps_dir, get_setexif_dir, log, log_function_call
-from EXIFnaming.helpers.settings import includeSubdirs, image_types, video_types
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict, FilenameAccessor
 from EXIFnaming.helpers.tags import create_model, hasDateTime
 
@@ -27,7 +27,7 @@ def shift_time(hours=0, minutes=0, seconds=0, is_video=False):
     log_function_call(shift_time.__name__, hours, minutes, seconds, is_video)
     inpath = os.getcwd()
     delta_t = dt.timedelta(hours=hours, minutes=minutes, seconds=seconds)
-    Tagdict = read_exiftags(inpath, video_types if is_video else image_types)
+    Tagdict = read_exiftags(inpath, settings.video_types if is_video else settings.image_types)
     if has_not_keys(Tagdict, keys=["Directory", "File Name", "Date/Time Original"]): return
     leng = len(list(Tagdict.values())[0])
     time_tags = ["DateTimeOriginal", "CreateDate", "ModifyDate"]
@@ -62,7 +62,7 @@ def fake_date(start='2000:01:01'):
     dir_counter = -1
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath): continue
-        filenames = filterFiles(filenames, image_types + video_types)
+        filenames = filterFiles(filenames, settings.image_types + settings.video_types)
         if not filenames: continue
         print(dirpath)
         dir_counter += 1
@@ -90,8 +90,8 @@ def location_to_keywords():
     deprecated: try to use read_csv() instead
     """
     inpath = os.getcwd()
-    log().info("process %d Files in %s, subdir: %r", count_files_in(inpath, image_types + video_types, ""), inpath,
-               includeSubdirs)
+    log().info("process %d Files in %s, subdir: %r", count_files_in(inpath, settings.image_types + settings.video_types, ""), inpath,
+               settings.includeSubdirs)
     askToContinue()
     Tagdict = read_exiftags(inpath, ask=False)
     leng = len(list(Tagdict.values())[0])
@@ -113,9 +113,9 @@ def name_to_exif(folder=r"", additional_tags=(), startdir=None):
     """
     inpath = os.getcwd()
     clock = Clock()
-    file_types = image_types + video_types
+    file_types = settings.image_types + settings.video_types
     log().info("process %d Files in %s, subdir: %r", count_files_in(inpath, file_types, ""), inpath,
-               includeSubdirs)
+               settings.includeSubdirs)
     askToContinue()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
@@ -235,7 +235,7 @@ def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder: str = No
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder, start=start_folder): continue
-        for filename in filterFiles(filenames, image_types):
+        for filename in filterFiles(filenames, settings.image_types):
             meta_data = FileMetaData(dirpath, filename)
             if not _passes_restrictor(meta_data, csv_restriction): continue
             if import_filename: meta_data.import_filename()
@@ -279,7 +279,7 @@ def copy_exif_via_mainname(origin: str, target: str, overwriteDateTime=False):
     command = "-TagsFromFile"
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, target)):
         if is_invalid_path(dirpath): continue
-        filenames = filterFiles(filenames, image_types)
+        filenames = filterFiles(filenames, settings.image_types)
         for filename in filenames:
             if not overwriteDateTime:
                 tagDict = read_exiftag(dirpath, filename)
@@ -288,7 +288,7 @@ def copy_exif_via_mainname(origin: str, target: str, overwriteDateTime=False):
             target_dict.setdefault(main, []).append(os.path.join(dirpath, filename))
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, origin)):
         if is_invalid_path(dirpath): continue
-        filenames = filterFiles(filenames, image_types)
+        filenames = filterFiles(filenames, settings.image_types)
         for filename in filenames:
             main = FilenameAccessor(filename).mainname()
             if not main in target_dict: continue

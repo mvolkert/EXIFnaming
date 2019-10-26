@@ -9,7 +9,7 @@ import numpy as np
 import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, log
-from EXIFnaming.helpers.settings import includeSubdirs, image_types
+from EXIFnaming.helpers import settings
 
 __all__ = ["count_files", "count_files_in", "is_invalid_path", "writeToFile", "renameInPlace", "moveFiles",
            "renameTemp", "move", "copyFilesTo", "get_filename_sorted_dirfiletuples", "moveToSubpath", "isfile",
@@ -104,7 +104,7 @@ def moveBracketSeries(dirpath: str, filenames: list) -> list:
     other_filenames = []
     for filename in filenames:
         # example: filename="MS17-4_552B2.JPG"
-        if not file_has_ext(filename, image_types):
+        if not file_has_ext(filename, settings.image_types):
             other_filenames.append(filename)
             continue
         match = re.search('(\w+_[0-9]+)B([1-7])', filename)
@@ -166,7 +166,7 @@ def get_relpath_depth(inpath, dirpath):
 def count_files_in(inpath: str, file_extensions: Iterable, skipdirs=()):
     NFiles = 0
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: break
+        if not settings.includeSubdirs and not inpath == dirpath: break
         if os.path.basename(dirpath) in skipdirs: continue
         NFiles += count_files(filenames, file_extensions)
     return NFiles
@@ -201,7 +201,7 @@ def is_invalid_path(dirpath, blacklist=None, whitelist=None, regex=r"", start=""
     basename = os.path.basename(dirpath)
     relpath = str(os.path.relpath(dirpath, inpath))
     dirnames = relpath.split(os.sep)
-    if not includeSubdirs and not inpath == dirpath: return True
+    if not settings.includeSubdirs and not inpath == dirpath: return True
     if any(len(dirname) > 1 and dirname.startswith('.') for dirname in dirnames):  return True
     if '.EXIFnaming' in dirpath:  return True
     if blacklist and any(basename.startswith(blacklistEntry) for blacklistEntry in blacklist): return True

@@ -10,8 +10,7 @@ import re
 from typing import Optional, Match, Iterable, Any, IO, Tuple
 
 import numpy as np
-from sortedcollections import OrderedSet
-
+from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.constants import CameraModelShort
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeries, moveSeries, move, removeIfEmtpy, \
@@ -19,8 +18,8 @@ from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeri
     file_has_ext, remove_ext
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log, log_function_call
-from EXIFnaming.helpers.settings import image_types, video_types
 from EXIFnaming.helpers.tag_conversion import FilenameAccessor
+from sortedcollections import OrderedSet
 
 __all__ = ["filter_series", "filter_primary", "copy_subdirectories", "copy_files", "copy_new_files", "replace_in_file",
            "folders_to_main", "rename_HDR", "sanitize_filename", "rename_temp_back", "rename_back", "extract_tags",
@@ -44,9 +43,9 @@ def filter_series():
         filenames = moveSeries(dirpath, filenames, "S")
         filenames = moveSeries(dirpath, filenames, "SM")
         filenames = moveSeries(dirpath, filenames, "TL")
-        filenames = move_media(dirpath, filenames, video_types, "mp4")
+        filenames = move_media(dirpath, filenames, settings.video_types, "mp4")
         filenames = move_media(dirpath, filenames, ["HDR"], "HDR")
-        move_media(dirpath, filenames, image_types, "single")
+        move_media(dirpath, filenames, settings.image_types, "single")
 
 
 def filter_primary():
@@ -65,11 +64,11 @@ def filter_primary():
         filenames = moveSeries(dirpath, filenames, "S")
         filenames = moveSeries(dirpath, filenames, "SM")
         filenames = moveSeries(dirpath, filenames, "TL")
-        filenames = move_media(dirpath, filenames, video_types, "mp4")
+        filenames = move_media(dirpath, filenames, settings.video_types, "mp4")
         filenames = move_media(dirpath, filenames, ["HDR"], "HDR")
         filenames = moveSeries(dirpath, filenames, "B", "1")
         filenames = moveSeries(dirpath, filenames, "B")
-        move_media(dirpath, filenames, image_types, "primary")
+        move_media(dirpath, filenames, settings.image_types, "primary")
 
 
 def copy_subdirectories(dest: str, dir_names: []):
@@ -188,7 +187,7 @@ def folders_to_main(all_folders=False, series=False, primary=False, blurry=False
         if dirpath == inpath: continue
         log().info("%s #dirs:%d #files:%d", dirpath, len(dirnames), len(filenames))
         for filename in filenames:
-            if not file_has_ext(filename, image_types + video_types): continue
+            if not file_has_ext(filename, settings.image_types + settings.video_types): continue
             if not_inpath and os.path.dirname(dirpath) == inpath: continue
             if one_level:
                 destination = os.path.dirname(dirpath)
@@ -406,7 +405,7 @@ def create_favorites_csv():
     fav_file, writer = _create_writer(out_filename, ["name_part", "rating"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath): continue
-        for filename in filterFiles(filenames, image_types):
+        for filename in filterFiles(filenames, settings.image_types):
             writer.writerow([filename, 4])
     fav_file.close()
 

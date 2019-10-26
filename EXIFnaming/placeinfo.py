@@ -4,7 +4,7 @@ from collections import OrderedDict
 import googlemaps
 
 from EXIFnaming.helpers.program_dir import get_info_dir
-from EXIFnaming.helpers.settings import googlemaps_api_key
+from EXIFnaming.helpers import settings
 
 __all__ = ["get_info", "write_infos"]
 
@@ -15,7 +15,7 @@ def get_info(search: str):
     :param search: place search string
     :return: result dict representing json
     """
-    gmaps = googlemaps.Client(key=googlemaps_api_key)
+    gmaps = googlemaps.Client(key=settings.googlemaps_api_key)
     params = {"input": search, "inputtype": "textquery", "fields": "geometry/location,name"}
     result = gmaps._request("/maps/api/place/findplacefromtext/json", params)
     return result

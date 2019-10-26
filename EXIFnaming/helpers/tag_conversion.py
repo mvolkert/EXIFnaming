@@ -7,10 +7,9 @@ from typing import List
 import numpy as np
 from sortedcollections import OrderedSet
 
-from EXIFnaming.helpers import constants as c
+from EXIFnaming.helpers import constants as c, settings
 from EXIFnaming.helpers.decode import read_exiftag
 from EXIFnaming.helpers.program_dir import log
-from EXIFnaming.helpers.settings import hdr_program, panorama_program, photographer, video_types
 from EXIFnaming.helpers.tags import SceneModeAbbreviations
 
 __all__ = ["FileMetaData", "Location", "add_dict", "FilenameAccessor", "FilenameBuilder"]
@@ -181,9 +180,9 @@ class FileMetaData:
 
     def _write_description_tree(self):
         if any(["HDR" in key or "TM" in key for key in self.description_tree]):
-            self.description_tree["HDR-program"] = hdr_program
+            self.description_tree["HDR-program"] = settings.hdr_program
         if any(["PANO" in key for key in self.description_tree]):
-            self.description_tree["PANO-program"] = panorama_program
+            self.description_tree["PANO-program"] = settings.panorama_program
         description_tree = OrderedDict()
         process_order = ["HDR", "TM", "PANO", ""]
         for key_part in process_order:
@@ -216,7 +215,7 @@ class FileMetaData:
         tagDict = {'Label': self.filenameAccessor.name, 'Title': self.title,
                    'Keywords': self.tags, 'Subject': list(self.tags),
                    'Description': full_description, 'UserComment': full_description,
-                   'Identifier': self.id, 'Rating': self.rating, 'Artist': photographer}
+                   'Identifier': self.id, 'Rating': self.rating, 'Artist': settings.photographer}
 
         if len(self.gps) == 2:
             tagDict["GPSLatitudeRef"] = self.gps[0]
@@ -460,7 +459,7 @@ class FilenameAccessor:
     def _is_counter(self, subname) -> bool:
         if not subname:
             return False
-        if self.ext in video_types:
+        if self.ext in settings.video_types:
             return subname[0] == "M" and np.chararray.isdigit(subname[-1])
         starts_and_ends_with_digit = (np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1]))
         return starts_and_ends_with_digit

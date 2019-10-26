@@ -10,7 +10,6 @@ from sortedcollections import OrderedSet
 from EXIFnaming.helpers.fileop import count_files, count_files_in, is_invalid_path, isfile
 from EXIFnaming.helpers.measuring_tools import Clock
 from EXIFnaming.helpers.program_dir import log
-from EXIFnaming.helpers.settings import includeSubdirs, encoding_format, image_types, video_types
 from EXIFnaming.helpers import settings
 from EXIFnaming.models import ModelBase
 
@@ -18,12 +17,12 @@ __all__ = ["read_exiftags", "call_exiftool", "askToContinue", "write_exiftags", 
            "has_not_keys", "call_exiftool_direct", "read_exiftag"]
 
 
-def read_exiftags(inpath="", file_types=image_types, skipdirs=(), ask=True):
+def read_exiftags(inpath="", file_types=settings.image_types, skipdirs=(), ask=True):
     if not inpath:
         inpath = os.getcwd()
     file_types = _get_distinct_filestypes(file_types)
-    log().info("process %d %s Files in %s, includeSubdirs: %r",
-               count_files_in(inpath, file_types, skipdirs), file_types, inpath, includeSubdirs)
+    log().info("process %d %s Files in %s, settings.includeSubdirs: %r",
+               count_files_in(inpath, file_types, skipdirs), file_types, inpath, settings.includeSubdirs)
     if ask: askToContinue()
 
     clock = Clock()
@@ -60,8 +59,8 @@ def write_exiftags(tagDict: dict, inpath="", options=()):
         inpath = os.getcwd()
     clock = Clock()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not includeSubdirs and not inpath == dirpath: break
-        n = count_files(filenames, image_types + video_types)
+        if not settings.includeSubdirs and not inpath == dirpath: break
+        n = count_files(filenames, settings.image_types + settings.video_types)
         if n == 0:
             log().info("  No matching files in %s", os.path.relpath(dirpath, inpath))
             continue
@@ -113,12 +112,12 @@ def call_exiftool(dirpath: str, name: str, options: List = (), override=True) ->
 
 def call_exiftool_direct(options: List = (), override=True) -> (str, str):
     path = getExiftoolPath()
-    encoding_args = ["-charset", encoding_format, "-charset", "FileName=" + encoding_format]
+    encoding_args = ["-charset", settings.encoding_format, "-charset", "FileName=" + settings.encoding_format]
     args = [path + "exiftool"] + encoding_args + options
     if override and options: args.append("-overwrite_original_in_place")
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
-    out = out.decode(encoding_format)
+    out = out.decode(settings.encoding_format)
     err = err.decode("UTF-8")
     for line in err.split("\r\n"):
         if not line: continue

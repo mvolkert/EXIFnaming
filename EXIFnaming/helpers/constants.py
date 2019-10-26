@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from EXIFnaming.helpers.settings import standard_kamera
+from EXIFnaming.helpers import settings
 
 __all__ = ["CameraModelShort", "RecModes", "hdr_algorithm", "tm_preset"]
 
@@ -13,7 +13,7 @@ CameraModelShort['DCR-TRV25E'] = 'VS'
 CameraModelShort['HDC-SD300'] = 'V'
 #CameraModelShort['Canon EOS 450D'] = 'F'
 #CameraModelShort['Canon EOS 5D Mark II'] = 'F'
-CameraModelShort[standard_kamera] = ''
+CameraModelShort[settings.standard_kamera] = ''
 
 RecModes = ["4KB", "4K", "HS", "FHD"]
 

@@ -10,6 +10,7 @@ from collections import OrderedDict
 
 import numpy as np
 
+from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_firstlast_of_dirname, \
     find_dir_with_closest_time
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
@@ -18,7 +19,6 @@ from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, moveFiles, ren
 from EXIFnaming.helpers.measuring_tools import Clock, TimeJumpDetector
 from EXIFnaming.helpers.misc import tofloat
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_dir, log, log_function_call
-from EXIFnaming.helpers.settings import image_types, video_types
 from EXIFnaming.helpers.tag_conversion import FilenameBuilder
 from EXIFnaming.helpers.tags import create_model, getPath
 
@@ -76,7 +76,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keept
     :param name: optional name between date and filenumber, seldom used
     """
     log_function_call(rename.__name__, Prefix, dateformat, startindex, onlyprint, keeptags, is_video, name)
-    Tagdict = read_exiftags(file_types=video_types if is_video else image_types)
+    Tagdict = read_exiftags(file_types=settings.video_types if is_video else settings.image_types)
     if not Tagdict: return
 
     # rename temporary
@@ -188,7 +188,7 @@ def order():
     log_function_call(order.__name__)
     inpath = os.getcwd()
 
-    Tagdict = read_exiftags(file_types=image_types)
+    Tagdict = read_exiftags(file_types=settings.image_types)
     timeJumpDetector = TimeJumpDetector()
     time_old = giveDatetime()
     dircounter = 1
@@ -225,7 +225,7 @@ def order():
 
     print_firstlast_of_dirname(dirNameDict_firsttime, dirNameDict_lasttime)
 
-    Tagdict_mp4 = read_exiftags(file_types=video_types)
+    Tagdict_mp4 = read_exiftags(file_types=settings.video_types)
     leng = len(list(Tagdict_mp4.values())[0])
     print('Number of mp4: %d' % leng)
     for i in range(leng):
@@ -296,7 +296,7 @@ def rotate(subname="", folder=r"", sign=1, override=True, ask=True):
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
         if len(filenames) == 0: continue
-        Tagdict = read_exiftags(dirpath, image_types, ask=ask)
+        Tagdict = read_exiftags(dirpath, settings.image_types, ask=ask)
         if has_not_keys(Tagdict, keys=["Rotation"]): continue
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):
@@ -346,7 +346,7 @@ def print_timetable():
         for dirname in dirnames:
             if dirname.startswith('.'): continue
             print("Folder: " + dirname)
-            fotos = get_filename_sorted_dirfiletuples(image_types, inpath, dirname)
+            fotos = get_filename_sorted_dirfiletuples(settings.image_types, inpath, dirname)
             if not fotos: continue
             first = _get_time(fotos[0])
             last = _get_time(fotos[-1])
