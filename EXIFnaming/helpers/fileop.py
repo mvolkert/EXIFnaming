@@ -196,7 +196,8 @@ def remove_ext(filename: str):
     return filename[:filename.rfind(".")]
 
 
-def is_invalid_path(dirpath, blacklist=None, whitelist=None, regex=r"", start="") -> bool:
+def is_invalid_path(dirpath: str, blacklist: list = None, whitelist: list = None, regex: str = r"",
+                    start: str = "") -> bool:
     inpath = os.getcwd()
     basename = os.path.basename(dirpath)
     relpath = str(os.path.relpath(dirpath, inpath))

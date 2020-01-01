@@ -17,7 +17,7 @@ def giveDatetime(datestring="2000:01:01 00:00:00.000") -> dt.datetime:
     return time
 
 
-def newdate(time: dt.datetime, time_old: dt.datetime, use_day=True) -> bool:
+def newdate(time: dt.datetime, time_old: dt.datetime, use_day: bool = True) -> bool:
     # adjust datebreak at midnight
     timedelta = time - time_old
     timedelta_seconds = abs(timedelta.total_seconds())
@@ -33,7 +33,9 @@ def newdate(time: dt.datetime, time_old: dt.datetime, use_day=True) -> bool:
 newdate.dateswitch = False
 
 
-def dateformating(time=dt.datetime.now(), dateformat="") -> str:
+def dateformating(time: dt.datetime, dateformat: str = "") -> str:
+    if not time:
+        time = dt.datetime.now()
     y = dateformat.count('Y')
     if y > 0: dateformat = dateformat.replace('Y' * y, str(time.year)[-y:])
     if dateformat.count('N') > 0:
@@ -44,14 +46,14 @@ def dateformating(time=dt.datetime.now(), dateformat="") -> str:
     dateformat = _replace_date_ID(dateformat, 'H', time.hour)
     dateformat = _replace_date_ID(dateformat, 'm', time.minute)
     dateformat = _replace_date_ID(dateformat, 's', time.second)
-    dateformat = _replace_date_ID(dateformat, 'S', time.microsecond / 1000)
+    dateformat = _replace_date_ID(dateformat, 'S', int(time.microsecond / 1000))
     return dateformat
 
 
 dateformating.numberofDates = 0
 
 
-def _replace_date_ID(dateformat, search_str, value) -> str:
+def _replace_date_ID(dateformat: str, search_str: str, value: int) -> str:
     count = dateformat.count(search_str)
     if count == 0: return dateformat
     return dateformat.replace(search_str * count, ("%0" + str(count) + "d") % value)
