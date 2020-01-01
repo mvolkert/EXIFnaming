@@ -5,6 +5,7 @@ measuring tools
 import datetime as dt
 
 from EXIFnaming.helpers.date import giveDatetime, newdate
+from EXIFnaming.helpers.program_dir import log
 
 __all__ = ["Clock", "TimeJumpDetector", "DirChangePrinter"]
 
@@ -17,13 +18,13 @@ class DirChangePrinter:
 
     def update(self, directory):
         if not self.current_dir == directory:
-            print("updated %4d tags in %s" % (self.counter, self.current_dir))
+            log().info("updated %4d tags in %s" % (self.counter, self.current_dir))
             self.counter = 0
             self.current_dir = directory
         self.counter += 1
 
     def finish(self):
-        print("updated %4d tags in %s" % (self.counter, self.current_dir))
+        log().info("updated %4d tags in %s" % (self.counter, self.current_dir))
 
 
 class Clock:
@@ -33,7 +34,7 @@ class Clock:
 
     def finish(self):
         timedelta = dt.datetime.now() - self.timebegin
-        print("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
+        log().info("elapsed time: %2d min, %2d sec" % (int(timedelta.seconds / 60), timedelta.seconds % 60))
 
 
 class TimeJumpDetector:

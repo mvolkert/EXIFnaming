@@ -8,6 +8,7 @@ import os
 from collections import OrderedDict
 from typing import Callable, Dict
 
+from EXIFnaming.helpers.program_dir import log
 from EXIFnaming.models import *
 
 dateTimeKey = "Date/Time Original"
@@ -17,7 +18,7 @@ __all__ = ["getPath", "create_model", "hasDateTime", "SceneModeAbbreviations"]
 
 def getPath(Tagdict, i: int):
     if not all([x in Tagdict for x in ["Directory", "File Name"]]):
-        print("Directory or File Name is not in Tagdict")
+        log().info("Directory or File Name is not in Tagdict")
         return ""
     return os.path.join(Tagdict["Directory"][i], Tagdict["File Name"][i])
 
