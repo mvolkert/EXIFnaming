@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 from collections import OrderedDict
-from typing import Iterable
+from typing import Iterable, List, Tuple
 
 import numpy as np
 
@@ -17,7 +17,7 @@ __all__ = ["count_files", "count_files_in", "is_invalid_path", "writeToFile", "r
            "filterFiles", "file_has_ext", "remove_ext"]
 
 
-def moveFiles(filenames, path: str):
+def moveFiles(filenames: List[Tuple[str, str]], path: str):
     if os.path.isdir(path):
         print("directory already exists: ", path)
         return
@@ -27,20 +27,20 @@ def moveFiles(filenames, path: str):
         rename_join((filename[0], filename[1]), (path, filename[1]))
 
 
-def moveFilesToSubpath(filenames, dirpath, subpath):
+def moveFilesToSubpath(filenames: List[str], dirpath: str, subpath: str):
     if len(filenames) == 0: return
     os.makedirs(os.path.join(dirpath, subpath), exist_ok=True)
     for filename in filenames:
         rename_join((dirpath, filename), (dirpath, subpath, filename))
 
 
-def moveToSubpath(filename, dirpath, subpath):
+def moveToSubpath(filename: str, dirpath: str, subpath: str):
     os.makedirs(os.path.join(dirpath, subpath), exist_ok=True)
     if not isfile(dirpath, filename): return
     rename_join((dirpath, filename), (dirpath, subpath, filename))
 
 
-def move(filename, oldpath, newpath):
+def move(filename: str, oldpath: str, newpath: str):
     os.makedirs(newpath, exist_ok=True)
     if not isfile(oldpath, filename): return
     if isfile(newpath, filename): return
@@ -76,7 +76,7 @@ def removeIfEmtpy(dirpath: str):
     if not os.listdir(dirpath): os.rmdir(dirpath)
 
 
-def renameTemp(DirectoryList: list, FileNameList: list):
+def renameTemp(DirectoryList: list, FileNameList: list) -> str:
     if not len(DirectoryList) == len(FileNameList):
         log().error("error in renameTemp: len(DirectoryList)!=len(FileNameList)")
         return ""
@@ -97,7 +97,7 @@ def renameEveryTemp(inpath: str):
     return temppostfix
 
 
-def moveBracketSeries(dirpath: str, filenames: list) -> list:
+def moveBracketSeries(dirpath: str, filenames: list) -> List[str]:
     main_old = "000"
     counter2_old = "0"
     BList = []
@@ -124,7 +124,7 @@ def moveBracketSeries(dirpath: str, filenames: list) -> list:
     return other_filenames
 
 
-def moveSeries(dirpath: str, filenames: list, series_type="S", counter_match=r'([0-9]+)') -> list:
+def moveSeries(dirpath: str, filenames: list, series_type: str = "S", counter_match: str = r'([0-9]+)') -> List[str]:
     other_filenames = []
     for filename in filenames:
         match = re.search('_([0-9]+)' + series_type + counter_match, filename)
@@ -135,7 +135,7 @@ def moveSeries(dirpath: str, filenames: list, series_type="S", counter_match=r'(
     return other_filenames
 
 
-def move_media(dirpath: str, filenames: list, name_searches: list, dest: str) -> list:
+def move_media(dirpath: str, filenames: list, name_searches: list, dest: str) -> List[str]:
     other_filenames = []
     for filename in filenames:
         if any(name_search in filename for name_search in name_searches):
@@ -145,7 +145,7 @@ def move_media(dirpath: str, filenames: list, name_searches: list, dest: str) ->
     return other_filenames
 
 
-def copyFilesTo(files: list, path: str, prompt=True):
+def copyFilesTo(files: list, path: str, prompt: bool = True):
     print(len(files), "matches are to be copied to", path)
     if prompt: askToContinue()
     os.makedirs(path, exist_ok=True)
@@ -157,7 +157,7 @@ def changeExtension(filename: str, ext: str):
     return filename[:filename.rfind(".")] + ext
 
 
-def get_relpath_depth(inpath, dirpath):
+def get_relpath_depth(inpath: str, dirpath: str):
     relpath = os.path.relpath(dirpath, inpath)
     if relpath == ".": return 0
     return len(relpath.split(os.sep))
@@ -172,11 +172,11 @@ def count_files_in(inpath: str, file_extensions: Iterable, skipdirs=()):
     return NFiles
 
 
-def count_files(filenames: [], file_extensions: Iterable):
+def count_files(filenames: List[str], file_extensions: Iterable):
     return len(filterFiles(filenames, file_extensions))
 
 
-def filterFiles(filenames: [], file_extensions: Iterable):
+def filterFiles(filenames: List[str], file_extensions: Iterable):
     return [filename for filename in filenames if not file_extensions or file_has_ext(filename, file_extensions)]
 
 
@@ -196,7 +196,7 @@ def remove_ext(filename: str):
     return filename[:filename.rfind(".")]
 
 
-def is_invalid_path(dirpath: str, blacklist: list = None, whitelist: list = None, regex: str = r"",
+def is_invalid_path(dirpath: str, blacklist: List[str] = None, whitelist: List[str] = None, regex: str = r"",
                     start: str = "") -> bool:
     inpath = os.getcwd()
     basename = os.path.basename(dirpath)
@@ -213,14 +213,14 @@ def is_invalid_path(dirpath: str, blacklist: list = None, whitelist: list = None
     return False
 
 
-def get_plain_filenames(*path) -> list:
+def get_plain_filenames(*path) -> List[str]:
     plain_filenames = []
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(*path)):
         plain_filenames += filenames
     return sorted(plain_filenames)
 
 
-def get_filename_sorted_dirfiletuples(file_extensions, *path) -> list:
+def get_filename_sorted_dirfiletuples(file_extensions, *path) -> List[Tuple[str, str]]:
     out = []
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(*path)):
         for filename in filenames:

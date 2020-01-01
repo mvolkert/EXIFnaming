@@ -16,7 +16,9 @@ __all__ = ["read_exiftags", "call_exiftool", "askToContinue", "write_exiftags", 
            "has_not_keys", "call_exiftool_direct", "read_exiftag"]
 
 
-def read_exiftags(inpath="", file_types=settings.image_types, skipdirs=(), ask=True):
+def read_exiftags(inpath="", file_types: List[str]=settings.image_types, skipdirs: List[str] = None, ask=True):
+    if not skipdirs:
+        skipdirs = []
     if not inpath:
         inpath = os.getcwd()
     file_types = _get_distinct_filestypes(file_types)
@@ -53,7 +55,7 @@ def _get_distinct_filestypes(types: List[str]) -> Set[str]:
     return set([filetype.lower() for filetype in types])
 
 
-def write_exiftags(tagDict: dict, inpath: str = "", options: list = None):
+def write_exiftags(tagDict: dict, inpath: str = "", options: List[str] = None):
     if not options:
         options = []
     log_function_call_debug(write_exiftags.__name__, tagDict, inpath, options)
@@ -66,13 +68,13 @@ def write_exiftags(tagDict: dict, inpath: str = "", options: list = None):
         if n == 0:
             log().info("  No matching files in %s", os.path.relpath(dirpath, inpath))
             continue
-        all_options = list(options) + tag_dict_to_options(tagDict)
+        all_options = options + tag_dict_to_options(tagDict)
         call_exiftool(dirpath, "*", all_options, True)
         log().info("%4d tags written in   %s", n, os.path.relpath(dirpath, inpath))
     clock.finish()
 
 
-def write_exiftag(tagDict: dict, inpath: str = "", filename: str = "", options: list = None):
+def write_exiftag(tagDict: dict, inpath: str = "", filename: str = "", options: List[str] = None):
     log_function_call_debug(write_exiftag.__name__, tagDict, inpath, filename, options)
     if not options:
         options = ["-ImageDescription=", "-XPComment="]
@@ -110,14 +112,14 @@ def has_not_keys(indict: dict, keys: list) -> bool:
     return False
 
 
-def call_exiftool(dirpath: str, name: str, options: list = None, override=True) -> (str, str):
+def call_exiftool(dirpath: str, name: str, options: List[str] = None, override=True) -> (str, str):
     if not options:
         options = []
     fullname = os.path.join(dirpath, name)
     return call_exiftool_direct(options + [fullname], override)
 
 
-def call_exiftool_direct(options: list = None, override=True) -> (str, str):
+def call_exiftool_direct(options: List[str] = None, override=True) -> (str, str):
     if not options:
         options = []
     log_function_call_debug(call_exiftool_direct.__name__, options, override)
