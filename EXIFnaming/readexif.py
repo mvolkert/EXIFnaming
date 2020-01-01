@@ -367,7 +367,6 @@ def order_with_timetable(timefile: str = None):
     """
     use timetable to create folder structure
     :param timefile: timetable file
-    :param fileexts: extensions
     :return:
     """
     if not timefile:

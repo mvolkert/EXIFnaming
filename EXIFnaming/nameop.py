@@ -142,7 +142,6 @@ def replace_in_file(search: str, replace: str, fileext: str):
             if filename.endswith(fileext):
                 log().info(filename)
                 fullfilename = os.path.join(dirpath, filename)
-                content = ""
                 with open(fullfilename, 'r') as file:
                     content = file.read()
                     content = content.replace(search, replace)
