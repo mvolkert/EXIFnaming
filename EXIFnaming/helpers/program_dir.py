@@ -1,8 +1,13 @@
 import datetime as dt
 import os
 from logging import Logger
+from typing import Tuple
 
-__all__ = ["log", "get_saves_dir", "get_gps_dir", "get_info_dir", "get_setexif_dir", "get_log_dir", "log_function_call"]
+from EXIFnaming.helpers.settings import loglevel
+
+__all__ = ["log", "get_saves_dir", "get_gps_dir", "get_info_dir", "get_setexif_dir", "get_log_dir", "log_function_call",
+           "log_function_call_debug"]
+
 
 
 def get_saves_dir(*subpath):
@@ -67,7 +72,7 @@ def log() -> Logger:
         fileHandler.setFormatter(logFormatter)
         rootLogger.addHandler(fileHandler)
 
-        rootLogger.setLevel(10)
+        rootLogger.setLevel(loglevel)
         log.logger = rootLogger
     return log.logger
 
@@ -77,6 +82,15 @@ log.dir = None
 
 
 def log_function_call(function_name: str, *parameters):
-    parameters = [str(parameter) for parameter in parameters]
-    parameter_str = ", ".join(parameters)
+    parameter_str = _join_params(parameters)
     log().info("call %s(%s)", function_name, parameter_str)
+
+
+def log_function_call_debug(function_name: str, *parameters):
+    parameter_str = _join_params(parameters)
+    log().debug("call %s(%s)", function_name, parameter_str)
+
+
+def _join_params(parameters: Tuple) -> str:
+    parameters = [str(parameter) for parameter in parameters]
+    return ", ".join(parameters)

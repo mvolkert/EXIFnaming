@@ -7,6 +7,7 @@ import EXIFnaming.helpers.constants as c
 
 __all__ = ["ModelBase"]
 
+
 class ModelBase:
     TagNames = OrderedDict()
 
@@ -90,10 +91,10 @@ class ModelBase:
     unknownTags[("Scene Mode", "Unknown (54)")] = "HS"
 
     def __init__(self, Tagdict: OrderedDict, i: int):
-        self.Tagdict = Tagdict
-        self.i = i
-        self.filename = self.get_entry("File Name")
-        self.dir = self.get_entry("Directory")
+        self.Tagdict: OrderedDict = Tagdict
+        self.i: int = i
+        self.filename: str = self.get_entry("File Name")
+        self.dir: str = self.get_entry("Directory")
 
     def fix_unknownTags(self):
         for key in self.Tagdict:
@@ -104,7 +105,7 @@ class ModelBase:
     def set_entry(self, key: str, val: str):
         self.Tagdict[key][self.i] = val
 
-    def get_entry(self, entry: str):
+    def get_entry(self, entry: str) -> str:
         return self.Tagdict[entry][self.i]
 
     def check_entry(self, entry: str, value: str) -> bool:
@@ -207,7 +208,7 @@ class ModelBase:
 
     def get_mode(self) -> str:
         if self.is_scene():
-            return  self.get_printable_scene()
+            return self.get_printable_scene()
         elif self.is_creative():
             return self.get_printable_creative()
         elif self.is_HDR():

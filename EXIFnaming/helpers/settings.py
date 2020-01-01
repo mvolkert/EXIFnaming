@@ -11,3 +11,4 @@ standard_kamera = "DMC-TZ101"
 googlemaps_api_key = ""
 # if unset is same directory as settings
 exiftool_directory = r""
+loglevel=10

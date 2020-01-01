@@ -5,13 +5,12 @@ import sys
 from collections import OrderedDict
 from typing import List, Dict, Set
 
-from sortedcollections import OrderedSet
-
+from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.fileop import count_files, count_files_in, is_invalid_path, isfile
 from EXIFnaming.helpers.measuring_tools import Clock
-from EXIFnaming.helpers.program_dir import log
-from EXIFnaming.helpers import settings
+from EXIFnaming.helpers.program_dir import log, log_function_call_debug
 from EXIFnaming.models import ModelBase
+from sortedcollections import OrderedSet
 
 __all__ = ["read_exiftags", "call_exiftool", "askToContinue", "write_exiftags", "count_files_in", "write_exiftag",
            "has_not_keys", "call_exiftool_direct", "read_exiftag"]
@@ -54,7 +53,10 @@ def _get_distinct_filestypes(types: List[str]) -> Set[str]:
     return set([filetype.lower() for filetype in types])
 
 
-def write_exiftags(tagDict: dict, inpath="", options=()):
+def write_exiftags(tagDict: dict, inpath: str = "", options: list = None):
+    if not options:
+        options = []
+    log_function_call_debug(write_exiftags.__name__, tagDict, inpath, options)
     if not inpath:
         inpath = os.getcwd()
     clock = Clock()
@@ -70,10 +72,13 @@ def write_exiftags(tagDict: dict, inpath="", options=()):
     clock.finish()
 
 
-def write_exiftag(tagDict: dict, inpath="", filename="", options=("-ImageDescription=", "-XPComment=")):
+def write_exiftag(tagDict: dict, inpath: str = "", filename: str = "", options: list = None):
+    log_function_call_debug(write_exiftag.__name__, tagDict, inpath, filename, options)
+    if not options:
+        options = ["-ImageDescription=", "-XPComment="]
     if not inpath:
         inpath = os.getcwd()
-    all_options = list(options) + tag_dict_to_options(tagDict)
+    all_options = options + tag_dict_to_options(tagDict)
     call_exiftool(inpath, filename, all_options, True)
 
 
@@ -105,12 +110,17 @@ def has_not_keys(indict: dict, keys: list) -> bool:
     return False
 
 
-def call_exiftool(dirpath: str, name: str, options: List = (), override=True) -> (str, str):
+def call_exiftool(dirpath: str, name: str, options: list = None, override=True) -> (str, str):
+    if not options:
+        options = []
     fullname = os.path.join(dirpath, name)
     return call_exiftool_direct(options + [fullname], override)
 
 
-def call_exiftool_direct(options: List = (), override=True) -> (str, str):
+def call_exiftool_direct(options: list = None, override=True) -> (str, str):
+    if not options:
+        options = []
+    log_function_call_debug(call_exiftool_direct.__name__, options, override)
     path = getExiftoolPath()
     encoding_args = ["-charset", settings.encoding_format, "-charset", "FileName=" + settings.encoding_format]
     args = [path + "exiftool"] + encoding_args + options
@@ -127,7 +137,7 @@ def call_exiftool_direct(options: List = (), override=True) -> (str, str):
 
 def getExiftoolPath() -> str:
     if settings.exiftool_directory:
-        path =  os.path.join(settings.exiftool_directory, '')
+        path = os.path.join(settings.exiftool_directory, '')
     else:
         path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '')
     if not isfile(path + "exiftool.exe"):
