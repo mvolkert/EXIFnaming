@@ -46,7 +46,7 @@ def shift_time(hours=0, minutes=0, seconds=0, is_video=False):
         if is_video:
             for time_tag in time_tags_mp4:
                 outTagDict[time_tag] = timestring
-        write_exiftags(outTagDict, model.dir, model.filename)
+        write_exiftag(outTagDict, model.dir, model.filename)
         dir_change_printer.update(model.dir)
     dir_change_printer.finish()
 
