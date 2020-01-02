@@ -7,6 +7,7 @@ dependencies: exiftool
 import csv
 import datetime as dt
 import os
+from typing import Union, List
 
 from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.date import giveDatetime, dateformating
@@ -176,8 +177,9 @@ def geotag_single(lat: float, lon: float):
     call_exiftool(inpath, "*", options=options)
 
 
-def read_csv(csv_filenames=(), folder=r"", start_folder="", csv_folder: str = None, csv_restriction="",
-             import_filename=True, import_exif=True, only_when_changed=False, overwrite_gps=False):
+def read_csv(csv_filenames: Union[str, List[str]] = "*", folder: str = r"", start_folder: str = "",
+             csv_folder: str = None, csv_restriction: str = "", import_filename: bool = True, import_exif: bool = True,
+             only_when_changed: bool = False, overwrite_gps: bool = False):
     """
     csv files are used for setting tags
     the csv files have to be separated by semicolon
