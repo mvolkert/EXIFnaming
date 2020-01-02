@@ -93,8 +93,8 @@ def location_to_keywords():
     deprecated: try to use read_csv() instead
     """
     inpath = os.getcwd()
-    log().info("process %d Files in %s, subdir: %r", count_files_in(inpath, settings.image_types + settings.video_types, ""), inpath,
-               settings.includeSubdirs)
+    log().info("process %d Files in %s, subdir: %r",
+               count_files_in(inpath, settings.image_types + settings.video_types, ""), inpath, settings.includeSubdirs)
     askToContinue()
     Tagdict = read_exiftags(inpath, ask=False)
     leng = len(list(Tagdict.values())[0])
