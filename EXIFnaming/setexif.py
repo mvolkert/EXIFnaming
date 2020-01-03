@@ -179,7 +179,7 @@ def geotag_single(lat: float, lon: float):
 
 def read_csv(csv_filenames: Union[str, List[str]] = "*", folder: str = r"", start_folder: str = "",
              csv_folder: str = None, csv_restriction: str = "", import_filename: bool = True, import_exif: bool = True,
-             only_when_changed: bool = False, overwrite_gps: bool = False):
+             only_when_changed: bool = False, overwrite_gps: bool = False, is_video: bool=False):
     """
     csv files are used for setting tags
     the csv files have to be separated by semicolon
@@ -218,6 +218,7 @@ def read_csv(csv_filenames: Union[str, List[str]] = "*", folder: str = r"", star
     :param overwrite_gps: modifier for import_exif, overwrites gps data with information of csv
     :param only_when_changed: when true filename is not imported to tags for files without matching entries in csv
         useless if csv_restriction is set
+    :param is_video: wheter video types should be written - video types might not handle tags right
     :return:
     """
     if not csv_folder:
@@ -237,9 +238,11 @@ def read_csv(csv_filenames: Union[str, List[str]] = "*", folder: str = r"", star
     if csv_restriction:
         csv_restriction = os.path.join(csv_folder, csv_restriction) + ".csv"
 
+    filetypes = settings.video_types if is_video else settings.image_types
+
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder, start=start_folder): continue
-        for filename in filterFiles(filenames, settings.image_types):
+        for filename in filterFiles(filenames, filetypes):
             meta_data = FileMetaData(dirpath, filename)
             if not _passes_restrictor(meta_data, csv_restriction): continue
             if import_filename: meta_data.import_filename()
