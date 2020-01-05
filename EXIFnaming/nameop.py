@@ -35,7 +35,8 @@ def filter_series():
     log_function_call(filter_series.__name__)
     inpath = os.getcwd()
     skipdirs = ["B" + str(i) for i in range(1, 8)]
-    skipdirs += ["S", "SM", "TL", "mp4", "HDR", "single", "PANO", "others"] + [model for model in CameraModelShort.values() if model]
+    skipdirs += ["S", "SM", "TL", "mp4", "HDR", "single", "PANO", "others"]
+    skipdirs += [model for model in CameraModelShort.values() if model]
 
     log().info(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -56,10 +57,11 @@ def filter_primary():
     """
     log_function_call(filter_primary.__name__)
     inpath = os.getcwd()
-    skipdirs = ["S", "SM", "TL", "mp4", "HDR", "single", "PANO", "others"] + [model for model in CameraModelShort.values() if model]
+    skipdirs = ["S", "SM", "TL", "mp4", "HDR", "single", "PANO", "others"]
+    skipdirs += [model for model in CameraModelShort.values() if model]
 
     log().info(inpath)
-    folders_to_main(False, False, False, False, ["B" + str(i) for i in range(1, 8)])
+    folders_to_main(dirs=["B" + str(i) for i in range(1, 8)])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, skipdirs): continue
         log().info("%s #dirs:%d #files:%d", dirpath, len(dirnames), len(filenames))
@@ -149,19 +151,18 @@ def replace_in_file(search: str, replace: str, fileext: str):
                     file.write(content)
 
 
-def folders_to_main(all_folders=False, series=False, primary=False, blurry=False, dirs=None, one_level=True,
-                    not_inpath=True):
+def folders_to_main(series: bool = False, primary: bool = False, blurry: bool = False, dirs: list = None,
+                    one_level: bool = True, not_inpath: bool = True):
     """
     reverses filtering/sorting into directories
-    :param series: reverse filterSeries
-    :param primary: reverse filterPrimary
-    :param blurry: reverse detectBlurry
-    :param all_folders: reverse all
-    :param dirs: reverse other dirs
+    :param series: restrict to reverse of filterSeries
+    :param primary: restrict to reverse of filterPrimary
+    :param blurry: restrict to reverse of detectBlurry
+    :param dirs: restrict to reverse other dirs
     :param one_level: reverse only one directory up
     :param not_inpath: leave all directories in inpath as they are, only change subdirectories
     """
-    log_function_call(folders_to_main.__name__, all_folders, series, primary, blurry, dirs, one_level, not_inpath)
+    log_function_call(folders_to_main.__name__, series, primary, blurry, dirs, one_level, not_inpath)
     inpath = os.getcwd()
     if dirs is None:
         reverseDirs = []
@@ -173,9 +174,13 @@ def folders_to_main(all_folders=False, series=False, primary=False, blurry=False
 
     deepest = 0
     for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if not_inpath and dirpath == inpath: continue
+        if is_invalid_path(dirpath, whitelist=reverseDirs): continue
         depth = get_relpath_depth(dirpath, inpath)
         deepest = max(deepest, depth)
-    if all_folders and deepest > 1:
+        if not_inpath:
+            deepest -= 1
+    if not reverseDirs and deepest > 1:
         log().warning("A folder structure with a depth of %2d will be flattened", deepest)
         askToContinue()
     elif deepest > 3:
@@ -184,16 +189,15 @@ def folders_to_main(all_folders=False, series=False, primary=False, blurry=False
         askToContinue()
 
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not all_folders and not os.path.basename(dirpath) in reverseDirs: continue
-        if dirpath == inpath: continue
+        if not_inpath and dirpath == inpath: continue
+        if is_invalid_path(dirpath, whitelist=reverseDirs): continue
+        if one_level:
+            destination = os.path.dirname(dirpath)
+        else:
+            destination = inpath
         log().info("%s #dirs:%d #files:%d", dirpath, len(dirnames), len(filenames))
         for filename in filenames:
             if not file_has_ext(filename, settings.image_types + settings.video_types): continue
-            if not_inpath and os.path.dirname(dirpath) == inpath: continue
-            if one_level:
-                destination = os.path.dirname(dirpath)
-            else:
-                destination = inpath
             move(filename, dirpath, destination)
         removeIfEmtpy(dirpath)
 
