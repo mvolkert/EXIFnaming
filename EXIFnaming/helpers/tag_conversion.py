@@ -371,8 +371,12 @@ class FilenameAccessor:
 
     def __init__(self, filename):
         self.filename = filename
-        self.name, self.ext = filename.rsplit('.', 1)
-        self.ext = "." + self.ext
+        if '.' in filename:
+            self.name, self.ext = filename.rsplit('.', 1)
+            self.ext = "." + self.ext
+        else:
+            self.name = self.filename
+            self.ext = ''
         self.main = []
         self.pre = ""
         self.primmodes = []
@@ -427,6 +431,8 @@ class FilenameAccessor:
 
     def sorted_filename(self):
         arr = self.main + self.scenes + self.processes + self.posttags
+        if len(arr) == 0:
+            return self.filename
         return "_".join(arr) + self.ext
 
     def counter_main(self) -> str:

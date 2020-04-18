@@ -99,7 +99,7 @@ def copy_files(dest: str, sub_name: str = None):
     found_files = []
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         for filename in filenames:
-            if sub_name in filename:
+            if not sub_name or sub_name in filename:
                 found_files.append(os.path.join(dirpath, filename))
     copyFilesTo(found_files, dest, False)
 
@@ -164,13 +164,11 @@ def folders_to_main(series: bool = False, primary: bool = False, blurry: bool = 
     """
     log_function_call(folders_to_main.__name__, series, primary, blurry, dirs, one_level, not_inpath)
     inpath = os.getcwd()
-    if dirs is None:
-        reverseDirs = []
-    else:
-        reverseDirs = list(dirs)
+    reverseDirs = []
     if series: reverseDirs += ["B" + str(i) for i in range(1, 8)] + ["S", "single"]
     if primary: reverseDirs += ["B", "S", "TL", "SM", "primary"]
     if blurry: reverseDirs += ["blurry"]
+    if dirs: reverseDirs += list(dirs)
 
     deepest = 0
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -251,13 +249,14 @@ def sanitize_filename(folder=r""):
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
         log().info("Folder: %s", dirpath)
-        for filename in filenames:
+        for filename in (filenames + dirnames):
             filename = filename.replace("panorama", "PANO")
             filenameAccessor = FilenameAccessor(filename)
             _sanitize_process_counter(filenameAccessor)
             _sanitize_pano(filenameAccessor)
             filename_new = filenameAccessor.sorted_filename()
-            renameInPlace(dirpath, filename, filename_new)
+            if not filename == filename_new:
+                renameInPlace(dirpath, filename, filename_new)
 
 
 def _sanitize_pano(filenameAccessor: FilenameAccessor):
