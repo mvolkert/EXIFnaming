@@ -29,7 +29,7 @@ def step3_filter():
     filter_series()
 
 
-def step4_sanitize(subname="HDRT", folder="HDR"):
+def step4_sanitize(subname: str = "HDRT", folder: str = ""):
     """
     sanitize postprocessing
     :param subname: name of HDR
@@ -41,15 +41,15 @@ def step4_sanitize(subname="HDRT", folder="HDR"):
     sanitize_filename()
 
 
-def step5_write_exif(csv_restriction="fav"):
+def step5_write_exif(csv_restriction: str = "fav", timezone: int = 2):
     """
     write exif via csv, filename and gpx files
     """
     read_csv("*", csv_restriction=csv_restriction)
-    geotag(timezone=2, offset="")
+    geotag(timezone=timezone, offset="")
 
 
-def make_fav(timezone=2):
+def make_fav(timezone: int = 2):
     sanitize_filename()
     create_favorites_csv()
     geotag(timezone=timezone, offset="")

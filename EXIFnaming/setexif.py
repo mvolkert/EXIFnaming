@@ -23,7 +23,7 @@ __all__ = ["shift_time", "fake_date", "add_location", "location_to_keywords", "n
            "read_csv", "copy_exif_via_mainname"]
 
 
-def shift_time(hours=0, minutes=0, seconds=0, is_video=False):
+def shift_time(hours: int = 0, minutes: int = 0, seconds: int = 0, is_video: bool = False):
     """
     for example to adjust time zone by one: hours=-1
     """
@@ -134,7 +134,7 @@ def name_to_exif(folder=r"", additional_tags=(), startdir=None):
     clock.finish()
 
 
-def geotag(timezone=2, offset="", start_folder=""):
+def geotag(timezone: int = 2, offset: str = "", start_folder: str = ""):
     """
     adds gps information to all pictures in all sub directories of current directory
     the gps information is obtained from gpx files, that are expected to be in a folder called ".gps"
@@ -179,7 +179,7 @@ def geotag_single(lat: float, lon: float):
 
 def read_csv(csv_filenames: Union[str, List[str]] = "*", folder: str = r"", start_folder: str = "",
              csv_folder: str = None, csv_restriction: str = "", import_filename: bool = True, import_exif: bool = True,
-             only_when_changed: bool = False, overwrite_gps: bool = False, is_video: bool=False):
+             only_when_changed: bool = False, overwrite_gps: bool = False, is_video: bool = False):
     """
     csv files are used for setting tags
     the csv files have to be separated by semicolon
@@ -260,7 +260,7 @@ def read_csv(csv_filenames: Union[str, List[str]] = "*", folder: str = r"", star
     clock.finish()
 
 
-def _passes_restrictor(meta_data, csv_restriction):
+def _passes_restrictor(meta_data: FileMetaData, csv_restriction: str):
     if not csv_restriction:
         return True
     with open(csv_restriction, "r") as csvfile:
@@ -271,7 +271,7 @@ def _passes_restrictor(meta_data, csv_restriction):
     return False
 
 
-def copy_exif_via_mainname(origin: str, target: str, overwriteDateTime=False):
+def copy_exif_via_mainname(origin: str, target: str, overwriteDateTime: bool = False):
     """
     copy exif information from files in directory origin to target
     files are matched via main name -> processed files can get exif information of original files

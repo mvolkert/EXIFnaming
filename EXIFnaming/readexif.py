@@ -276,7 +276,7 @@ def searchby_exiftag_interval(tag_name: str, min_value: float, max_value: float)
     copyFilesTo(files, os.path.join(inpath, "matches"))
 
 
-def rotate(subname="", folder=r"", sign=1, override=True, ask=True):
+def rotate(subname: str = "", folder: str = r"", sign=1, override=True, ask=True):
     """
     rotate back according to tag information (Rotate 90 CW or Rotate 270 CW)
     Some programs like franzis hdr projects rotate the resolution of the picture -> picture gets upward resolution and

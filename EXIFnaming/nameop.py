@@ -88,7 +88,7 @@ def copy_subdirectories(dest: str, dir_names: []):
         copyFilesTo(filenames, dest, False)
 
 
-def copy_files(dest: str, sub_name: str):
+def copy_files(dest: str, sub_name: str = None):
     """
     copy files which have names containing sub_name to dest without directory structure
     :param dest: copy destination
