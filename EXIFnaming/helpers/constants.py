@@ -25,8 +25,11 @@ hdr_algorithm["Ls"] = "Luminance sharpness"
 
 tm_preset = OrderedDict()
 tm_preset["Nb"] = "Natural balanced"
+tm_preset["Nbl"] = "Natural back light"
 tm_preset["Npc"] = "Natural powerful colours"
-tm_preset["Lpc"] = "Landscape powerful colours"
+tm_preset["Ndb"] = "Natural details brightened"
 tm_preset["Ls"] = "Landscape sunset"
+tm_preset["Lpc"] = "Landscape powerful colours"
+tm_preset["Lcad"] = "Landscape colour and detail"
 tm_preset["Spc"] = "Surreal powerful colours"
 tm_preset["SE"] = "Surreal Extreme"

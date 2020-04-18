@@ -362,7 +362,7 @@ def process_to_description(process: str) -> dict:
         if process_split[2] in c.tm_preset:
             description["TM-Preset"] = c.tm_preset[process_split[2]]
         else:
-            log().info("%s not in tm_preset", process_split[1])
+            log().info("%s not in tm_preset", process_split[2])
     return description
 
 
