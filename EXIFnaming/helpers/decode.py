@@ -16,14 +16,19 @@ __all__ = ["read_exiftags", "call_exiftool", "askToContinue", "write_exiftags", 
            "has_not_keys", "call_exiftool_direct", "read_exiftag"]
 
 
-def read_exiftags(inpath="", file_types: List[str]=settings.image_types, skipdirs: List[str] = None, ask=True):
+def read_exiftags(inpath="", file_types: List[str] = settings.image_types, skipdirs: List[str] = None,
+                  ask=True) -> Dict[str, list]:
     if not skipdirs:
         skipdirs = []
     if not inpath:
         inpath = os.getcwd()
     file_types = _get_distinct_filestypes(file_types)
+    number_of_files = count_files_in(inpath, file_types, skipdirs)
+    if number_of_files == 0:
+        log().debug("no %s Files in %s, settings.includeSubdirs: %r", file_types, inpath, settings.includeSubdirs)
+        return {}
     log().info("process %d %s Files in %s, settings.includeSubdirs: %r",
-               count_files_in(inpath, file_types, skipdirs), file_types, inpath, settings.includeSubdirs)
+               number_of_files, file_types, inpath, settings.includeSubdirs)
     if ask: askToContinue()
 
     clock = Clock()
@@ -99,7 +104,7 @@ def tag_dict_to_options(data: dict) -> list:
 
 
 def has_not_keys(indict: dict, keys: list) -> bool:
-    if not keys: return True
+    if not indict or not keys: return True
     notContains = []
     for key in keys:
         if not key in indict:
