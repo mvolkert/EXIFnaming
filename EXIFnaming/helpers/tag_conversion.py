@@ -215,7 +215,10 @@ class FileMetaData:
         tagDict = {'Label': self.filenameAccessor.name, 'Title': self.title,
                    'Keywords': self.tags, 'Subject': list(self.tags),
                    'Description': full_description, 'UserComment': full_description,
-                   'Identifier': self.id, 'Rating': self.rating, 'Artist': settings.photographer}
+                   'Identifier': self.id, 'Rating': self.rating}
+
+        if settings.photographer:
+            tagDict['Artist'] = settings.photographer
 
         if len(self.gps) == 2:
             tagDict["GPSLatitudeRef"] = self.gps[0]
