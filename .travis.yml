@@ -10,6 +10,7 @@ script:
   - pytest
   - ./setversion.sh
 deploy:
+  skip_cleanup: true
   provider: pypi
   on:
     tags: true
