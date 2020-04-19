@@ -1,6 +1,6 @@
 language: python
 python:
-  - "3.7"
+  - "3.8"
 # command to install dependencies
 install:
   - pip install -r requirements.txt
@@ -10,13 +10,11 @@ script:
   - pytest
   - ./setversion.sh
 deploy:
-  skip_cleanup: true
   provider: pypi
   on:
     tags: true
     branch:
       - master
       - /(\d+\.)(\d+\.)(\d+)$/
-  user: "__token__"
-  password:
+  api_key:
     secure: $PYPI_API_KEY
