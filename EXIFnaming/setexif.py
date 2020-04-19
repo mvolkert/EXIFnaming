@@ -299,6 +299,7 @@ def copy_exif_via_mainname(origin: str, target: str, overwriteDateTime: bool = F
         for filename in filenames:
             main = FilenameAccessor(filename).mainname()
             if not main in target_dict: continue
+            if filename in [os.path.basename(target_file) for target_file in target_dict[main]]: continue
             orgin_file = os.path.join(dirpath, filename)
             for target_file in target_dict[main]:
                 commands = [command, orgin_file, target_file]
