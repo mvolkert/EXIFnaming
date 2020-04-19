@@ -16,5 +16,6 @@ deploy:
     branch:
       - master
       - /(\d+\.)(\d+\.)(\d+)$/
-  api_key:
+  username: "__token__"
+  password:
     secure: $PYPI_API_KEY
