@@ -173,12 +173,12 @@ def _count_files_for_each_date(Tagdict, startindex, dateformat):
         model = create_model(Tagdict, i)
         time = giveDatetime(model.get_date())
         if not i == 0 and newdate(time, time_old, 'D' in dateformat or 'N' in dateformat):
-            log().info(time_old.date(), counter)
+            log().info("%s: %s", time_old.date(), counter)
             if maxCounter < counter: maxCounter = counter
             counter = startindex - 1
         if model.get_sequence_number() < 2: counter += 1
         time_old = time
-    log().info(time_old.date(), counter)
+    log().info("%s: %s", time_old.date(), counter)
     if maxCounter < counter: maxCounter = counter
     return str(len(str(maxCounter)))
 
@@ -202,7 +202,7 @@ def order():
     daystring = dateformating(time, "YYMMDD_")
     dirName = daystring + "%02d" % dircounter
     dirNameDict_firsttime[time] = dirName
-    log().info('Number of JPG: %d' % leng)
+    log().info('Number of JPG: %d', leng)
     for i in range(leng):
         model = create_model(Tagdict, i)
         time = giveDatetime(model.get_date())
@@ -229,7 +229,7 @@ def order():
 
     Tagdict_mp4 = read_exiftags(file_types=settings.video_types)
     leng = len(list(Tagdict_mp4.values())[0])
-    log().info('Number of mp4: %d' % leng)
+    log().info('Number of mp4: %d', leng)
     for i in range(leng):
         model = create_model(Tagdict_mp4, i)
         time = giveDatetime(model.get_date())
@@ -238,7 +238,7 @@ def order():
         if dirName:
             move(model.filename, model.dir, os.path.join(inpath, dirName, "mp4"))
         else:
-            log().warning("Did not move %s to %s" % (model.filename, dirName))
+            log().warning("Did not move %s to %s", model.filename, dirName)
 
 
 def searchby_exiftag_equality(tag_name: str, value: str):
@@ -347,7 +347,7 @@ def print_timetable():
         if not inpath == dirpath: continue
         for dirname in dirnames:
             if dirname.startswith('.'): continue
-            log().info("Folder: " + dirname)
+            log().info("Folder: %s", dirname)
             fotos = get_filename_sorted_dirfiletuples(settings.image_types, inpath, dirname)
             if not fotos: continue
             first = _get_time(fotos[0])
@@ -377,7 +377,7 @@ def order_with_timetable(timefile: str = None):
     dirNameDict_firsttime, dirNameDict_lasttime = _read_timetable(timefile)
     Tagdict = read_exiftags()
     leng = len(list(Tagdict.values())[0])
-    log().info('Number of jpg: %d' % leng)
+    log().info('Number of jpg: %d', leng)
     for i in range(leng):
         model = create_model(Tagdict, i)
         time = giveDatetime(model.get_date())
