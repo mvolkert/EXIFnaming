@@ -346,8 +346,6 @@ def extract_tags_per_dir():
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath): continue
         for dirname in dirnames:
-            if dirname.startswith('.'): continue
-            log().info("Folder: %s", dirname)
             tag_set = OrderedSet()
             plain_filenames = get_plain_filenames(inpath, dirname)
             for filename in plain_filenames:
