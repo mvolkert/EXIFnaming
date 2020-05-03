@@ -114,7 +114,7 @@ def copy_new_files(dest: str, playlist: str):
     with codecs.open(playlist, "rb", "utf-16") as csvfile:
         reader = csv.DictReader(csvfile, dialect="tab")
         places = [remove_ext(row["Ort"]) for row in reader if row is not None]
-        places = [os.path.basename(place) for place in places if place is not ""]
+        places = [os.path.basename(place) for place in places if place != ""]
     inpath = os.getcwd()
     mp3_files = []
     m4a_files = []
