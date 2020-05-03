@@ -344,7 +344,7 @@ def extract_tags_per_dir():
     out_filename = get_info_dir("tags_places.csv")
     tags_places_file, writer = _create_writer(out_filename, ["directory", "name_part"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if not inpath == dirpath: continue
+        if is_invalid_path(dirpath): continue
         for dirname in dirnames:
             if dirname.startswith('.'): continue
             log().info("Folder: %s", dirname)
@@ -360,7 +360,6 @@ def extract_tags_per_dir():
             subnames = [subname for subname in dirname_split if not subname.isnumeric()]
             dirname = "_".join(subnames)
             for tag in tag_set:
-                if not tag[0].isupper(): continue
                 tag_set_names.add((dirname, tag))
     writer.writerows(tag_set_names)
     tags_places_file.close()
@@ -379,13 +378,13 @@ def extract_tags(location=""):
     out_filename = get_info_dir("tags_places.csv")
     tags_places_file, writer = _create_writer(out_filename, ["directory", "name_part"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if is_invalid_path(dirpath): continue
         for filename in filenames:
             fileNameAccessor = FilenameAccessor(filename)
             for tag in fileNameAccessor.tags():
                 tag_set.add(tag)
-    writeToFile(get_info_dir("tags.txt"), "\n\t".join(tag_set) + "\n")
+    writeToFile(get_info_dir("tags.txt"), location + "\n\t" + "\n\t".join(tag_set) + "\n")
     for tag in tag_set:
-        if tag[0].isupper(): continue
         tag_set_names.add((location, tag))
     writer.writerows(tag_set_names)
     tags_places_file.close()
