@@ -14,7 +14,7 @@ from EXIFnaming.helpers import settings
 __all__ = ["count_files", "count_files_in", "is_invalid_path", "writeToFile", "renameInPlace", "moveFiles",
            "renameTemp", "move", "copyFilesTo", "get_filename_sorted_dirfiletuples", "moveToSubpath", "isfile",
            "moveBracketSeries", "moveSeries", "removeIfEmtpy", "get_relpath_depth", "move_media", "get_plain_filenames",
-           "filterFiles", "file_has_ext", "remove_ext"]
+           "filterFiles", "file_has_ext", "remove_ext", "get_plain_filenames_of_type"]
 
 
 def moveFiles(filenames: List[Tuple[str, str]], path: str):
@@ -218,6 +218,15 @@ def get_plain_filenames(*path) -> List[str]:
     plain_filenames = []
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(*path)):
         plain_filenames += filenames
+    return sorted(plain_filenames)
+
+
+def get_plain_filenames_of_type(file_extensions: Tuple[str], *path) -> List[str]:
+    plain_filenames = []
+    for (dirpath, dirnames, filenames) in os.walk(os.path.join(*path)):
+        for filename in filenames:
+            if not file_has_ext(filename, file_extensions): continue
+            plain_filenames.append(filename)
     return sorted(plain_filenames)
 
 

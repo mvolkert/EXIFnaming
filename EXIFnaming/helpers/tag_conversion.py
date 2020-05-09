@@ -474,6 +474,18 @@ class FilenameAccessor:
         starts_and_ends_with_digit = (np.chararray.isdigit(subname[0]) and np.chararray.isdigit(subname[-1]))
         return starts_and_ends_with_digit
 
+    def is_direct_successor_of(self, other: 'FilenameAccessor'):
+        selfcounter = int(self.counter_main())
+        othercounter = int(other.counter_main())
+        diff = selfcounter - othercounter
+        return self.pre == other.pre and (diff == 0 or diff == 1) and self.has_similar_tags(other)
+
+    def has_similar_tags(self, other: 'FilenameAccessor'):
+        return self.first_posttag() == other.first_posttag()
+
+    def first_posttag(self):
+        return self.posttags[0] if len(self.posttags) > 0 else ""
+
 
 class FilenameBuilder:
 

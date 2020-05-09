@@ -17,15 +17,16 @@ from EXIFnaming.helpers.constants import CameraModelShort
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeries, moveSeries, move, removeIfEmtpy, \
     get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, get_plain_filenames, filterFiles, isfile, \
-    file_has_ext, remove_ext
+    file_has_ext, remove_ext, get_plain_filenames_of_type
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log, log_function_call
+from EXIFnaming.helpers.settings import image_types
 from EXIFnaming.helpers.tag_conversion import FilenameAccessor
 from sortedcollections import OrderedSet
 
 __all__ = ["filter_series", "filter_primary", "copy_subdirectories", "copy_files", "copy_new_files", "replace_in_file",
            "folders_to_main", "rename_HDR", "sanitize_filename", "rename_temp_back", "rename_back", "extract_tags",
-           "extract_tags_per_dir", "create_example_csvs", "create_favorites_csv"]
+           "extract_tags_per_dir", "extract_counters_per_dir", "create_example_csvs", "create_favorites_csv"]
 
 
 def filter_series():
@@ -361,6 +362,37 @@ def extract_tags_per_dir():
                 tag_set_names.add((dirname, tag))
     writer.writerows(tag_set_names)
     tags_places_file.close()
+
+
+def extract_counters_per_dir():
+    """
+    extract counter from the file name
+    write a csv file with those counters for each directory
+    """
+    log_function_call(extract_tags_per_dir.__name__)
+    inpath = os.getcwd()
+    tag_set_names = OrderedSet()
+    out_filename = get_info_dir("tags_counters.csv")
+    csvfile, writer = _create_writer(out_filename,
+                                     ["directory", "name_main", "name_part", "first", "last", "tags3", "description"])
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if is_invalid_path(dirpath): continue
+        for dirname in dirnames:
+            filenameAccessors = [FilenameAccessor(filename) for filename in
+                                 get_plain_filenames_of_type(image_types, inpath, dirname)]
+            if len(filenameAccessors) == 0: continue
+            fileNameAccessorFirst = filenameAccessors[0]
+            fileNameAccessorLast = filenameAccessors[0]
+            for filenameAccessor in filenameAccessors[1:-1]:
+                if not filenameAccessor.is_direct_successor_of(fileNameAccessorLast):
+                    tag_set_names.add((dirname, fileNameAccessorFirst.pre, fileNameAccessorFirst.first_posttag(),
+                                       fileNameAccessorFirst.counter_main(), fileNameAccessorLast.counter_main()))
+                    fileNameAccessorFirst = filenameAccessor
+                fileNameAccessorLast = filenameAccessor
+            tag_set_names.add((dirname, fileNameAccessorFirst.pre, fileNameAccessorFirst.first_posttag(),
+                               fileNameAccessorFirst.counter_main(), fileNameAccessorLast.counter_main()))
+    writer.writerows(tag_set_names)
+    csvfile.close()
 
 
 def extract_tags(location=""):
