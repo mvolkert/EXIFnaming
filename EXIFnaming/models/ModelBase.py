@@ -155,11 +155,11 @@ class ModelBase:
 
     def is_rotated_by(self, deg: int) -> bool:
         if deg == 0:
-            return self.check_entry("Rotation", "Horizontal (normal)")
+            return self.check_entry("Orientation", "Horizontal (normal)")
         elif deg == 90:
-            return self.check_entry("Rotation", "Rotate 90 CW")
+            return self.check_entry("Orientation", "Rotate 90 CW")
         elif deg == 270 or deg == -90:
-            return self.check_entry("Rotation", "Rotate 270 CW")
+            return self.check_entry("Orientation", "Rotate 270 CW")
         return False
 
     def is_upward(self) -> bool:
