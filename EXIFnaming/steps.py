@@ -38,7 +38,7 @@ def step4_sanitize(subname: str = "HDRT", folder: str = ""):
     """
     rename_HDR(mode=subname, folder=folder)
     rotate(subname=subname, folder=folder, sign=1, override=True, ask=False)
-    sanitize_filename()
+    sanitize_filename(folder=r"", posttags_to_end=None, onlyprint=False)
 
 
 def step5_write_exif(csv_restriction: str = "fav", timezone: int = 2):
@@ -50,7 +50,7 @@ def step5_write_exif(csv_restriction: str = "fav", timezone: int = 2):
 
 
 def make_fav(timezone: int = 2):
-    sanitize_filename()
+    sanitize_filename(folder=r"", posttags_to_end=None, onlyprint=False)
     create_favorites_csv()
     geotag(timezone=timezone, offset="")
     read_csv("*", csv_restriction="", import_exif=False, overwrite_gps=False)

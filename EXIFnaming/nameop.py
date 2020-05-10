@@ -9,7 +9,7 @@ import csv
 import datetime as dt
 import os
 import re
-from typing import Optional, Match, Iterable, Any, IO, Tuple
+from typing import Optional, Match, Iterable, Any, IO, Tuple, List
 
 import numpy as np
 from EXIFnaming.helpers import settings
@@ -238,27 +238,38 @@ def _rename_match(dirpath: str, filename: str, mode: str, match: Optional[Match[
     renameInPlace(dirpath, filename, filename_new)
 
 
-def sanitize_filename(folder=r""):
+def sanitize_filename(folder=r"", posttags_to_end: List[str] = None, onlyprint=False):
     """
     sanitize order of Scene and Process tags
     sanitize counter to be split by $
     sanitize sub process names added by a external program to by concat to main processname (only Hugin)
-    :param folder:
+    :param folder: optional regex for restrict to folders
+    :param posttags_to_end: optional for resorting special posttags to end
+    :param onlyprint: if true, renaming will only printed to log and no files are renamed, good for testing
     :return:
     """
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
-        log().info("Folder: %s", dirpath)
         for filename in (filenames + dirnames):
             filename = filename.replace("panorama", "PANO")
             filenameAccessor = FilenameAccessor(filename)
+            _sanitize_posttags(filenameAccessor, posttags_to_end)
             _sanitize_process_counter(filenameAccessor)
             _sanitize_pano(filenameAccessor)
             filename_new = filenameAccessor.sorted_filename()
             if not filename == filename_new:
-                renameInPlace(dirpath, filename, filename_new)
+                log().info("rename: %s to %s", filename, filename_new)
+                if not onlyprint:
+                    renameInPlace(dirpath, filename, filename_new)
 
+def _sanitize_posttags(filenameAccessor: FilenameAccessor, posttags_to_end: List[str] = None):
+    if not posttags_to_end: return
+
+    for posttag in posttags_to_end:
+        if posttag in filenameAccessor.posttags:
+            filenameAccessor.posttags.remove(posttag)
+            filenameAccessor.posttags.append(posttag)
 
 def _sanitize_pano(filenameAccessor: FilenameAccessor):
     matches = [tag for tag in filenameAccessor.processes if tag.startswith("PANO")]
