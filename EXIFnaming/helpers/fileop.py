@@ -107,7 +107,7 @@ def moveBracketSeries(dirpath: str, filenames: list) -> List[str]:
         if not file_has_ext(filename, settings.image_types):
             other_filenames.append(filename)
             continue
-        match = re.search('(\w+_[0-9]+)B([1-7])', filename)
+        match = re.search(r'(\w+_[0-9]+)B([1-7])', filename)
         if match:
             main, counter2 = match.groups()
             if not main == main_old:
@@ -127,7 +127,7 @@ def moveBracketSeries(dirpath: str, filenames: list) -> List[str]:
 def moveSeries(dirpath: str, filenames: list, series_type: str = "S", counter_match: str = r'([0-9]+)') -> List[str]:
     other_filenames = []
     for filename in filenames:
-        match = re.search('_([0-9]+)' + series_type + counter_match, filename)
+        match = re.search(r'_([0-9]+)' + series_type + counter_match, filename)
         if match:
             moveToSubpath(filename, dirpath, series_type)
         else:
