@@ -336,7 +336,8 @@ def process_to_tag(process: str) -> list:
 
 
 process_to_tag.map = {"HDR": ["HDR"], "HDRT": ["HDR", "Tone Mapping"], "PANO": ["Panorama"],
-                      "ANIMA": ["Animation"], "RET": ["retouch"], "ZOOM": ["magnified"], "CUT": ["CUT"]}
+                      "ANIMA": ["Animation"], "RET": ["retouch"], "ZOOM": ["magnified"], "CUT": ["CUT"],
+                      "SMALL": ["SMALL"]}
 
 
 def is_scene_abbreviation(name: str):

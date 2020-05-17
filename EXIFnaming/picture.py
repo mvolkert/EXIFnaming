@@ -70,7 +70,7 @@ def resize(size=(128, 128)):
     dest = os.path.join(inpath, "SMALL")
     os.mkdir(dest)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if is_invalid_path(dirpath): continue
+        if is_invalid_path(dirpath, blacklist= ["SMALL"] ): continue
         for filename in filenames:
             if not file_has_ext(filename, ('.JPG', ".jpg")): continue
             # Load the original image:
