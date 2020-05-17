@@ -135,7 +135,10 @@ def call_exiftool_direct(options: List[str] = None, override=True) -> (str, str)
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     out = out.decode(settings.encoding_format)
-    err = err.decode("UTF-8")
+    try:
+        err = err.decode("UTF-8")
+    except UnicodeDecodeError:
+        err = err
     for line in err.split("\r\n"):
         if not line: continue
         log().warning(line)
