@@ -2,14 +2,19 @@
 """
 Picture processing, no usage of exif infos
 
-dependencies: scikit-image, opencv-python
+dependencies: scikit-image, opencv-python, PIL
 """
 import os
 
-from EXIFnaming.helpers.cv2op import is_blurry, are_similar
-from EXIFnaming.helpers.fileop import moveToSubpath, isfile, is_invalid_path
+from PIL import Image
 
-__all__ = ["detectBlurry", "detectSimilar"]
+from EXIFnaming.helpers.cv2op import is_blurry, are_similar
+from EXIFnaming.helpers.fileop import moveToSubpath, isfile, is_invalid_path, file_has_ext
+
+__all__ = ["detectBlurry", "detectSimilar", "resize"]
+
+from EXIFnaming.helpers.program_dir import log_function_call
+from EXIFnaming.helpers.tag_conversion import FilenameAccessor
 
 
 def detectBlurry():
@@ -21,7 +26,7 @@ def detectBlurry():
         if is_invalid_path(dirpath): continue
         print(dirpath, len(dirnames), len(filenames))
         for filename in filenames:
-            if not ".JPG" in filename: continue
+            if not file_has_ext(filename, ('.JPG', ".jpg")): continue
             if not is_blurry(dirpath, filename, 30): continue
             moveToSubpath(filename, dirpath, "blurry")
 
@@ -52,3 +57,26 @@ def detectSimilar(similarity=0.9):
             if not os.path.isdir(os.path.join(dirpath, "%03d" % dircounter)): continue
             moveToSubpath(filenameA, dirpath, "%03d" % dircounter)
             dircounter += 1
+
+
+def resize(size=(128, 128)):
+    """
+    resize to icon like image
+    :param size: size of resulting image
+    """
+    log_function_call(resize.__name__, size)
+
+    inpath = os.getcwd()
+    dest = os.path.join(inpath, "SMALL")
+    os.mkdir(dest)
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if is_invalid_path(dirpath): continue
+        for filename in filenames:
+            if not file_has_ext(filename, ('.JPG', ".jpg")): continue
+            # Load the original image:
+            accessor = FilenameAccessor(filename)
+            img = Image.open(os.path.join(dirpath, filename))
+            img.thumbnail(size, Image.ANTIALIAS)
+            accessor.processes.append("SMALL")
+            outfile = os.path.join(dest, accessor.sorted_filename())
+            img.save(outfile, 'JPEG', quality=90)
