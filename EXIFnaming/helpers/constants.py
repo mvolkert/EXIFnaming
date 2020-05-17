@@ -26,6 +26,7 @@ hdr_algorithm["Ls"] = "Luminance sharpness"
 tm_preset = OrderedDict()
 tm_preset["Nb"] = "Natural balanced"
 tm_preset["Nbl"] = "Natural back light"
+tm_preset["NBbl"] = "Natural Bright back light"
 tm_preset["Npc"] = "Natural powerful colours"
 tm_preset["Ndb"] = "Natural details brightened"
 tm_preset["Lb"] = "Landscape backlit"
