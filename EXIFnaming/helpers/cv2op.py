@@ -57,7 +57,9 @@ def compare_images(directory, nameA, nameB):
 
 def read_picture(directory, name, xscale=500):
     fullname = os.path.join(directory, name)
-    picture = cv2.imread(fullname)
+    with open(fullname, 'rb') as img_stream:
+        file_bytes = np.asarray(bytearray(img_stream.read()), dtype=np.uint8)
+        picture = cv2.imdecode(file_bytes, cv2.IMREAD_UNCHANGED)
     if picture is None or not picture.data:
         print("failed to load", fullname)
         return
