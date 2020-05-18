@@ -41,7 +41,7 @@ def detectSimilar(similarity=0.9):
         if is_invalid_path(dirpath): continue
         print(dirpath, len(dirnames), len(filenames))
         dircounter = 0
-        filenamesA = [filename for filename in filenames if ".JPG" in filename]
+        filenamesA = [filename for filename in filenames if file_has_ext(filename, ('.JPG', ".jpg"))]
         for i, filenameA in enumerate(filenamesA):
             print(filenameA)
             notSimCounter = 0

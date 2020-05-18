@@ -1,13 +1,12 @@
 # https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
 
 import os
-
 import cv2
 import numpy as np
-# import the necessary packages
-from skimage.measure import compare_ssim as ssim
+from skimage.metrics import structural_similarity
 
 __all__ = ["is_blurry", "are_similar"]
+
 
 def is_blurry(directory, filename, threshold=100):
     image = read_picture(directory, filename)
@@ -19,7 +18,7 @@ def are_similar(dirA, filenameA, dirB, filenameB, threshold=0.9):
     imageA = read_picture(dirA, filenameA, 100)
     imageB = read_picture(dirB, filenameB, 100)
     if imageA is None or imageB is None: return False
-    s = ssim(imageA, imageB)
+    s = structural_similarity(imageA, imageB)
     if threshold < s:
         print(filenameA, filenameB, s)
     return threshold < s
@@ -50,7 +49,7 @@ def compare_images(directory, nameA, nameB):
     imageA = read_picture(directory, nameA)
     imageB = read_picture(directory, nameB)
     m = mse(imageA, imageB)
-    s = ssim(imageA, imageB)
+    s = structural_similarity(imageA, imageB)
     print("m:", m)
     print("s", s)
 
