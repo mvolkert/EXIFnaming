@@ -48,6 +48,13 @@ def filter_series():
         filenames = moveSeries(dirpath, filenames, "SM")
         filenames = moveSeries(dirpath, filenames, "TL")
         filenames = move_media(dirpath, filenames, settings.video_types, "mp4")
+        # filter process types to separate folders - attention: ordering of statements matters
+        filenames = move_media(dirpath, filenames, ["PANO"], "PANO")
+        filenames = move_media(dirpath, filenames, ["ANIMA"], "ANIMA")
+        filenames = move_media(dirpath, filenames, ["RET"], "RET")
+        filenames = move_media(dirpath, filenames, ["ZOOM"], "ZOOM")
+        filenames = move_media(dirpath, filenames, ["SMALL"], "SMALL")
+        filenames = move_media(dirpath, filenames, ["CUT"], "CUT")
         filenames = move_media(dirpath, filenames, ["HDR"], "HDR")
         move_media(dirpath, filenames, settings.image_types, "single")
 
