@@ -263,6 +263,7 @@ def sanitize_filename(folder=r"", posttags_to_end: List[str] = None, onlyprint=F
                 if not onlyprint:
                     renameInPlace(dirpath, filename, filename_new)
 
+
 def _sanitize_posttags(filenameAccessor: FilenameAccessor, posttags_to_end: List[str] = None):
     if not posttags_to_end: return
 
@@ -270,6 +271,7 @@ def _sanitize_posttags(filenameAccessor: FilenameAccessor, posttags_to_end: List
         if posttag in filenameAccessor.posttags:
             filenameAccessor.posttags.remove(posttag)
             filenameAccessor.posttags.append(posttag)
+
 
 def _sanitize_pano(filenameAccessor: FilenameAccessor):
     matches = [tag for tag in filenameAccessor.processes if tag.startswith("PANO")]
@@ -356,12 +358,13 @@ def extract_tags_per_dir():
     out_filename = get_info_dir("tags_places.csv")
     tags_places_file, writer = _create_writer(out_filename, ["directory", "name_part"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if is_invalid_path(dirpath): continue
+        if not inpath == dirpath: continue
         for dirname in dirnames:
             tag_set = OrderedSet()
-            plain_filenames = get_plain_filenames(inpath, dirname)
-            for filename in plain_filenames:
-                fileNameAccessor = FilenameAccessor(filename)
+            filenameAccessors = [FilenameAccessor(filename) for filename in
+                                 get_plain_filenames_of_type(image_types, dirpath, dirname)]
+            if len(filenameAccessors) == 0: continue
+            for fileNameAccessor in filenameAccessors:
                 for tag in fileNameAccessor.tags():
                     tag_set.add(tag)
             writeToFile(get_info_dir("tags.txt"), dirname + "\n\t" + "\n\t".join(tag_set) + "\n")
@@ -387,21 +390,44 @@ def extract_counters_per_dir():
     csvfile, writer = _create_writer(out_filename,
                                      ["directory", "name_main", "name_part", "first", "last", "tags3", "description"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if is_invalid_path(dirpath): continue
+        if not inpath == dirpath: continue
         for dirname in dirnames:
             filenameAccessors = [FilenameAccessor(filename) for filename in
-                                 get_plain_filenames_of_type(image_types, inpath, dirname)]
+                                 get_plain_filenames_of_type(image_types, dirpath, dirname)]
             if len(filenameAccessors) == 0: continue
-            fileNameAccessorFirst = filenameAccessors[0]
-            fileNameAccessorLast = filenameAccessors[0]
-            for filenameAccessor in filenameAccessors[1:-1]:
-                if not filenameAccessor.is_direct_successor_of(fileNameAccessorLast):
-                    tag_set_names.add((dirname, fileNameAccessorFirst.pre, fileNameAccessorFirst.first_posttag(),
-                                       fileNameAccessorFirst.counter_main(), fileNameAccessorLast.counter_main()))
-                    fileNameAccessorFirst = filenameAccessor
-                fileNameAccessorLast = filenameAccessor
+            _add_counter_csv_entries(dirname, filenameAccessors, tag_set_names)
+    writer.writerows(tag_set_names)
+    csvfile.close()
+
+
+def _add_counter_csv_entries(dirname: str, filenameAccessors: List[FilenameAccessor], tag_set_names: OrderedSet):
+    fileNameAccessorFirst = filenameAccessors[0]
+    fileNameAccessorLast = filenameAccessors[0]
+    for filenameAccessor in filenameAccessors[1:-1]:
+        if not filenameAccessor.is_direct_successor_of(fileNameAccessorLast):
             tag_set_names.add((dirname, fileNameAccessorFirst.pre, fileNameAccessorFirst.first_posttag(),
                                fileNameAccessorFirst.counter_main(), fileNameAccessorLast.counter_main()))
+            fileNameAccessorFirst = filenameAccessor
+        fileNameAccessorLast = filenameAccessor
+    tag_set_names.add((dirname, fileNameAccessorFirst.pre, fileNameAccessorFirst.first_posttag(),
+             fileNameAccessorFirst.counter_main(), fileNameAccessorLast.counter_main()))
+
+
+def extract_counters():
+    """
+    extract counter from the file name
+    write a csv file with those counters
+    """
+    log_function_call(extract_tags_per_dir.__name__)
+    inpath = os.getcwd()
+    tag_set_names = OrderedSet()
+    out_filename = get_info_dir("tags_counters.csv")
+    csvfile, writer = _create_writer(out_filename,
+                                     ["directory", "name_main", "name_part", "first", "last", "tags3",
+                                      "description"])
+
+    filenameAccessors = [FilenameAccessor(filename) for filename in get_plain_filenames_of_type(image_types, inpath)]
+    _add_counter_csv_entries("", filenameAccessors, tag_set_names)
     writer.writerows(tag_set_names)
     csvfile.close()
 
@@ -418,12 +444,10 @@ def extract_tags(location=""):
     tag_set_names = OrderedSet()
     out_filename = get_info_dir("tags_places.csv")
     tags_places_file, writer = _create_writer(out_filename, ["directory", "name_part"])
-    for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if is_invalid_path(dirpath): continue
-        for filename in filenames:
-            fileNameAccessor = FilenameAccessor(filename)
-            for tag in fileNameAccessor.tags():
-                tag_set.add(tag)
+    filenameAccessors = [FilenameAccessor(filename) for filename in get_plain_filenames_of_type(image_types, inpath)]
+    for fileNameAccessor in filenameAccessors:
+        for tag in fileNameAccessor.tags():
+            tag_set.add(tag)
     writeToFile(get_info_dir("tags.txt"), location + "\n\t" + "\n\t".join(tag_set) + "\n")
     for tag in tag_set:
         tag_set_names.add((location, tag))

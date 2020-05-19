@@ -217,6 +217,7 @@ def is_invalid_path(dirpath: str, blacklist: List[str] = None, whitelist: List[s
 def get_plain_filenames(*path) -> List[str]:
     plain_filenames = []
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(*path)):
+        if is_invalid_path(dirpath): continue
         plain_filenames += filenames
     return sorted(plain_filenames)
 
@@ -224,6 +225,7 @@ def get_plain_filenames(*path) -> List[str]:
 def get_plain_filenames_of_type(file_extensions: Tuple[str], *path) -> List[str]:
     plain_filenames = []
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(*path)):
+        if is_invalid_path(dirpath): continue
         for filename in filenames:
             if not file_has_ext(filename, file_extensions): continue
             plain_filenames.append(filename)
