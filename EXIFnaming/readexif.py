@@ -24,8 +24,8 @@ from EXIFnaming.helpers.program_dir import get_saves_dir, get_gps_dir, get_info_
 from EXIFnaming.helpers.tag_conversion import FilenameBuilder
 from EXIFnaming.helpers.tags import create_model, getPath
 
-__all__ = ["print_info", "rename", "rename_pm", "order", "order_with_timetable", "searchby_exiftag_equality",
-           "searchby_exiftag_interval", "rotate", "exif_to_name", "print_timetable", "better_gpx_via_timetable"]
+__all__ = ["print_info", "rename", "order", "order_with_timetable", "searchby_exiftag_equality",
+           "searchby_exiftag_interval", "rotate", "rename_from_exif", "print_timetable", "better_gpx_via_timetable"]
 
 
 def print_info(tagGroupNames=(), allGroups=False):
@@ -56,14 +56,6 @@ def print_info(tagGroupNames=(), allGroups=False):
 
         dirname = get_saves_dir()
         writeToFile(os.path.join(dirname, "tags_" + tagGroupName + ".txt"), outstring)
-
-
-def rename_pm(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keeptags=True, name=""):
-    """
-    rename for JPG and MP4
-    """
-    rename(Prefix, dateformat, startindex, onlyprint, keeptags, False, name)
-    rename(Prefix, dateformat, 1, onlyprint, keeptags, True, name)
 
 
 def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keeptags=True, is_video=False, name=""):
@@ -322,9 +314,9 @@ def rotate(subname: str = "", folder: str = r"", sign=1, override=True, ask=True
     clock.finish()
 
 
-def exif_to_name():
+def rename_from_exif():
     """
-    reverse exif_to_name()
+    use exif information written by :func:`write_exif_using_csv` to restore filename
     """
     Tagdict = read_exiftags()
     if has_not_keys(Tagdict, keys=["Label"]): return

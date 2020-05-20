@@ -16,7 +16,7 @@ from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.constants import CameraModelShort
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeries, moveSeries, move, removeIfEmtpy, \
-    get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, get_plain_filenames, filterFiles, isfile, \
+    get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, filterFiles, isfile, \
     file_has_ext, remove_ext, get_plain_filenames_of_type
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log, log_function_call
@@ -25,8 +25,9 @@ from EXIFnaming.helpers.tag_conversion import FilenameAccessor
 from sortedcollections import OrderedSet
 
 __all__ = ["filter_series", "filter_primary", "copy_subdirectories", "copy_files", "copy_new_files", "replace_in_file",
-           "folders_to_main", "rename_HDR", "sanitize_filename", "rename_temp_back", "rename_back", "extract_tags",
-           "extract_tags_per_dir", "extract_counters_per_dir", "create_example_csvs", "create_favorites_csv"]
+           "folders_to_main", "rename_HDR", "sanitize_filename", "rename_temp_back", "rename_back", "create_tags_csv",
+           "create_tags_csv_per_dir", "create_counters_csv", "create_counters_csv_per_dir", "create_example_csvs",
+           "create_favorites_csv"]
 
 
 def filter_series():
@@ -354,16 +355,38 @@ def rename_back(timestring="", fileext=".JPG"):
     np.savez_compressed(os.path.join(dirname, "Tags" + fileext + timestring), Tagdict=Tagdict)
 
 
-def extract_tags_per_dir():
+def create_tags_csv(location: str = ""):
+    """
+    extract tags from the file name
+    write a csv file with those tags
+    :param location: optional content of directory column
+    """
+    inpath = os.getcwd()
+    tag_set = OrderedSet()
+    tag_set_names = OrderedSet()
+    out_filename = get_info_dir("tags_places.csv")
+    tags_places_file, writer = _create_csv_writer(out_filename, ["directory", "name_part"])
+    filenameAccessors = [FilenameAccessor(filename) for filename in get_plain_filenames_of_type(image_types, inpath)]
+    for fileNameAccessor in filenameAccessors:
+        for tag in fileNameAccessor.tags():
+            tag_set.add(tag)
+    writeToFile(get_info_dir("tags.txt"), location + "\n\t" + "\n\t".join(tag_set) + "\n")
+    for tag in tag_set:
+        tag_set_names.add((location, tag))
+    writer.writerows(tag_set_names)
+    tags_places_file.close()
+
+
+def create_tags_csv_per_dir():
     """
     extract tags from the file name
     write a csv file with those tags and group them by toplevel directory
     """
-    log_function_call(extract_tags_per_dir.__name__)
+    log_function_call(create_tags_csv_per_dir.__name__)
     inpath = os.getcwd()
     tag_set_names = OrderedSet()
     out_filename = get_info_dir("tags_places.csv")
-    tags_places_file, writer = _create_writer(out_filename, ["directory", "name_part"])
+    tags_places_file, writer = _create_csv_writer(out_filename, ["directory", "name_part"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not inpath == dirpath: continue
         for dirname in dirnames:
@@ -385,17 +408,37 @@ def extract_tags_per_dir():
     tags_places_file.close()
 
 
-def extract_counters_per_dir():
+def create_counters_csv():
+    """
+    extract counter from the file name
+    write a csv file with those counters
+    """
+    log_function_call(create_tags_csv_per_dir.__name__)
+    inpath = os.getcwd()
+    tag_set_names = OrderedSet()
+    out_filename = get_info_dir("tags_counters.csv")
+    csvfile, writer = _create_csv_writer(out_filename,
+                                         ["directory", "name_main", "name_part", "first", "last", "tags3",
+                                          "description"])
+
+    filenameAccessors = [FilenameAccessor(filename) for filename in get_plain_filenames_of_type(image_types, inpath)]
+    _add_counter_csv_entries("", filenameAccessors, tag_set_names)
+    writer.writerows(tag_set_names)
+    csvfile.close()
+
+
+def create_counters_csv_per_dir():
     """
     extract counter from the file name
     write a csv file with those counters for each directory
     """
-    log_function_call(extract_tags_per_dir.__name__)
+    log_function_call(create_tags_csv_per_dir.__name__)
     inpath = os.getcwd()
     tag_set_names = OrderedSet()
     out_filename = get_info_dir("tags_counters.csv")
-    csvfile, writer = _create_writer(out_filename,
-                                     ["directory", "name_main", "name_part", "first", "last", "tags3", "description"])
+    csvfile, writer = _create_csv_writer(out_filename,
+                                         ["directory", "name_main", "name_part", "first", "last", "tags3",
+                                          "description"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not inpath == dirpath: continue
         for dirname in dirnames:
@@ -417,52 +460,10 @@ def _add_counter_csv_entries(dirname: str, filenameAccessors: List[FilenameAcces
             fileNameAccessorFirst = filenameAccessor
         fileNameAccessorLast = filenameAccessor
     tag_set_names.add((dirname, fileNameAccessorFirst.pre, fileNameAccessorFirst.first_posttag(),
-             fileNameAccessorFirst.counter_main(), fileNameAccessorLast.counter_main()))
+                       fileNameAccessorFirst.counter_main(), fileNameAccessorLast.counter_main()))
 
 
-def extract_counters():
-    """
-    extract counter from the file name
-    write a csv file with those counters
-    """
-    log_function_call(extract_tags_per_dir.__name__)
-    inpath = os.getcwd()
-    tag_set_names = OrderedSet()
-    out_filename = get_info_dir("tags_counters.csv")
-    csvfile, writer = _create_writer(out_filename,
-                                     ["directory", "name_main", "name_part", "first", "last", "tags3",
-                                      "description"])
-
-    filenameAccessors = [FilenameAccessor(filename) for filename in get_plain_filenames_of_type(image_types, inpath)]
-    _add_counter_csv_entries("", filenameAccessors, tag_set_names)
-    writer.writerows(tag_set_names)
-    csvfile.close()
-
-
-def extract_tags(location=""):
-    """
-    extract tags from the file name
-    write a csv file with those tags
-    :param location: optional content of directory column
-    :return:
-    """
-    inpath = os.getcwd()
-    tag_set = OrderedSet()
-    tag_set_names = OrderedSet()
-    out_filename = get_info_dir("tags_places.csv")
-    tags_places_file, writer = _create_writer(out_filename, ["directory", "name_part"])
-    filenameAccessors = [FilenameAccessor(filename) for filename in get_plain_filenames_of_type(image_types, inpath)]
-    for fileNameAccessor in filenameAccessors:
-        for tag in fileNameAccessor.tags():
-            tag_set.add(tag)
-    writeToFile(get_info_dir("tags.txt"), location + "\n\t" + "\n\t".join(tag_set) + "\n")
-    for tag in tag_set:
-        tag_set_names.add((location, tag))
-    writer.writerows(tag_set_names)
-    tags_places_file.close()
-
-
-def _create_writer(filename: str, titles: Iterable) -> Tuple[IO, Any]:
+def _create_csv_writer(filename: str, titles: Iterable) -> Tuple[IO, Any]:
     file = open(filename, "w")
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
     writer = csv.writer(file, dialect="semicolon")
@@ -470,18 +471,21 @@ def _create_writer(filename: str, titles: Iterable) -> Tuple[IO, Any]:
     return file, writer
 
 
-def create_favorites_csv():
+def create_favorites_csv(rating: int = 4, name: str = ""):
     """
     creates a csv file with all files in the directory
-    the rating column is filled with "4"
+    the rating column is filled with param rating
+    :param rating: rating to be written
+    :param name: name for fav csv-file
     """
+    log_function_call(create_favorites_csv.__name__, rating, name)
     inpath = os.getcwd()
-    out_filename = get_setexif_dir("fav.csv")
-    fav_file, writer = _create_writer(out_filename, ["name_part", "rating"])
+    out_filename = get_setexif_dir("fav%s.csv" % name)
+    fav_file, writer = _create_csv_writer(out_filename, ["name_part", "rating"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath): continue
         for filename in filterFiles(filenames, settings.image_types):
-            writer.writerow([filename, 4])
+            writer.writerow([filename, rating])
     fav_file.close()
 
 
@@ -498,5 +502,5 @@ def create_example_csvs():
 def _create_empty_csv(name: str, columns: Iterable):
     filename = get_setexif_dir(name + ".csv")
     if isfile(filename): return
-    csv_file, writer = _create_writer(filename, columns)
+    csv_file, writer = _create_csv_writer(filename, columns)
     csv_file.close()

@@ -4,7 +4,7 @@ Steps combine multiple functions
 """
 from EXIFnaming.nameop import filter_series, rename_HDR, sanitize_filename, create_example_csvs, create_favorites_csv
 from EXIFnaming.readexif import order, rename, rotate
-from EXIFnaming.setexif import geotag, read_csv
+from EXIFnaming.setexif import geotag, write_exif_using_csv
 
 __all__ = ["step1_prepare", "step2_rename", "step3_filter", "step4_sanitize", "step5_write_exif", "make_fav"]
 
@@ -29,28 +29,34 @@ def step3_filter():
     filter_series()
 
 
-def step4_sanitize(subname: str = "HDRT", folder: str = ""):
+def step4_sanitize(subname: str = "HDR", folder: str = ""):
     """
     sanitize postprocessing
     :param subname: name of HDR
     :param folder: name of HDR folder
-    :return:
     """
     rename_HDR(mode=subname, folder=folder)
     rotate(subname=subname, folder=folder, sign=1, override=True, ask=False)
     sanitize_filename(folder=r"", posttags_to_end=None, onlyprint=False)
 
 
-def step5_write_exif(csv_restriction: str = "fav", timezone: int = 2):
+def step5_write_exif(timezone: int, csv_restriction: str = ""):
     """
-    write exif via csv, filename and gpx files
+    write exif using csv, filename and gpx files
+    :param timezone: number of hours offset for geotag
+    :param csv_restriction: files that do not pass any of the restriction in this file are not modified at all.
+        if empty: no restriction
     """
-    read_csv("*", csv_restriction=csv_restriction)
+    write_exif_using_csv("*", csv_restriction=csv_restriction)
     geotag(timezone=timezone, offset="")
 
 
-def make_fav(timezone: int = 2):
+def make_fav(timezone: int):
+    """
+    easy way to finalize just the favorites
+    :param timezone: number of hours offset for geotag
+    """
     sanitize_filename(folder=r"", posttags_to_end=None, onlyprint=False)
-    create_favorites_csv()
+    create_favorites_csv(rating=4, name="")
     geotag(timezone=timezone, offset="")
-    read_csv("*", csv_restriction="", import_exif=False, overwrite_gps=False)
+    write_exif_using_csv("*", csv_restriction="", import_exif=False, overwrite_gps=False)

@@ -19,13 +19,19 @@ from EXIFnaming.helpers.program_dir import get_gps_dir, get_setexif_dir, log, lo
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict, FilenameAccessor
 from EXIFnaming.helpers.tags import create_model, hasDateTime
 
-__all__ = ["shift_time", "fake_date", "add_location", "location_to_keywords", "name_to_exif", "geotag", "geotag_single",
-           "read_csv", "copy_exif_via_mainname"]
+__all__ = ["shift_time", "fake_date", "geotag", "write_exif_using_csv", "copy_exif_via_mainname"]
 
 
 def shift_time(hours: int = 0, minutes: int = 0, seconds: int = 0, is_video: bool = False):
     """
-    for example to adjust time zone by one: hours=-1
+    shift DateTimeOriginal to correct for wrong camera time setting
+
+    :example: to adjust time zone by one, set hours=-1
+
+    :param hours: hours to shift
+    :param minutes: minutes to shift
+    :param seconds: seconds to shift
+    :param is_video: whether to modify videos, if false modifies pictures
     """
     log_function_call(shift_time.__name__, hours, minutes, seconds, is_video)
     inpath = os.getcwd()
@@ -76,64 +82,6 @@ def fake_date(start='2000:01:01'):
             write_exiftag({"DateTimeOriginal": time_string}, dirpath, filename)
 
 
-def add_location(country="", city="", location=""):
-    """
-    deprecated: try to use read_csv() instead
-    :param country: example:"Germany"
-    :param city: example:"Nueremberg"
-    :param location: additional location info
-    """
-    write_exiftags({"Country": country, "City": city, "Location": location})
-
-
-def location_to_keywords():
-    """
-    import location exif information to put into Keywords
-
-    deprecated: try to use read_csv() instead
-    """
-    inpath = os.getcwd()
-    log().info("process %d Files in %s, subdir: %r",
-               count_files_in(inpath, settings.image_types + settings.video_types, ""), inpath, settings.includeSubdirs)
-    askToContinue()
-    Tagdict = read_exiftags(inpath, ask=False)
-    leng = len(list(Tagdict.values())[0])
-    for i in range(leng):
-        dirpath = Tagdict["Directory"][i]
-        filename = Tagdict["File Name"][i]
-        image_tags = Tagdict["Keywords"][i].split(', ')
-        outTagDict = {'Keywords': image_tags, 'Subject': list(image_tags)}
-        location = Location(Tagdict, i)
-        add_dict(outTagDict, location.to_tag_dict())
-        write_exiftag(outTagDict, dirpath, filename)
-
-
-def name_to_exif(folder=r"", additional_tags=(), startdir=None):
-    """
-    extract title, description and mode from name and write them to exif
-
-    deprecated: try to use read_csv() instead
-    """
-    inpath = os.getcwd()
-    clock = Clock()
-    file_types = settings.image_types + settings.video_types
-    log().info("process %d Files in %s, subdir: %r", count_files_in(inpath, file_types, ""), inpath,
-               settings.includeSubdirs)
-    askToContinue()
-    for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if is_invalid_path(dirpath, regex=folder): continue
-        filenames = filterFiles(filenames, file_types)
-        for filename in filenames:
-            meta_data = FileMetaData(dirpath, filename)
-            if startdir:
-                meta_data.import_fullname(startdir)
-            else:
-                meta_data.import_filename()
-            meta_data.update({'tags': additional_tags})
-            write_exiftag(meta_data.to_tag_dict(), dirpath, filename)
-    clock.finish()
-
-
 def geotag(timezone: int = 2, offset: str = "", start_folder: str = ""):
     """
     adds gps information to all pictures in all sub directories of current directory
@@ -163,23 +111,10 @@ def geotag(timezone: int = 2, offset: str = "", start_folder: str = ""):
             call_exiftool(inpath, dirname, options=options)
 
 
-def geotag_single(lat: float, lon: float):
-    """
-    adds gps information to all pictures in all sub directories of current directory
-    :param lat: GPSLatitude
-    :param lon: GPSLongitude
-
-    deprecated: try to use read_csv() instead
-    """
-    inpath = os.getcwd()
-    options = ["-GPSLatitudeRef=%f" % lat, "-GPSLatitude=%f" % lat, "-GPSLongitudeRef=%f" % lon,
-               "-GPSLongitude=%f" % lon]
-    call_exiftool(inpath, "*", options=options)
-
-
-def read_csv(csv_filenames: Union[str, List[str]] = "*", folder: str = r"", start_folder: str = "",
-             csv_folder: str = None, csv_restriction: str = "", import_filename: bool = True, import_exif: bool = True,
-             only_when_changed: bool = False, overwrite_gps: bool = False, is_video: bool = False):
+def write_exif_using_csv(csv_filenames: Union[str, List[str]] = "*", folder: str = r"", start_folder: str = "",
+                         csv_folder: str = None, csv_restriction: str = "", import_filename: bool = True,
+                         import_exif: bool = True,
+                         only_when_changed: bool = False, overwrite_gps: bool = False, is_video: bool = False):
     """
     csv files are used for setting tags
     the csv files have to be separated by semicolon
@@ -219,12 +154,11 @@ def read_csv(csv_filenames: Union[str, List[str]] = "*", folder: str = r"", star
     :param only_when_changed: when true filename is not imported to tags for files without matching entries in csv
         useless if csv_restriction is set
     :param is_video: wheter video types should be written - video types might not handle tags right
-    :return:
     """
     if not csv_folder:
         csv_folder = get_setexif_dir()
 
-    log_function_call(read_csv.__name__, csv_filenames, folder, start_folder, csv_folder, csv_restriction,
+    log_function_call(write_exif_using_csv.__name__, csv_filenames, folder, start_folder, csv_folder, csv_restriction,
                       import_filename, import_exif, only_when_changed, overwrite_gps)
     inpath = os.getcwd()
     clock = Clock()

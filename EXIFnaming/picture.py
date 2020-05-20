@@ -11,13 +11,13 @@ from PIL import Image
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
 from EXIFnaming.helpers.fileop import moveToSubpath, isfile, is_invalid_path, file_has_ext
 
-__all__ = ["detectBlurry", "detectSimilar", "resize"]
+__all__ = ["detect_blurry", "detect_similar", "resize"]
 
 from EXIFnaming.helpers.program_dir import log_function_call
 from EXIFnaming.helpers.tag_conversion import FilenameAccessor
 
 
-def detectBlurry():
+def detect_blurry():
     """
     detects blurry images and put them in a sub directory named blurry
     """
@@ -31,7 +31,7 @@ def detectBlurry():
             moveToSubpath(filename, dirpath, "blurry")
 
 
-def detectSimilar(similarity=0.9):
+def detect_similar(similarity=0.9):
     """
     put similar pictures in same sub folder
     :param similarity: -1: completely different, 1: same
