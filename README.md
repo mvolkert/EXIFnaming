@@ -6,8 +6,7 @@
 <!---[![codecov](https://codecov.io/gh/mvolkert/EXIFnaming/branch/master/graph/badge.svg)](https://codecov.io/gh/mvolkert/EXIFnaming)--->
 <!---![GitHub contributors](https://img.shields.io/github/contributors/mvolkert/EXIFnaming)--->
 
-Renaming/Ordering/Modifying Photos using EXIF tool https://sno.phy.queensu.ca/~phil/exiftool/.
-"exiftool.exe" has to be copied to "EXIFnaming/helpers/exiftool.exe".
+Renaming/Ordering/Modifying Photos using exiftool (https://exiftool.org/).
 
 Developed for Panasonic Lumix TZ101 but other models may also work.
 You are free to contact me for verifying the support of your Camera model.
@@ -35,7 +34,7 @@ And many more...
 ## Usage:
 It is designed to be used via ipython.
 You do need at least basic knowlege about python.
-The different functions can either be used via the toplevel module or via the subscriptes.
+The different functions can either be used via the toplevel module or via the submodules.
 
 
 ## Naming Conventions:
@@ -99,9 +98,13 @@ The program creates a folder ".EXIFnaming" in your photodirectory:
 * setexif: put here your csv files for tag writing  
 
 ## Camera Models
-* Can be used basically with all camera models which are supported by https://sno.phy.queensu.ca/~phil/exiftool/  
+* Can be used basically with all camera models which are supported by https://exiftool.org/  
 * To use specialties of renaming like Series type or Scene mode, there has to be an implemention of ModelBase for your Camera Model  
 * Contact me to improve the support of your Camera Model  
 
+## Setup
 
-    
+Download https://exiftool.org/.
+Then set EXIFnaming.settings.exiftool_directory to the location of the exiftool.exe.
+You can do this for example by using `.ipython\profile_default\startup\start.py`.
+Take also a look to other settings.
