@@ -7,7 +7,7 @@ dependencies: exiftool
 import csv
 import datetime as dt
 import os
-from typing import Union, List
+from typing import Union, List, Iterable
 
 from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.date import giveDatetime, dateformating
@@ -205,13 +205,15 @@ def _passes_restrictor(meta_data: FileMetaData, csv_restriction: str):
     return False
 
 
-def copy_exif_via_mainname(origin: str, target: str, overwriteDateTime: bool = False):
+def copy_exif_via_mainname(origin: str, target: str, overwriteDateTime: bool = False,
+                           file_types: Iterable = settings.image_types):
     """
     copy exif information from files in directory origin to target
     files are matched via main name -> processed files can get exif information of original files
     :param overwriteDateTime: whether to overwrite already exiting "Date/Time Original"
-    :param origin:
-    :param target:
+    :param origin: where exif infos should be read
+    :param target: where exif infos should be written to
+    :param file_types: of target files, default: all image types
     """
     log_function_call(copy_exif_via_mainname.__name__, origin, target)
     inpath = os.getcwd()
@@ -220,7 +222,7 @@ def copy_exif_via_mainname(origin: str, target: str, overwriteDateTime: bool = F
     command = "-TagsFromFile"
     for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, target)):
         if is_invalid_path(dirpath): continue
-        filenames = filterFiles(filenames, settings.image_types)
+        filenames = filterFiles(filenames, file_types)
         for filename in filenames:
             if not overwriteDateTime:
                 tagDict = read_exiftag(dirpath, filename)

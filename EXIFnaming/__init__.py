@@ -25,5 +25,5 @@ from EXIFnaming.nameop import filter_series, filter_primary, copy_subdirectories
 from EXIFnaming.picture import detect_blurry, detect_similar, resize
 from EXIFnaming.readexif import print_info, rename, order, searchby_exiftag_equality, \
     searchby_exiftag_interval, rotate, rename_from_exif, print_timetable, better_gpx_via_timetable
-from EXIFnaming.setexif import shift_time, geotag, fake_date, write_exif_using_csv
+from EXIFnaming.setexif import shift_time, geotag, fake_date, write_exif_using_csv, copy_exif_via_mainname
 from EXIFnaming.steps import step1_prepare, step2_rename, step3_filter, step4_sanitize, step5_write_exif, make_fav
