@@ -27,7 +27,7 @@ from sortedcollections import OrderedSet
 __all__ = ["filter_series", "filter_primary", "copy_subdirectories", "copy_files", "copy_new_files", "replace_in_file",
            "folders_to_main", "rename_HDR", "sanitize_filename", "rename_temp_back", "rename_back", "create_tags_csv",
            "create_tags_csv_per_dir", "create_counters_csv", "create_counters_csv_per_dir", "create_example_csvs",
-           "create_favorites_csv"]
+           "create_rating_csv"]
 
 
 def filter_series():
@@ -471,29 +471,31 @@ def _create_csv_writer(filename: str, titles: Iterable) -> Tuple[IO, Any]:
     return file, writer
 
 
-def create_favorites_csv(rating: int = 4, name: str = ""):
+def create_rating_csv(rating: int = 4, subdir: str = ""):
     """
     creates a csv file with all files in the directory
     the rating column is filled with param rating
     :param rating: rating to be written
-    :param name: name for fav csv-file
+    :param subdir: sub directory to make rating file of, if empty all directories will be taken
     """
-    log_function_call(create_favorites_csv.__name__, rating, name)
+    log_function_call(create_rating_csv.__name__, rating, subdir)
     inpath = os.getcwd()
-    out_filename = get_setexif_dir("fav%s.csv" % name)
-    fav_file, writer = _create_csv_writer(out_filename, ["name_part", "rating"])
-    for (dirpath, dirnames, filenames) in os.walk(inpath):
+    out_filebasename = "rating"
+    if subdir: out_filebasename += "_" + subdir
+    out_filename = get_setexif_dir(out_filebasename + ".csv")
+    rating_file, writer = _create_csv_writer(out_filename, ["name_part", "rating"])
+    for (dirpath, dirnames, filenames) in os.walk(os.path.join(inpath, subdir)):
         if is_invalid_path(dirpath): continue
         for filename in filterFiles(filenames, settings.image_types):
             writer.writerow([filename, rating])
-    fav_file.close()
+    rating_file.close()
 
 
 def create_example_csvs():
     """
     creates some examples for csv files
     """
-    _create_empty_csv("fav", ["name_part", "rating"])
+    _create_empty_csv("rating", ["name_part", "rating"])
     _create_empty_csv("gps", ["directory", "name_part", "Location", "gps", "City", "State", "Country", "tags3"])
     _create_empty_csv("tags", ["name_main", "first", "last", "tags", "tags3"])
     _create_empty_csv("processing", ["directory", "name_part", "tags2", "HDR-ghosting", "HDR-strength"])

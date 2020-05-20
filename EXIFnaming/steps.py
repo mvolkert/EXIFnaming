@@ -2,7 +2,7 @@
 """
 Steps combine multiple functions
 """
-from EXIFnaming.nameop import filter_series, rename_HDR, sanitize_filename, create_example_csvs, create_favorites_csv
+from EXIFnaming.nameop import filter_series, rename_HDR, sanitize_filename, create_example_csvs, create_rating_csv
 from EXIFnaming.readexif import order, rename, rotate
 from EXIFnaming.setexif import geotag, write_exif_using_csv
 
@@ -57,6 +57,6 @@ def make_fav(timezone: int):
     :param timezone: number of hours offset for geotag
     """
     sanitize_filename(folder=r"", posttags_to_end=None, onlyprint=False)
-    create_favorites_csv(rating=4, name="")
+    create_rating_csv(rating=4, subdir="")
     geotag(timezone=timezone, offset="")
     write_exif_using_csv("*", csv_restriction="", import_exif=False, overwrite_gps=False)
