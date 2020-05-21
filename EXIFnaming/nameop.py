@@ -360,6 +360,9 @@ def create_tags_csv(location: str = ""):
     extract tags from the file name
     write a csv file with those tags
     :param location: optional content of directory column
+
+    This csv can be modified to be used with :func:`write_exif_using_csv` or :func:`placeinfo.write_infos`
+    If you want to modify it with EXCEL or Calc take care to import all columns of the csv as text.
     """
     inpath = os.getcwd()
     tag_set = OrderedSet()
@@ -381,6 +384,9 @@ def create_tags_csv_per_dir():
     """
     extract tags from the file name
     write a csv file with those tags and group them by toplevel directory
+
+    This csv can be modified to be used with :func:`write_exif_using_csv` or :func:`placeinfo.write_infos`
+    If you want to modify it with EXCEL or Calc take care to import all columns of the csv as text.
     """
     log_function_call(create_tags_csv_per_dir.__name__)
     inpath = os.getcwd()
@@ -412,6 +418,9 @@ def create_counters_csv():
     """
     extract counter from the file name
     write a csv file with those counters
+
+    This csv can be modified to be used with :func:`write_exif_using_csv`
+    If you want to modify it with EXCEL or Calc take care to import all columns of the csv as text.
     """
     log_function_call(create_tags_csv_per_dir.__name__)
     inpath = os.getcwd()
@@ -431,6 +440,9 @@ def create_counters_csv_per_dir():
     """
     extract counter from the file name
     write a csv file with those counters for each directory
+
+    This csv can be modified to be used with :func:`write_exif_using_csv`
+    If you want to modify it with EXCEL or Calc take care to import all columns of the csv as text.
     """
     log_function_call(create_tags_csv_per_dir.__name__)
     inpath = os.getcwd()
