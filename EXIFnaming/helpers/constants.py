@@ -20,6 +20,7 @@ RecModes = ["4KB", "4K", "HS", "FHD"]
 hdr_algorithm = OrderedDict()
 hdr_algorithm["E"] = "Entropy"
 hdr_algorithm["Ld"] = "Luminance distance"
+hdr_algorithm["LRGB"] = "Luminance RGB"
 hdr_algorithm["C"] = "Colourmix"
 hdr_algorithm["Ls"] = "Luminance sharpness"
 
