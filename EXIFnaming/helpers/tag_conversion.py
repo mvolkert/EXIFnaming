@@ -78,6 +78,7 @@ class FileMetaData:
     kown_keys = restriction_keys + tag_setting_keys + Location.location_keys
     linesep = " | "
     secondary_regex = re.compile(r"_[0-9]+[A-Z]+\d*[2-9]")
+    dateTimeOriginal_regex = re.compile(r"\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}")
 
     def __init__(self, directory, filename):
         self.directory = directory
@@ -92,7 +93,9 @@ class FileMetaData:
         self.location = Location()
         self.rating = None
         self.gps = ()
-        self.gps_exif = False
+        self.has_gps_in_exif = False
+        self.dateTimeOriginal = ""
+        self.has_dateTimeOriginal_in_exif = False
         self.tagDict = None
         self.filenameAccessor = FilenameAccessor(filename)
         self.main_name = self.filenameAccessor.pre
@@ -122,7 +125,10 @@ class FileMetaData:
             self.rating = self.tagDict["Rating"]
 
         if not overwrite_gps and "GPS Latitude" in self.tagDict and self.tagDict["GPS Latitude"]:
-            self.gps_exif = True
+            self.has_gps_in_exif = True
+
+        if "DateTimeOriginal" in self.tagDict and self.tagDict["DateTimeOriginal"]:
+            self.has_dateTimeOriginal_in_exif = True
 
         if "User Comment" in self.tagDict:
             user_comment = self.tagDict["User Comment"]
@@ -151,9 +157,10 @@ class FileMetaData:
         if good_key('tags'): self.tags += [tag for tag in data['tags'].split(', ') if tag]
         if good_key('tags2'): self.tags2 += [tag for tag in data['tags2'].split(', ') if tag]
         if good_key('tags3'): self.tags3 += [tag for tag in data['tags3'].split(', ') if tag]
-        if good_key('gps') and not self.gps_exif: self.gps = data['gps'].split(', ')
+        if good_key('gps') and not self.has_gps_in_exif: self.gps = data['gps'].split(', ')
         if good_key('rating'): self.rating = data['rating']
         if good_key('description'): self.descriptions.append(data['description'])
+        if good_key('DateTimeOriginal') and not self.has_dateTimeOriginal_in_exif: self.dateTimeOriginal = data['DateTimeOriginal']
         self.location.update(data)
 
         for key in data:
@@ -225,6 +232,9 @@ class FileMetaData:
             tagDict["GPSLatitude"] = self.gps[0]
             tagDict["GPSLongitudeRef"] = self.gps[1]
             tagDict["GPSLongitude"] = self.gps[1]
+
+        if self.dateTimeOriginal and FileMetaData.dateTimeOriginal_regex.match(self.dateTimeOriginal):
+            tagDict["DateTimeOriginal"] = self.dateTimeOriginal
 
         add_dict(tagDict, self.location.to_tag_dict())
         tagDict['Keywords'].extend(self.tags2 + self.tags3)
