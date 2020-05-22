@@ -1,7 +1,7 @@
 import datetime as dt
 from collections import OrderedDict
 
-__all__ = ["giveDatetime", "newdate", "dateformating", "find_dir_with_closest_time", "print_firstlast_of_dirname"]
+__all__ = ["giveDatetime", "newdate", "dateformating", "find_dir_with_closest_time", "find_dir_with_closest_time_new", "print_firstlast_of_dirname"]
 
 
 def giveDatetime(datestring="2000:01:01 00:00:00.000") -> dt.datetime:
@@ -73,6 +73,21 @@ def find_dir_with_closest_time(dirDict_firsttime: dict, dirDict_lasttime: dict, 
         return deltaDict[deltatime_min]
     return time.strftime("%y%m%d_unrelated")
 
+def find_dir_with_closest_time_new(dirDict: dict, time: dt.datetime,
+                               maxdelta=3600 * 24) -> str:
+    deltaDict = OrderedDict()
+    for name, time_tub in dirDict.items():
+        deltafirst = (time - time_tub[0]).total_seconds()
+        deltalast = (time - time_tub[1]).total_seconds()
+        if 0 < deltafirst and  deltalast < 0:
+            return name
+        deltaDict[abs(deltafirst)] = name
+        deltaDict[abs(deltalast)] = name
+
+    deltatime_min = min(deltaDict.keys())
+    if deltatime_min < maxdelta:
+        return deltaDict[deltatime_min]
+    return time.strftime("%y%m%d_unrelated")
 
 def print_firstlast_of_dirname(dirDict_firsttime: dict, dirDict_lasttime: dict):
     outDict = OrderedDict()

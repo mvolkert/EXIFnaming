@@ -14,7 +14,7 @@ import numpy as np
 
 from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_firstlast_of_dirname, \
-    find_dir_with_closest_time
+    find_dir_with_closest_time, find_dir_with_closest_time_new
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
 from EXIFnaming.helpers.fileop import writeToFile, renameInPlace, moveFiles, renameTemp, move, \
     copyFilesTo, get_filename_sorted_dirfiletuples, is_invalid_path
@@ -400,6 +400,22 @@ def _read_timetable(filename: str = None):
 _read_timetable.timeformat = "%y%m%d %H:%M"
 
 
+def _read_timetable_new(filename: str = None):
+    if not filename:
+        filename = get_info_dir("timetable.txt")
+
+    file = open(filename, 'r')
+    dirNameDict = OrderedDict()
+    for line in file:
+        dir_name, start, end = [entry.strip(' ').strip('\r\n') for entry in line.split(';')]
+        if not start or not end: continue
+        start = dt.datetime.strptime(start, _read_timetable.timeformat)
+        end = dt.datetime.strptime(end, _read_timetable.timeformat)
+        dirNameDict[dir_name] = (start, end)
+    file.close()
+    return dirNameDict
+
+
 def better_gpx_via_timetable(gpxfilename: str):
     """
     crossmatch gpx file with timetable and take only entries for which photos exist
@@ -418,7 +434,7 @@ def better_gpx_via_timetable(gpxfilename: str):
 
     timefile = get_info_dir("timetable.txt")
     gpxfilename = get_gps_dir(gpxfilename)
-    dirNameDict_firsttime, dirNameDict_lasttime = _read_timetable(timefile)
+    dirNameDict = _read_timetable_new(timefile)
     timeregex = re.compile("(.*<time>)([^<]*)(</time>.*)")
     gpxfilename_out, ext = gpxfilename.rsplit('.', 1)
     dirName_last1 = ""
@@ -438,7 +454,7 @@ def better_gpx_via_timetable(gpxfilename: str):
             line = line.replace("wpt", "trkpt")
             time = match.group(2)
             time = dt.datetime.strptime(time, "%Y-%m-%dT%H:%M:%SZ")
-            dirName = find_dir_with_closest_time(dirNameDict_firsttime, dirNameDict_lasttime, time, 3600)
+            dirName = find_dir_with_closest_time_new(dirNameDict, time, 3600)
             if "unrelated" in dirName:
                 write(dirName_last2, gpxfile_out2)
                 dirName_last2 = dirName
