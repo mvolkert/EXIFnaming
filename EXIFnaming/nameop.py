@@ -37,7 +37,8 @@ def filter_series():
     log_function_call(filter_series.__name__)
     inpath = os.getcwd()
     skipdirs = ["B" + str(i) for i in range(1, 8)]
-    skipdirs += ["S", "SM", "TL", "mp4", "HDR", "single", "PANO", "others"]
+    skipdirs += ["S", "SM", "TL", "mp4", "HDR", "single", "PANO", "others", "TLM"]
+    # TLM: Timelapse manual - pictures on different days to be combined to a Timelapse
     skipdirs += [model for model in CameraModelShort.values() if model]
 
     log().info(inpath)
