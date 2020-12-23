@@ -220,6 +220,8 @@ def order():
     print_firstlast_of_dirname(dirNameDict_firsttime, dirNameDict_lasttime)
 
     Tagdict_mp4 = read_exiftags(file_types=settings.video_types)
+    if len(Tagdict_mp4) == 0:
+        return
     leng = len(list(Tagdict_mp4.values())[0])
     log().info('Number of mp4: %d', leng)
     for i in range(leng):
