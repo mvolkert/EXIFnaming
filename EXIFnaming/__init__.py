@@ -20,8 +20,8 @@ from EXIFnaming.nameop import filter_series, rename_back, filter_primary, rename
     copy_subdirectories
 from EXIFnaming.nameop import filter_series, filter_primary, copy_subdirectories, copy_files, copy_new_files, \
     replace_in_file, folders_to_main, rename_HDR, sanitize_filename, rename_temp_back, rename_back, \
-    create_tags_csv, create_tags_csv_per_dir, create_counters_csv, create_counters_csv_per_dir, create_example_csvs, \
-    create_rating_csv
+    create_tags_csv, create_tags_csv_per_dir, create_counters_csv, create_counters_csv_per_dir, \
+    create_names_csv_per_dir, create_example_csvs, create_rating_csv
 from EXIFnaming.picture import detect_blurry, detect_similar, resize
 from EXIFnaming.readexif import print_info, rename, order, searchby_exiftag_equality, \
     searchby_exiftag_interval, rotate, rename_from_exif, print_timetable, better_gpx_via_timetable

@@ -26,8 +26,8 @@ from sortedcollections import OrderedSet
 
 __all__ = ["filter_series", "filter_primary", "copy_subdirectories", "copy_files", "copy_new_files", "replace_in_file",
            "folders_to_main", "rename_HDR", "sanitize_filename", "rename_temp_back", "rename_back", "create_tags_csv",
-           "create_tags_csv_per_dir", "create_counters_csv", "create_counters_csv_per_dir", "create_example_csvs",
-           "create_rating_csv"]
+           "create_tags_csv_per_dir", "create_counters_csv", "create_counters_csv_per_dir", 'create_names_csv_per_dir',
+           "create_example_csvs", "create_rating_csv"]
 
 
 def filter_series():
@@ -482,6 +482,45 @@ def _create_csv_writer(filename: str, titles: Iterable) -> Tuple[IO, Any]:
     writer = csv.writer(file, dialect="semicolon")
     writer.writerow(titles)
     return file, writer
+
+
+def create_names_csv_per_dir(start_after_dir=''):
+    """
+    extract names from the file path
+    write a csv file with those names for each directory
+
+    This csv can be modified to be used with :func:`write_exif_using_csv`
+    If you want to modify it with EXCEL or Calc take care to import all columns of the csv as text.
+    """
+    log_function_call(create_tags_csv_per_dir.__name__)
+    inpath = os.getcwd()
+    tag_set_names = OrderedSet()
+    out_filename = get_info_dir("tags_names.csv")
+    csvfile, writer = _create_csv_writer(out_filename, ["directory", "name_main", "tags"])
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if is_invalid_path(dirpath): continue
+        for dirname in dirnames:
+            filenameAccessors = [FilenameAccessor(filename) for filename in
+                                 get_plain_filenames_of_type(image_types, dirpath, dirname)]
+            if len(filenameAccessors) == 0: continue
+            tags = []
+            found = False
+            for part in dirpath.split(os.sep):
+                if found:
+                    tags.append(part)
+                else:
+                    found = part == start_after_dir
+            tags += dirname.split(', ')
+            filenameAccessorLast = filenameAccessors[0]
+            tag_set_names.add(
+                (dirname, filenameAccessorLast.pre, ', '.join(OrderedSet(tags + [filenameAccessorLast.pre]))))
+            for filenameAccessor in filenameAccessors[1:]:
+                if not filenameAccessor.pre == filenameAccessorLast.pre:
+                    tag_set_names.add(
+                        (dirname, filenameAccessor.pre, ', '.join(OrderedSet(tags + [filenameAccessor.pre]))))
+                filenameAccessorLast = filenameAccessor
+    writer.writerows(tag_set_names)
+    csvfile.close()
 
 
 def create_rating_csv(rating: int = 4, subdir: str = ""):
