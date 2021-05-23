@@ -1,8 +1,9 @@
+import csv
 import os
 import re
 import shutil
 from collections import OrderedDict
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Tuple, IO, Any
 
 import numpy as np
 
@@ -14,7 +15,7 @@ from EXIFnaming.helpers import settings
 __all__ = ["count_files", "count_files_in", "is_invalid_path", "writeToFile", "renameInPlace", "moveFiles",
            "renameTemp", "move", "copyFilesTo", "get_filename_sorted_dirfiletuples", "moveToSubpath", "isfile",
            "moveBracketSeries", "moveSeries", "removeIfEmtpy", "get_relpath_depth", "move_media", "get_plain_filenames",
-           "filterFiles", "file_has_ext", "remove_ext", "get_plain_filenames_of_type"]
+           "filterFiles", "file_has_ext", "remove_ext", "get_plain_filenames_of_type", "create_csv_writer"]
 
 
 def moveFiles(filenames: List[Tuple[str, str]], path: str):
@@ -245,3 +246,10 @@ def get_filename_sorted_dirfiletuples(file_extensions, *path) -> List[Tuple[str,
 def is_not_standard_camera(filename: str) -> bool:
     models = [model for model in c.CameraModelShort.values() if not model == ""]
     return any(model in filename for model in models)
+
+def create_csv_writer(filename: str, titles: Iterable) -> Tuple[IO, Any]:
+    file = open(filename, "w")
+    csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
+    writer = csv.writer(file, dialect="semicolon")
+    writer.writerow(titles)
+    return file, writer

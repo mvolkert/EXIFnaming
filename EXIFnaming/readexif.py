@@ -11,8 +11,9 @@ import re
 from collections import OrderedDict
 
 import numpy as np
+from sortedcollections import OrderedSet
 
-from EXIFnaming.helpers import settings
+from EXIFnaming.helpers import settings, fileop
 from EXIFnaming.helpers.date import giveDatetime, newdate, dateformating, print_firstlast_of_dirname, \
     find_dir_with_closest_time, find_dir_with_closest_time_new
 from EXIFnaming.helpers.decode import read_exiftags, has_not_keys, read_exiftag
@@ -25,7 +26,8 @@ from EXIFnaming.helpers.tag_conversion import FilenameBuilder
 from EXIFnaming.helpers.tags import create_model, getPath
 
 __all__ = ["print_info", "rename", "order", "order_with_timetable", "searchby_exiftag_equality",
-           "searchby_exiftag_interval", "rotate", "rename_from_exif", "print_timetable", "better_gpx_via_timetable"]
+           "searchby_exiftag_interval", "rotate", "rename_from_exif", "print_timetable", "better_gpx_via_timetable",
+           "find_bad_exif"]
 
 
 def print_info(tagGroupNames=(), allGroups=False):
@@ -465,3 +467,50 @@ def better_gpx_via_timetable(gpxfilename: str):
                 dirName_last1 = dirName
     gpxfile_out1.close()
     gpxfile_out2.close()
+
+def find_bad_exif(do_move=True, folder: str = r""):
+    """
+    find files with missing exif data
+    """
+    log_function_call(find_bad_exif.__name__, do_move)
+
+    clock = Clock()
+    inpath = os.getcwd()
+    lines_no_tags = OrderedSet()
+    lines_bad_date = OrderedSet()
+    out_filename_no_tags = get_info_dir("no_tags.csv")
+    file_no_tags, writer_no_tags = fileop.create_csv_writer(out_filename_no_tags,
+                                                            ["directory", "name_part"])
+    out_filename_bad_date = get_info_dir("bad_date.csv")
+    file_bad_date, writer_bad_date = fileop.create_csv_writer(out_filename_bad_date,
+                                                              ["directory", "name_part"])
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if is_invalid_path(dirpath, regex=folder): continue
+        if fileop.count_files(filenames, settings.image_types) == 0: continue
+        Tagdict = read_exiftags(dirpath, settings.image_types, ask=False)
+        if len(list(Tagdict.values())) == 0: continue
+        leng = len(list(Tagdict.values())[0])
+        for i in range(leng):
+            is_bad = False
+            if not "Keywords" in Tagdict or not Tagdict["Keywords"][i]:
+                lines_no_tags.add(
+                    (os.path.basename(dirpath), _remove_counter(Tagdict["File Name"][i])))
+                is_bad = True
+            if ("Date Created" in Tagdict and Tagdict["Date Created"][i]) or (
+                    "Create Date" in Tagdict and Tagdict["Create Date"][i]):
+                lines_bad_date.add(
+                    (os.path.basename(dirpath), _remove_counter(Tagdict["File Name"][i])))
+                is_bad = True
+            if do_move and is_bad and not "bad_exif" in dirpath:
+                move(Tagdict["File Name"][i], dirpath, dirpath.replace(inpath, os.path.join(inpath, "bad_exif")))
+    writer_no_tags.writerows(lines_no_tags)
+    writer_bad_date.writerows(lines_bad_date)
+    file_no_tags.close()
+    file_bad_date.close()
+    clock.finish()
+
+
+def _remove_counter(filename: str):
+    filename = fileop.remove_ext(filename)
+    return filename[:filename.rfind("_")]
+
