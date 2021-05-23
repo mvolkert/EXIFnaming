@@ -117,14 +117,26 @@ def has_not_keys(indict: dict, keys: list) -> bool:
     return False
 
 
-def call_exiftool(dirpath: str, name: str, options: List[str] = None, override=True) -> (str, str):
+def call_exiftool(dirpath: str, name: str, options: List[str] = None, override=True) -> (str, List[str]):
     if not options:
         options = []
     fullname = os.path.join(dirpath, name)
-    return call_exiftool_direct(options + [fullname], override)
+    (out, errorLines) = call_exiftool_direct(options + [fullname], override)
+    # https://exiftool.org/faq.html#Q20
+    if any("Bad format (0) for IFD0 entry" in line for line in errorLines):
+        log().info("try to fix Bad format")
+        call_exiftool_direct(call_exiftool_direct.auto_fix_options_bad_format + [fullname], override)
+        log().info("try again")
+        (out, errorLines) = call_exiftool_direct(options + [fullname], override)
+    if any("Bad MakerNotes offset" in line for line in errorLines):
+        log().info("try to fix Bad MakerNotes")
+        call_exiftool_direct(call_exiftool_direct.auto_fix_options_bad_makernotes + [fullname], override)
+        log().info("try again")
+        (out, errorLines) = call_exiftool_direct(options + [fullname], override)
+    return out, errorLines
 
 
-def call_exiftool_direct(options: List[str] = None, override=True) -> (str, str):
+def call_exiftool_direct(options: List[str] = None, override=True) -> (str, List[str]):
     if not options:
         options = []
     log_function_call_debug(call_exiftool_direct.__name__, options, override)
@@ -135,14 +147,21 @@ def call_exiftool_direct(options: List[str] = None, override=True) -> (str, str)
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     out = out.decode(settings.encoding_format)
+    errorLines = _decode_error(err)
+    for line in errorLines:
+        log().warning(line)
+    return out, errorLines
+
+
+call_exiftool_direct.auto_fix_options_bad_format = ["-all=", "-tagsfromfile", "@", "-all:all", "-unsafe", "-icc_profile"]
+call_exiftool_direct.auto_fix_options_bad_makernotes = ["-exif:all=", "-tagsfromfile", "@", "-exif:all", "-unsafe", "-thumbnailimage", "-F"]
+
+def _decode_error(err) -> List[str]:
     try:
         err = err.decode("UTF-8")
     except UnicodeDecodeError:
         err = err
-    for line in err.split("\r\n"):
-        if not line: continue
-        log().warning(line)
-    return out, err
+    return [line for line in err.split("\r\n") if line]
 
 
 def getExiftoolPath() -> str:
