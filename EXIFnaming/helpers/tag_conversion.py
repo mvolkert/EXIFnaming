@@ -154,9 +154,9 @@ class FileMetaData:
             return
 
         if good_key('title'): self.title = data['title']
-        if good_key('tags'): self.tags += [tag for tag in data['tags'].split(', ') if tag]
-        if good_key('tags2'): self.tags2 += [tag for tag in data['tags2'].split(', ') if tag]
-        if good_key('tags3'): self.tags3 += [tag for tag in data['tags3'].split(', ') if tag]
+        if good_key('tags'): self.tags += [tag for tag in data['tags'].split(', ') if tag and tag not in self.tags]
+        if good_key('tags2'): self.tags2 += [tag for tag in data['tags2'].split(', ') if tag and tag not in self.tags2]
+        if good_key('tags3'): self.tags3 += [tag for tag in data['tags3'].split(', ') if tag and tag not in self.tags3]
         if good_key('gps') and not self.has_gps_in_exif: self.gps = data['gps'].split(', ')
         if good_key('rating'): self.rating = data['rating']
         if good_key('description'): self.descriptions.append(data['description'])
