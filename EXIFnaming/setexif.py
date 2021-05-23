@@ -66,7 +66,7 @@ def fake_date(start='2000:01:01'):
     """
     log_function_call(fake_date.__name__, start)
     inpath = os.getcwd()
-    start += ' 00:00:00.000'
+    start += ' 06:00:00.000'
     start_time = giveDatetime(start)
     dir_counter = -1
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -79,7 +79,8 @@ def fake_date(start='2000:01:01'):
         for filename in filenames:
             time += dt.timedelta(seconds=1)
             time_string = dateformating(time, "YYYY:MM:DD HH:mm:ss")
-            write_exiftag({"DateTimeOriginal": time_string}, dirpath, filename)
+            #CreateDate is sometimes set and google fotos gives it precedence over DateTimeOriginal
+            write_exiftag({"DateTimeOriginal": time_string}, dirpath, filename, ["-DateCreated=", "-CreateDate=", "-Artist="])
 
 
 def geotag(timezone: int = 2, offset: str = "", start_folder: str = ""):
