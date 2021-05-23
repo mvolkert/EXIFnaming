@@ -27,7 +27,7 @@ from sortedcollections import OrderedSet
 __all__ = ["filter_series", "filter_primary", "copy_subdirectories", "copy_files", "copy_new_files", "replace_in_file",
            "folders_to_main", "rename_HDR", "sanitize_filename", "rename_temp_back", "rename_back", "create_tags_csv",
            "create_tags_csv_per_dir", "create_counters_csv", "create_counters_csv_per_dir", 'create_names_csv_per_dir',
-           "create_example_csvs", "create_rating_csv"]
+           "create_example_csvs", "create_rating_csv", "move_each_pretag_to_folder"]
 
 
 def filter_series():
@@ -208,6 +208,21 @@ def folders_to_main(series: bool = False, primary: bool = False, blurry: bool = 
             if not file_has_ext(filename, settings.image_types + settings.video_types): continue
             move(filename, dirpath, destination)
         removeIfEmtpy(dirpath)
+
+
+def move_each_pretag_to_folder():
+    """
+    """
+    log_function_call(move_each_pretag_to_folder.__name__)
+    inpath = os.getcwd()
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if is_invalid_path(dirpath): continue
+        for filename in filenames:
+            filenameAccessor = FilenameAccessor(filename)
+            if not filenameAccessor.pre in dirpath:
+                move(filename, dirpath, os.path.join(dirpath, filenameAccessor.pre))
+            if len(filenameAccessor.primtags) > 0 and not filenameAccessor.primtags[0] in dirpath:
+                move(filename, dirpath, os.path.join(dirpath, *filenameAccessor.primtags))
 
 
 def rename_HDR(mode="HDRT", folder=r"HDR\w*"):
@@ -423,7 +438,7 @@ def create_counters_csv():
     This csv can be modified to be used with :func:`write_exif_using_csv`
     If you want to modify it with EXCEL or Calc take care to import all columns of the csv as text.
     """
-    log_function_call(create_tags_csv_per_dir.__name__)
+    log_function_call(create_counters_csv.__name__)
     inpath = os.getcwd()
     tag_set_names = OrderedSet()
     out_filename = get_info_dir("tags_counters.csv")
@@ -492,7 +507,7 @@ def create_names_csv_per_dir(start_after_dir=''):
     This csv can be modified to be used with :func:`write_exif_using_csv`
     If you want to modify it with EXCEL or Calc take care to import all columns of the csv as text.
     """
-    log_function_call(create_tags_csv_per_dir.__name__)
+    log_function_call(create_names_csv_per_dir.__name__)
     inpath = os.getcwd()
     tag_set_names = OrderedSet()
     out_filename = get_info_dir("tags_names.csv")
