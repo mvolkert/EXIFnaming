@@ -443,8 +443,8 @@ def create_counters_csv():
     tag_set_names = OrderedSet()
     out_filename = get_info_dir("tags_counters.csv")
     csvfile, writer = fileop.create_csv_writer(out_filename,
-                                         ["directory", "name_main", "name_part", "first", "last", "tags3",
-                                          "description"])
+                                               ["directory", "name_main", "name_part", "first", "last", "tags3",
+                                                "description"])
 
     filenameAccessors = [FilenameAccessor(filename) for filename in get_plain_filenames_of_type(image_types, inpath)]
     _add_counter_csv_entries("", filenameAccessors, tag_set_names)
@@ -465,8 +465,8 @@ def create_counters_csv_per_dir():
     tag_set_names = OrderedSet()
     out_filename = get_info_dir("tags_counters.csv")
     csvfile, writer = fileop.create_csv_writer(out_filename,
-                                         ["directory", "name_main", "name_part", "first", "last", "tags3",
-                                          "description"])
+                                               ["directory", "name_main", "name_part", "first", "last", "tags3",
+                                                "description"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not inpath == dirpath: continue
         for dirname in dirnames:
@@ -491,8 +491,6 @@ def _add_counter_csv_entries(dirname: str, filenameAccessors: List[FilenameAcces
                        fileNameAccessorFirst.counter_main(), fileNameAccessorLast.counter_main()))
 
 
-
-
 def create_names_csv_per_dir(start_after_dir=''):
     """
     extract names from the file path
@@ -508,26 +506,24 @@ def create_names_csv_per_dir(start_after_dir=''):
     csvfile, writer = fileop.create_csv_writer(out_filename, ["directory", "name_main", "tags"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath): continue
-        for dirname in dirnames:
-            filenameAccessors = [FilenameAccessor(filename) for filename in
-                                 get_plain_filenames_of_type(image_types, dirpath, dirname)]
-            if len(filenameAccessors) == 0: continue
-            tags = []
-            found = False
-            for part in dirpath.split(os.sep):
-                if found:
-                    tags.append(part)
-                else:
-                    found = part == start_after_dir
-            tags += dirname.split(', ')
-            filenameAccessorLast = filenameAccessors[0]
-            tag_set_names.add(
-                (dirname, filenameAccessorLast.pre, ', '.join(OrderedSet(tags + [filenameAccessorLast.pre]))))
-            for filenameAccessor in filenameAccessors[1:]:
-                if not filenameAccessor.pre == filenameAccessorLast.pre:
-                    tag_set_names.add(
-                        (dirname, filenameAccessor.pre, ', '.join(OrderedSet(tags + [filenameAccessor.pre]))))
-                filenameAccessorLast = filenameAccessor
+        filenameAccessors = [FilenameAccessor(filename) for filename in
+                             filterFiles(filenames, image_types)]
+        if len(filenameAccessors) == 0: continue
+        tags = []
+        found = False
+        for part in dirpath.split(os.sep):
+            if found:
+                tags += part.split(', ')
+            else:
+                found = part == start_after_dir
+        filenameAccessorLast = filenameAccessors[0]
+        tag_set_names.add(
+            (", ".join(tags), filenameAccessorLast.pre, ', '.join(OrderedSet(tags + [filenameAccessorLast.pre]))))
+        for filenameAccessor in filenameAccessors[1:]:
+            if not filenameAccessor.pre == filenameAccessorLast.pre:
+                tag_set_names.add(
+                    (", ".join(tags), filenameAccessor.pre, ', '.join(OrderedSet(tags + [filenameAccessor.pre]))))
+            filenameAccessorLast = filenameAccessor
     writer.writerows(tag_set_names)
     csvfile.close()
 
