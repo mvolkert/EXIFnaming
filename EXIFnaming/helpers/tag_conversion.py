@@ -171,7 +171,7 @@ class FileMetaData:
         def not_match_entry(key: str, func):
             return key in data and data[key] and not func(data[key])
 
-        if not_match_entry('directory', lambda value: value in self.directory):
+        if not_match_entry('directory', lambda value: all(val in self.directory for val in value.split(', '))):
             return False
         if not_match_entry('name_main', lambda value: value == self.main_name):
             return False
@@ -179,7 +179,7 @@ class FileMetaData:
             return False
         if not_match_entry('last', lambda value: self.counter <= value):
             return False
-        if not_match_entry('name_part', lambda value: value in self.filename):
+        if not_match_entry('name_part', lambda value: all(val in self.filename for val in value.split(', '))):
             return False
 
         self.has_changed = True
