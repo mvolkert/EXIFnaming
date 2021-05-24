@@ -178,7 +178,8 @@ def count_files(filenames: List[str], file_extensions: Iterable):
 
 
 def filterFiles(filenames: List[str], file_extensions: Iterable):
-    return [filename for filename in filenames if not file_extensions or file_has_ext(filename, file_extensions)]
+    return [filename for filename in filenames if
+            (not file_extensions or file_has_ext(filename, file_extensions)) and not filename == 'Thumbs.jpg']
 
 
 def file_has_ext(filename: str, file_extensions: Iterable, ignore_case=True) -> bool:
@@ -246,6 +247,7 @@ def get_filename_sorted_dirfiletuples(file_extensions, *path) -> List[Tuple[str,
 def is_not_standard_camera(filename: str) -> bool:
     models = [model for model in c.CameraModelShort.values() if not model == ""]
     return any(model in filename for model in models)
+
 
 def create_csv_writer(filename: str, titles: Iterable) -> Tuple[IO, Any]:
     file = open(filename, "w")
