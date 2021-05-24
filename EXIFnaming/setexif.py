@@ -58,11 +58,12 @@ def shift_time(hours: int = 0, minutes: int = 0, seconds: int = 0, is_video: boo
     dir_change_printer.finish()
 
 
-def fake_date(start='2000:01:01'):
+def fake_date(start='2000:01:01', write=True):
     """
     each file in a directory is one second later
     each dir is one day later
     :param start: the date on which to start generate fake dates
+    :param write: whether should write or only print
     """
     log_function_call(fake_date.__name__, start)
     inpath = os.getcwd()
@@ -73,15 +74,16 @@ def fake_date(start='2000:01:01'):
         if is_invalid_path(dirpath): continue
         filenames = filterFiles(filenames, settings.image_types + settings.video_types)
         if not filenames: continue
-        print(dirpath)
         dir_counter += 1
         time = start_time + dt.timedelta(days=dir_counter)
+        log().info(time)
         for filename in filenames:
             time += dt.timedelta(seconds=1)
             time_string = dateformating(time, "YYYY:MM:DD HH:mm:ss")
-            # CreateDate is sometimes set and google fotos gives it precedence over DateTimeOriginal
-            write_exiftag({"DateTimeOriginal": time_string}, dirpath, filename,
-                          ["-DateCreated=", "-CreateDate=", "-Artist=", "-DigitalCreationDate=", "-ModifyDate="])
+            if write:
+                # CreateDate is sometimes set and google fotos gives it precedence over DateTimeOriginal
+                write_exiftag({"DateTimeOriginal": time_string}, dirpath, filename,
+                              ["-DateCreated=", "-CreateDate=", "-Artist=", "-DigitalCreationDate=", "-ModifyDate="])
 
 
 def geotag(timezone: int = 2, offset: str = "", start_folder: str = ""):
