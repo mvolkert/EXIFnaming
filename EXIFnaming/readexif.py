@@ -495,7 +495,10 @@ def find_bad_exif(do_move=True, folder: str = r""):
         if len(list(Tagdict.values())) == 0: continue
         leng = len(list(Tagdict.values())[0])
         for i in range(leng):
-            if not "Keywords" in Tagdict or not Tagdict["Keywords"][i]:
+            if (not "Keywords" in Tagdict or not Tagdict["Keywords"][i]) or \
+                    (not "Subject" in Tagdict or not Tagdict["Subject"][i]) or \
+                    (not "Description" in Tagdict or not Tagdict["Description"][i]) or \
+                    (not "User Comment" in Tagdict or not Tagdict["User Comment"][i]):
                 lines_no_tags.add(
                     (os.path.basename(dirpath), _remove_counter(Tagdict["File Name"][i])))
                 if do_move and not "bad_exif" in dirpath:
