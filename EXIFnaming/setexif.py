@@ -83,7 +83,7 @@ def fake_date(start='2000:01:01', write=True):
             if write:
                 # CreateDate is sometimes set and google fotos gives it precedence over DateTimeOriginal
                 write_exiftag({"DateTimeOriginal": time_string}, dirpath, filename,
-                              ["-DateCreated=", "-CreateDate=", "-Artist=", "-DigitalCreationDate=", "-ModifyDate="])
+                              ["-DateCreated=", "-TimeCreated=", "-CreateDate=", "-Artist=", "-DigitalCreationDate=", "-ModifyDate="])
 
 
 def geotag(timezone: int = 2, offset: str = "", start_folder: str = ""):

@@ -477,12 +477,16 @@ def find_bad_exif(do_move=True, folder: str = r""):
     clock = Clock()
     inpath = os.getcwd()
     lines_no_tags = OrderedSet()
-    lines_bad_date = OrderedSet()
+    lines_bad_date_additional = OrderedSet()
+    lines_date_missing = OrderedSet()
     out_filename_no_tags = get_info_dir("no_tags.csv")
     file_no_tags, writer_no_tags = fileop.create_csv_writer(out_filename_no_tags,
                                                             ["directory", "name_part"])
-    out_filename_bad_date = get_info_dir("bad_date.csv")
-    file_bad_date, writer_bad_date = fileop.create_csv_writer(out_filename_bad_date,
+    out_filename_bad_date_additional = get_info_dir("bad_date_additional.csv")
+    file_bad_date_additional, writer_bad_date_additional = fileop.create_csv_writer(out_filename_bad_date_additional,
+                                                              ["directory", "name_part"])
+    out_filename_date_missing = get_info_dir("date_missing.csv")
+    file_date_missing, writer_date_missing = fileop.create_csv_writer(out_filename_date_missing,
                                                               ["directory", "name_part"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
@@ -498,18 +502,27 @@ def find_bad_exif(do_move=True, folder: str = r""):
                     move(Tagdict["File Name"][i], dirpath,
                          dirpath.replace(inpath, os.path.join(inpath, "bad_exif_keywords")))
             if ("Date Created" in Tagdict and Tagdict["Date Created"][i]) or \
+                    ("Time Created" in Tagdict and Tagdict["Time Created"][i]) or \
                     ("Create Date" in Tagdict and Tagdict["Create Date"][i]) or \
                     ("Modify Date" in Tagdict and Tagdict["Modify Date"][i]) or \
                     ("Digital Creation Date" in Tagdict and Tagdict["Digital Creation Date"][i]):
-                lines_bad_date.add(
+                lines_bad_date_additional.add(
                     (os.path.basename(dirpath), _remove_counter(Tagdict["File Name"][i])))
                 if do_move and not "bad_exif" in dirpath:
                     move(Tagdict["File Name"][i], dirpath,
-                         dirpath.replace(inpath, os.path.join(inpath, "bad_exif_date")))
+                         dirpath.replace(inpath, os.path.join(inpath, "bad_exif_date_additional")))
+            if not "Date/Time Original" in Tagdict and not Tagdict["Date/Time Original"][i]:
+                lines_date_missing.add(
+                    (os.path.basename(dirpath), _remove_counter(Tagdict["File Name"][i])))
+                if do_move and not "bad_exif" in dirpath:
+                    move(Tagdict["File Name"][i], dirpath,
+                         dirpath.replace(inpath, os.path.join(inpath, "bad_exif_date_missing")))
     writer_no_tags.writerows(lines_no_tags)
-    writer_bad_date.writerows(lines_bad_date)
+    writer_bad_date_additional.writerows(lines_bad_date_additional)
+    writer_date_missing.writerows(lines_date_missing)
     file_no_tags.close()
-    file_bad_date.close()
+    file_bad_date_additional.close()
+    file_date_missing.close()
     clock.finish()
 
 
