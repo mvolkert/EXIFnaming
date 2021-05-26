@@ -13,7 +13,7 @@ from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.date import giveDatetime, dateformating
 from EXIFnaming.helpers.decode import read_exiftags, call_exiftool, askToContinue, write_exiftags, count_files_in, \
     write_exiftag, has_not_keys, call_exiftool_direct, read_exiftag
-from EXIFnaming.helpers.fileop import filterFiles, is_invalid_path
+from EXIFnaming.helpers.fileop import filterFiles, is_invalid_path, remove_ext
 from EXIFnaming.helpers.measuring_tools import Clock, DirChangePrinter
 from EXIFnaming.helpers.program_dir import get_gps_dir, get_setexif_dir, log, log_function_call
 from EXIFnaming.helpers.tag_conversion import FileMetaData, Location, add_dict, FilenameAccessor
@@ -73,17 +73,28 @@ def fake_date(start='2000:01:01', write=True):
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath): continue
         filenames = filterFiles(filenames, settings.image_types + settings.video_types)
-        if not filenames: continue
+        if not filenames or len(filenames) == 0: continue
         dir_counter += 1
-        time = start_time + dt.timedelta(days=dir_counter)
-        log().info(time)
+        dirtime = start_time + dt.timedelta(days=dir_counter)
+        log().info(dirtime)
+        secounds = 0
+        minutes = 0
+        lastname = ""
         for filename in filenames:
-            time += dt.timedelta(seconds=1)
+            if len(filename) == len(lastname) and remove_ext(filename)[:-2] == remove_ext(lastname)[:-2]:
+                secounds += 1
+            else:
+                secounds = 0
+                minutes += 1
+            lastname = filename
+            time = dirtime + dt.timedelta(minutes=minutes, seconds=secounds)
+
             time_string = dateformating(time, "YYYY:MM:DD HH:mm:ss")
             if write:
                 # CreateDate is sometimes set and google fotos gives it precedence over DateTimeOriginal
                 write_exiftag({"DateTimeOriginal": time_string}, dirpath, filename,
-                              ["-DateCreated=", "-TimeCreated=", "-CreateDate=", "-Artist=", "-DigitalCreationDate=", "-ModifyDate="])
+                              ["-DateCreated=", "-TimeCreated=", "-CreateDate=", "-Artist=", "-DigitalCreationDate=",
+                               "-ModifyDate="])
 
 
 def geotag(timezone: int = 2, offset: str = "", start_folder: str = ""):
