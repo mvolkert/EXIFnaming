@@ -123,7 +123,11 @@ def call_exiftool(dirpath: str, name: str, options: List[str] = None, override=T
     fullname = os.path.join(dirpath, name)
     (out, errorLines) = call_exiftool_direct(options + [fullname], override)
     # https://exiftool.org/faq.html#Q20
-    if any("Bad format (0) for IFD0 entry" in line or "Invalid XMP" in line or "Exif_0x0000 tag out of sequence in IFD0" in line for line in errorLines):
+    if any("Bad format (0) for IFD0 entry" in line or
+           "Invalid XMP" in line or
+           "Exif_0x0000 tag out of sequence in IFD0" in line or
+           "IFD1 pointer references previous InteropIFD directory" in line
+           for line in errorLines):
         log().info("try to fix Bad format")
         call_exiftool_direct(call_exiftool_direct.auto_fix_options_bad_format + [fullname], override)
         log().info("try again")
@@ -161,9 +165,13 @@ call_exiftool_direct.auto_fix_options_bad_makernotes = ["-exif:all=", "-tagsfrom
 
 def _decode_error(err) -> List[str]:
     try:
-        err = err.decode("UTF-8")
+        err = err.decode(settings.encoding_format)
     except UnicodeDecodeError:
-        err = err
+        try:
+            err = err.decode("UTF-8")
+        except UnicodeDecodeError:
+            log().warning(err)
+            err = ""
     return [line for line in err.split("\r\n") if line]
 
 

@@ -468,7 +468,8 @@ def better_gpx_via_timetable(gpxfilename: str):
     gpxfile_out1.close()
     gpxfile_out2.close()
 
-def find_bad_exif(do_move=True, folder: str = r""):
+
+def find_bad_exif(do_move=True, check_date_additional=False, folder: str = r""):
     """
     find files with missing exif data
     """
@@ -484,10 +485,10 @@ def find_bad_exif(do_move=True, folder: str = r""):
                                                             ["directory", "name_part"])
     out_filename_bad_date_additional = get_info_dir("bad_date_additional.csv")
     file_bad_date_additional, writer_bad_date_additional = fileop.create_csv_writer(out_filename_bad_date_additional,
-                                                              ["directory", "name_part"])
+                                                                                    ["directory", "name_part"])
     out_filename_date_missing = get_info_dir("date_missing.csv")
     file_date_missing, writer_date_missing = fileop.create_csv_writer(out_filename_date_missing,
-                                                              ["directory", "name_part"])
+                                                                      ["directory", "name_part"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=folder): continue
         if fileop.count_files(filenames, settings.image_types) == 0: continue
@@ -504,17 +505,18 @@ def find_bad_exif(do_move=True, folder: str = r""):
                 if do_move and not "bad_exif" in dirpath:
                     move(Tagdict["File Name"][i], dirpath,
                          dirpath.replace(inpath, os.path.join(inpath, "bad_exif_keywords")))
-            if ("Date Created" in Tagdict and Tagdict["Date Created"][i]) or \
-                    ("Time Created" in Tagdict and Tagdict["Time Created"][i]) or \
-                    ("Create Date" in Tagdict and Tagdict["Create Date"][i]) or \
-                    ("Modify Date" in Tagdict and Tagdict["Modify Date"][i]) or \
-                    ("Digital Creation Date" in Tagdict and Tagdict["Digital Creation Date"][i]):
+            if check_date_additional and \
+                    (("Date Created" in Tagdict and Tagdict["Date Created"][i]) or
+                     ("Time Created" in Tagdict and Tagdict["Time Created"][i]) or
+                     ("Create Date" in Tagdict and Tagdict["Create Date"][i]) or
+                     ("Modify Date" in Tagdict and Tagdict["Modify Date"][i]) or
+                     ("Digital Creation Date" in Tagdict and Tagdict["Digital Creation Date"][i])):
                 lines_bad_date_additional.add(
                     (os.path.basename(dirpath), _remove_counter(Tagdict["File Name"][i])))
                 if do_move and not "bad_exif" in dirpath:
                     move(Tagdict["File Name"][i], dirpath,
                          dirpath.replace(inpath, os.path.join(inpath, "bad_exif_date_additional")))
-            if not "Date/Time Original" in Tagdict and not Tagdict["Date/Time Original"][i]:
+            if not "Date/Time Original" in Tagdict or not Tagdict["Date/Time Original"][i]:
                 lines_date_missing.add(
                     (os.path.basename(dirpath), _remove_counter(Tagdict["File Name"][i])))
                 if do_move and not "bad_exif" in dirpath:
@@ -527,6 +529,27 @@ def find_bad_exif(do_move=True, folder: str = r""):
     file_bad_date_additional.close()
     file_date_missing.close()
     clock.finish()
+
+
+def first_date_per_folder() -> OrderedDict:
+    """
+    find files with missing exif data
+    """
+    log_function_call(first_date_per_folder.__name__)
+
+    clock = Clock()
+    inpath = os.getcwd()
+    folder_dict = OrderedDict()
+
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if is_invalid_path(dirpath): continue
+        if fileop.count_files(filenames, settings.image_types) == 0: continue
+        Tagdict = read_exiftags(dirpath, settings.image_types, ask=False)
+        if len(list(Tagdict.values())) == 0: continue
+        folder_dict[os.path.relpath(dirpath, inpath)] = [date for date in Tagdict["Date/Time Original"] if date][0]
+
+    clock.finish()
+    return folder_dict
 
 
 def _remove_counter(filename: str):

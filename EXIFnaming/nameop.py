@@ -407,7 +407,7 @@ def create_tags_csv_per_dir():
     log_function_call(create_tags_csv_per_dir.__name__)
     inpath = os.getcwd()
     tag_set_names = OrderedSet()
-    out_filename = get_info_dir("tags_places.csv")
+    out_filename = get_info_dir("tags_per_dir.csv")
     tags_places_file, writer = fileop.create_csv_writer(out_filename, ["directory", "name_part"])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not inpath == dirpath: continue
