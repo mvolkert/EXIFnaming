@@ -123,16 +123,18 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keept
         newname = filenameBuilder.build()
 
         # handle already exiting filename - its ok when they are in different directories
+        # its not ok to have to files with one uppercase and another lowercase -> equals with ignore case
         if len(Tagdict["File Name new"]) > 0:
-            if newname == Tagdict["File Name new"][-1] and Tagdict["Directory"][i] == Tagdict["Directory"][i - 1]:
-                log().warning("%s already exists - assume it is an unknown creative mode",
-                              os.path.join(model.dir, newname))
-                newname = filenameBuilder.set_version("CRTV").build()
+            if newname.lower() == Tagdict["File Name new"][-1].lower() and \
+                    Tagdict["Directory"][i].lower() == Tagdict["Directory"][i - 1].lower():
+                log().warning("%s already exists - postfix it with V%d", os.path.join(model.dir, newname), 1)
+                newname = filenameBuilder.set_version("V%d" % 1).build()
 
             for version in range(2, 100):
-                if newname in Tagdict["File Name new"]:
-                    index = Tagdict["File Name new"].index(newname)
-                    if Tagdict["Directory"][i] == Tagdict["Directory"][index]:
+                indexes_samename = [i for i, name in enumerate(Tagdict["File Name new"])
+                                    if name.lower() == newname.lower()]
+                if indexes_samename:
+                    if Tagdict["Directory"][i] == Tagdict["Directory"][indexes_samename[0]]:
                         log().warning("%s already exists - postfix it with V%d", os.path.join(model.dir, newname),
                                       version)
                         newname = filenameBuilder.set_version("V%d" % version).build()
