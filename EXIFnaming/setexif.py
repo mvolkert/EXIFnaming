@@ -7,7 +7,7 @@ dependencies: exiftool
 import csv
 import datetime as dt
 import os
-from typing import Union, List, Iterable
+from typing import Union, List, Iterable, OrderedDict
 
 from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.date import giveDatetime, dateformating
@@ -58,24 +58,32 @@ def shift_time(hours: int = 0, minutes: int = 0, seconds: int = 0, is_video: boo
     dir_change_printer.finish()
 
 
-def fake_date(start='2000:01:01', write=True):
+def fake_date(start='2000:01:01', write=True, folder_dict: OrderedDict = None):
     """
     each file in a directory is one second later
     each dir is one day later
     :param start: the date on which to start generate fake dates
     :param write: whether should write or only print
+    :param folder_dict: foldername to date
     """
     log_function_call(fake_date.__name__, start)
     inpath = os.getcwd()
-    start += ' 06:00:00.000'
-    start_time = giveDatetime(start)
+    start_time_part = ' 06:00:00.000'
+    start_time = giveDatetime(start + start_time_part)
     dir_counter = -1
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath): continue
         filenames = filterFiles(filenames, settings.image_types + settings.video_types)
         if not filenames or len(filenames) == 0: continue
-        dir_counter += 1
-        dirtime = start_time + dt.timedelta(days=dir_counter)
+        if folder_dict:
+            dirpath_rel = os.path.relpath(dirpath, inpath)
+            if not dirpath_rel in folder_dict:
+                continue
+            else:
+                dirtime = giveDatetime(folder_dict[dirpath_rel] + start_time_part)
+        else:
+            dir_counter += 1
+            dirtime = start_time + dt.timedelta(days=dir_counter)
         log().info(dirtime)
         secounds = 0
         minutes = 0
@@ -94,7 +102,7 @@ def fake_date(start='2000:01:01', write=True):
                 # CreateDate is sometimes set and google fotos gives it precedence over DateTimeOriginal
                 write_exiftag({"DateTimeOriginal": time_string}, dirpath, filename,
                               ["-DateCreated=", "-TimeCreated=", "-CreateDate=", "-Artist=", "-DigitalCreationDate=",
-                               "-ModifyDate="])
+                               "-ModifyDate=", "-DateTimeDigitized="])
 
 
 def geotag(timezone: int = 2, offset: str = "", start_folder: str = ""):
