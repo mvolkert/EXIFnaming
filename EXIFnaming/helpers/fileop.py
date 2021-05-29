@@ -253,7 +253,7 @@ def is_not_standard_camera(filename: str) -> bool:
 
 
 def create_csv_writer(filename: str, titles: Iterable) -> Tuple[IO, Any]:
-    file = open(filename, "w")
+    file = open(filename, "w", encoding="utf-8")
     csv.register_dialect('semicolon', delimiter=';', lineterminator='\n')
     writer = csv.writer(file, dialect="semicolon")
     writer.writerow(titles)

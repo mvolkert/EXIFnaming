@@ -358,7 +358,7 @@ def rename_back(timestring="", fileext=".JPG"):
     if not timestring or os.path.isfile(tagFile):
         tagFiles = [x for x in os.listdir(dirname) if ".npz" in x]
         tagFile = os.path.join(dirname, tagFiles[-1])
-    Tagdict = np.load(tagFile)["Tagdict"].item()
+    Tagdict = np.load(tagFile, allow_pickle=True)["Tagdict"].item()
     temppostfix = renameTemp(Tagdict["Directory"], Tagdict["File Name new"])
     log().debug("length of Tagdict: %d", len(list(Tagdict.values())[0]))
     for i in range(len(list(Tagdict.values())[0])):
@@ -369,6 +369,31 @@ def rename_back(timestring="", fileext=".JPG"):
         Tagdict["File Name new"][i], Tagdict["File Name"][i] = Tagdict["File Name"][i], Tagdict["File Name new"][i]
     timestring = dateformating(dt.datetime.now(), "_MMDDHHmmss")
     np.savez_compressed(os.path.join(dirname, "Tags" + fileext + timestring), Tagdict=Tagdict)
+
+
+def rename_in_csvs(timestring="", fileext=".JPG"):
+    """
+    use backup in saves; rename file reverences in csv in setexif directory
+    :param timestring: time of backup
+    :param fileext: file extension
+    """
+    log_function_call(rename_in_csvs.__name__)
+    dirname = get_saves_dir()
+    tagFile = os.path.join(dirname, "Tags" + fileext + "_" + timestring + ".npz")
+    if not timestring or os.path.isfile(tagFile):
+        tagFiles = [x for x in os.listdir(dirname) if ".npz" in x]
+        tagFile = os.path.join(dirname, tagFiles[-1])
+    Tagdict = np.load(tagFile, allow_pickle=True)["Tagdict"].item()
+    log().debug("length of Tagdict: %d", len(list(Tagdict.values())[0]))
+    csv_filenames = filterFiles(os.listdir(get_setexif_dir()), [".csv"])
+    csv_filenames = [os.path.join(get_setexif_dir(), csv_filename) for csv_filename in csv_filenames]
+    for csv_filename in csv_filenames:
+        with open(csv_filename, "r", encoding="utf-8") as file:
+            data = file.read()
+        for i in range(len(list(Tagdict.values())[0])):
+            data = data.replace(Tagdict["File Name"][i], Tagdict["File Name new"][i])
+        with open(csv_filename, "w", encoding="utf-8") as file:
+            file.write(data)
 
 
 def create_tags_csv(location: str = ""):
