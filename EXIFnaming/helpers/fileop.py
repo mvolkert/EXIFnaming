@@ -202,13 +202,16 @@ def is_invalid_path(dirpath: str, blacklist: List[str] = None, whitelist: List[s
                     start: str = "") -> bool:
     inpath = os.getcwd()
     basename = os.path.basename(dirpath)
+    # ignore what comes after special chars for exact match:
+    # HDR-E-Nb would still be a match with HDR but HDR2 would be no match
+    basename_split = basename.split("[-_ ]")[0]
     relpath = str(os.path.relpath(dirpath, inpath))
     dirnames = relpath.split(os.sep)
     if not settings.includeSubdirs and not inpath == dirpath: return True
     if any(len(dirname) > 1 and dirname.startswith('.') for dirname in dirnames):  return True
     if '.EXIFnaming' in dirpath:  return True
     if '.data' in dirpath:  return True
-    if blacklist and any(basename.startswith(blacklistEntry) for blacklistEntry in blacklist): return True
+    if blacklist and any(basename_split == blacklistEntry for blacklistEntry in blacklist): return True
     if whitelist and not basename in whitelist: return True
     if regex and not re.search(regex, basename): return True
     if start and relpath.lower() < start.lower(): return True
