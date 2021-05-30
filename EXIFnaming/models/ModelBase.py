@@ -7,6 +7,8 @@ import EXIFnaming.helpers.constants as c
 
 __all__ = ["ModelBase"]
 
+from EXIFnaming.helpers import settings
+
 
 class ModelBase:
     TagNames = OrderedDict()
@@ -237,6 +239,8 @@ class ModelBase:
     def get_model_abbr(self) -> str:
         if not self.has('Camera Model Name'): return ""
         model = self.get_entry('Camera Model Name')
+        if model == settings.standard_camera:
+            return ""
         if model in c.CameraModelShort:
             return c.CameraModelShort[model]
         return model

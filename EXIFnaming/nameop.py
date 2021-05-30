@@ -13,7 +13,7 @@ from typing import Optional, Match, Iterable, Any, IO, Tuple, List
 
 import numpy as np
 from EXIFnaming.helpers import settings, fileop
-from EXIFnaming.helpers.constants import CameraModelShort
+import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeries, moveSeries, move, removeIfEmtpy, \
     get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, filterFiles, isfile, \
@@ -39,7 +39,7 @@ def filter_series():
     skipdirs = ["B" + str(i) for i in range(1, 8)]
     skipdirs += ["S", "SM", "TL", "mp4", "HDR", "single", "PANO", "others", "TLM"]
     # TLM: Timelapse manual - pictures on different days to be combined to a Timelapse
-    skipdirs += [model for model in CameraModelShort.values() if model]
+    skipdirs += [model for model in c.CameraModelShort.values() if model]
 
     log().info(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
@@ -68,7 +68,7 @@ def filter_primary():
     log_function_call(filter_primary.__name__)
     inpath = os.getcwd()
     skipdirs = ["S", "SM", "TL", "mp4", "HDR", "single", "PANO", "others"]
-    skipdirs += [model for model in CameraModelShort.values() if model]
+    skipdirs += [model for model in c.CameraModelShort.values() if model]
 
     log().info(inpath)
     folders_to_main(dirs=["B" + str(i) for i in range(1, 8)])
