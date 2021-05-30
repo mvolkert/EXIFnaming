@@ -206,7 +206,7 @@ def write_exif_using_csv(csv_filenames: Union[str, List[str]] = "*", folder: str
             if import_exif: meta_data.import_exif(overwrite_gps)
 
             for csv_filename in csv_filenames:
-                with open(csv_filename, "r") as csvfile:
+                with open(csv_filename, "r", encoding="utf-8") as csvfile:
                     reader = csv.DictReader(csvfile, dialect='semicolon')
                     for row in reader:
                         meta_data.update(row)
@@ -220,7 +220,7 @@ def write_exif_using_csv(csv_filenames: Union[str, List[str]] = "*", folder: str
 def _passes_restrictor(meta_data: FileMetaData, csv_restriction: str):
     if not csv_restriction:
         return True
-    with open(csv_restriction, "r") as csvfile:
+    with open(csv_restriction, "r", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile, dialect='semicolon')
         for row in reader:
             if meta_data.passes_restrictions(row):
