@@ -186,7 +186,7 @@ def order():
     log_function_call(order.__name__)
     inpath = os.getcwd()
 
-    Tagdict = read_exiftags(file_types=settings.image_types)
+    Tagdict = read_exiftags(file_types=settings.image_types, ignore_model=True)
     timeJumpDetector = TimeJumpDetector()
     time_old = giveDatetime()
     dircounter = 1

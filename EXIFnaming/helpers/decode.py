@@ -17,7 +17,7 @@ __all__ = ["read_exiftags", "call_exiftool", "askToContinue", "write_exiftags", 
 
 
 def read_exiftags(inpath="", file_types: List[str] = settings.image_types, skipdirs: List[str] = None,
-                  ask=True) -> Dict[str, list]:
+                  ask=True, ignore_model=False) -> Dict[str, list]:
     if not skipdirs:
         skipdirs = []
     if not inpath:
@@ -51,7 +51,7 @@ def read_exiftags(inpath="", file_types: List[str] = settings.image_types, skipd
 
     outdict = listsOfDicts_to_dictOfLists(ListOfDicts)
     if not outdict: return {}
-    outdict = sort_dict_by_date_and_model(outdict)
+    outdict = sort_dict_by_date_and_model(outdict, ignore_model)
     clock.finish()
     return outdict
 
@@ -185,13 +185,13 @@ def getExiftoolPath() -> str:
     return path
 
 
-def sort_dict_by_date_and_model(indict: Dict[str, list]) -> Dict[str, list]:
+def sort_dict_by_date_and_model(indict: Dict[str, list], ignore_model=True) -> Dict[str, list]:
     date_mod_name = "File Modification Date/Time"
     date_org_name = "Date/Time Original"
     date_sub_name = "Sub Sec Time Original"
     model_name = "Camera Model Name"
     sortkeys = []
-    if model_name in indict:
+    if model_name in indict and not ignore_model:
         sortkeys.append(model_name)
     if date_org_name in indict:
         sortkeys.append(date_org_name)
