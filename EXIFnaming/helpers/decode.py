@@ -117,10 +117,10 @@ def has_not_keys(indict: dict, keys: list) -> bool:
     return False
 
 
-def call_exiftool(dirpath: str, name: str, options: List[str] = None, override=True) -> (str, List[str]):
+def call_exiftool(dirpath: str, name: str = "", options: List[str] = None, override=True) -> (str, List[str]):
     if not options:
         options = []
-    fullname = os.path.join(dirpath, name)
+    fullname = os.path.join(dirpath, name) if name else dirpath
     (out, errorLines) = call_exiftool_direct(options + [fullname], override)
     # https://exiftool.org/faq.html#Q20
     if any("Bad format (0) for IFD0 entry" in line or

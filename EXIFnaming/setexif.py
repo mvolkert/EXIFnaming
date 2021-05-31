@@ -125,13 +125,18 @@ def geotag(timezone: int = 2, offset: str = "", start_folder: str = ""):
             if not filename.endswith(".gpx"): continue
             options.append("-geotag")
             options.append(os.path.join(gpxDir, filename))
+
+    found_any = False
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if not inpath == dirpath: break
         for dirname in dirnames:
             if dirname.startswith("."): continue
             if dirname < start_folder: continue
             log().info(dirname)
+            found_any = True
             call_exiftool(inpath, dirname, options=options)
+    if not found_any:
+        call_exiftool(inpath, options=options)
 
 
 def write_exif_using_csv(csv_filenames: Union[str, List[str]] = "*", folder: str = r"", start_folder: str = "",
