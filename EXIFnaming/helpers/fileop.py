@@ -125,12 +125,14 @@ def moveBracketSeries(dirpath: str, filenames: list) -> List[str]:
     return other_filenames
 
 
-def moveSeries(dirpath: str, filenames: list, series_type: str = "S", counter_match: str = r'([0-9]+)') -> List[str]:
+def moveSeries(dirpath: str, filenames: list, series_type: str = "S", counter_match: str = r'([0-9]+)', dest: str = "") -> List[str]:
     other_filenames = []
+    if not dest:
+        dest = series_type
     for filename in filenames:
         match = re.search(r'_([0-9]+)' + series_type + counter_match, filename)
         if match:
-            moveToSubpath(filename, dirpath, series_type)
+            moveToSubpath(filename, dirpath, dest)
         else:
             other_filenames.append(filename)
     return other_filenames

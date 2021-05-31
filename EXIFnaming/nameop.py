@@ -80,7 +80,7 @@ def filter_primary():
         filenames = moveSeries(dirpath, filenames, "TL")
         filenames = move_media(dirpath, filenames, settings.video_types, "mp4")
         filenames = move_media(dirpath, filenames, ["HDR"], "HDR")
-        filenames = moveSeries(dirpath, filenames, "B", "1")
+        filenames = moveSeries(dirpath, filenames, "B", "1", "primary")
         filenames = moveSeries(dirpath, filenames, "B")
         move_media(dirpath, filenames, settings.image_types, "primary")
 
