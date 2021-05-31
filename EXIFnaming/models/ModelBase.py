@@ -224,6 +224,11 @@ class ModelBase:
             if subsec: dateTimeString += "." + subsec
         return dateTimeString
 
+    def get_date_mod(self) -> str:
+        dateTimeString = self.get_entry("File Modification Date/Time")
+        dateTimeString = dateTimeString.rsplit("+")[0]
+        return dateTimeString
+
     def get_sequence_number(self) -> int:
         """
         sequence starts with 1; 0 means no sequence

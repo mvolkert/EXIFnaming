@@ -75,9 +75,7 @@ class NormalFile(ModelBase):
         return ""
 
     def get_date(self) -> str:
-        dateTimeString = self.get_entry("File Modification Date/Time")
-        dateTimeString = dateTimeString.rsplit("+")[0]
-        return dateTimeString
+        return self.get_date_mod()
 
     def get_sequence_number(self) -> int:
         return 0
