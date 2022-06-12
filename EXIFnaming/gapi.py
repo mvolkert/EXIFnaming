@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+from time import sleep
 from typing import List
 
 from gphotospy import authorize
@@ -14,8 +15,7 @@ https://dev.to/davidedelpapa/manage-your-google-photo-account-with-python-p-1-9m
 def main():
     service = authorize.init('credentials.json')
 
-    new_albums = mainname_to_id(service)
-    create_albums(service, new_albums)
+    create_albums_for_each_name(service)
 
 
 def get_media(service: dict[str, str]):
@@ -64,6 +64,31 @@ def create_albums(service: dict[str, str], album_contents: dict[str, List[str]])
         for chunk in chunks:
             print(chunk)
             album_manager.batchAddMediaItems(album_id, chunk)
+
+def create_albums_for_each_name(service: dict[str, str]):
+    media_manager = Media(service)
+    album_manager = Album(service)
+    last_name = ""
+    iterator = media_manager.list()
+    while True:
+        if not iterator:
+            return
+        item = next(iterator)
+        print(item)
+        mainname = item['filename'].split('_')[0]
+        if not mainname == last_name:
+            last_name = mainname
+            try:
+                album_manager.create(mainname)
+            except Exception as err:
+                print(err)
+                sleep(60)
+                album_manager.create(mainname)
+
+def delete_albums(service: dict[str, str]):
+    media_manager = Media(service)
+    album_manager = Album(service)
+    albums = get_albums(service)
 
 
 def get_albums(service: dict[str, str])->List[dict]:
