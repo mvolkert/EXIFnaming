@@ -11,6 +11,7 @@ CameraModelShort['E4800'] = 'N'
 CameraModelShort['SM-G900F'] = 'S5'
 CameraModelShort['DCR-TRV25E'] = 'VS'
 CameraModelShort['HDC-SD300'] = 'V'
+CameraModelShort['M2002J9G'] = 'MI10'
 #CameraModelShort['Canon EOS 450D'] = 'F'
 #CameraModelShort['Canon EOS 5D Mark II'] = 'F'
 

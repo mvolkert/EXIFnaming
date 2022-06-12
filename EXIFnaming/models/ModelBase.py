@@ -219,6 +219,7 @@ class ModelBase:
 
     def get_date(self) -> str:
         dateTimeString = self.get_entry("Date/Time Original")
+        dateTimeString = dateTimeString.rsplit("+")[0]
         if self.has("Sub Sec Time Original"):
             subsec = self.get_entry("Sub Sec Time Original")
             if subsec: dateTimeString += "." + subsec

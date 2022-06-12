@@ -60,7 +60,7 @@ def print_info(tagGroupNames=(), allGroups=False):
         writeToFile(os.path.join(dirname, "tags_" + tagGroupName + ".txt"), outstring)
 
 
-def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keeptags=True, is_video=False, name=""):
+def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keeptags=False, is_video=False, name="", ignore_model=False):
     """
     Rename into Format: [Prefix][dateformat](_[name])_[Filenumber][SeriesType][SeriesSubNumber]_[PhotoMode]
     :param Prefix: prefix has to fulfil regex [-a-zA-Z]*
@@ -72,7 +72,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keept
     :param name: optional name between date and filenumber, seldom used
     """
     log_function_call(rename.__name__, Prefix, dateformat, startindex, onlyprint, keeptags, is_video, name)
-    Tagdict = read_exiftags(file_types=settings.video_types if is_video else settings.image_types)
+    Tagdict = read_exiftags(file_types=settings.video_types if is_video else settings.image_types, ignore_model=ignore_model)
     if not Tagdict: return
 
     # rename temporary
@@ -111,7 +111,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keept
         else:
             # SequenceNumber
             sequence_number = model.get_sequence_number()
-            if sequence_number < 2 and not time == time_old or model.ignore_same_date():
+            if (sequence_number < 2 and not time == time_old) or model.ignore_same_date() or ignore_model:
                 counter += 1
             counterString = ("%0" + digits + "d") % counter
             if not "HDR" in filename: counterString += model.get_sequence_string()

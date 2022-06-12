@@ -199,10 +199,10 @@ def sort_dict_by_date_and_model(indict: Dict[str, list], ignore_model=True) -> D
             sortkeys.append(date_sub_name)
     if date_mod_name in indict:
         sortkeys.append(date_mod_name)
-    return sort_dict(indict, sortkeys)
+    return sort_dict(indict, sortkeys, ignore_model)
 
 
-def sort_dict(indict: Dict[str, list], keys: list) -> Dict[str, list]:
+def sort_dict(indict: Dict[str, list], keys: list, fallback_to_last_key=False) -> Dict[str, list]:
     """example:
     sort indict by keys
     indict={"foo": [1, 3, 2], "bar": [8, 7, 6]}
@@ -216,7 +216,10 @@ def sort_dict(indict: Dict[str, list], keys: list) -> Dict[str, list]:
         vals = []
         for key in indictkeys:
             if key in indict:
-                vals.append(indict[key][i])
+                if fallback_to_last_key and key==keys[0] and not indict[key][i]:
+                    vals.append(indict[keys[-1]][i])
+                else:
+                    vals.append(indict[key][i])
             else:
                 log().warning("sortDict_badkey %s" % key)
         lists.append(vals)
