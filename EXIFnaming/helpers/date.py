@@ -10,7 +10,11 @@ def giveDatetime(datestring="2000:01:01 00:00:00.000") -> dt.datetime:
         for sub2 in sub1.split(":"):
             if "." in sub2:
                 args.append(int(sub2.split(".")[0]))
-                args.append(int(sub2.split(".")[1]) * 1000)
+                subsec = int(sub2.split(".")[1])
+                if subsec < 999:
+                    args.append(subsec * 1000)
+                elif subsec < 999999:
+                    args.append(subsec)
             else:
                 args.append(int(sub2))
     time = dt.datetime(*args)
@@ -73,13 +77,14 @@ def find_dir_with_closest_time(dirDict_firsttime: dict, dirDict_lasttime: dict, 
         return deltaDict[deltatime_min]
     return time.strftime("%y%m%d_unrelated")
 
+
 def find_dir_with_closest_time_new(dirDict: dict, time: dt.datetime,
-                               maxdelta=3600 * 24) -> str:
+                                   maxdelta=3600 * 24) -> str:
     deltaDict = OrderedDict()
     for name, time_tub in dirDict.items():
         deltafirst = (time - time_tub[0]).total_seconds()
         deltalast = (time - time_tub[1]).total_seconds()
-        if 0 < deltafirst and  deltalast < 0:
+        if 0 < deltafirst and deltalast < 0:
             return name
         deltaDict[abs(deltafirst)] = name
         deltaDict[abs(deltalast)] = name
@@ -88,6 +93,7 @@ def find_dir_with_closest_time_new(dirDict: dict, time: dt.datetime,
     if deltatime_min < maxdelta:
         return deltaDict[deltatime_min]
     return time.strftime("%y%m%d_unrelated")
+
 
 def print_firstlast_of_dirname(dirDict_firsttime: dict, dirDict_lasttime: dict):
     outDict = OrderedDict()

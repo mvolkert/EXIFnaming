@@ -10,7 +10,7 @@ photographer: Here comes your name
 """
 includeSubdirs = True
 encoding_format = "latin"
-image_types = (".JPG", ".jpg", ".tif", ".tiff", ".hdr", ".exr", ".ufo", ".fpx", ".RW2", ".Raw", ".gif")
+image_types = (".JPG", ".jpg", ".jpeg", ".png", ".tif", ".tiff", ".hdr", ".exr", ".ufo", ".fpx", ".RW2", ".Raw", ".gif")
 video_types = (".MP4", ".mp4")
 project_types = (".data", ".hdrProject", ".pto")
 hdr_program = "franzis HDR projects"
