@@ -1,5 +1,4 @@
-import { test, expect } from '@playwright/test';
-import { delay, firstValueFrom, interval, timeout } from 'rxjs';
+import { test } from '@playwright/test';
 
 test.use({
     storageState: 'login.json',
@@ -45,11 +44,11 @@ for (const name of people) {
 }
 */
 
-const begin = 'https://photos.google.com/photo/AF1QipOgIHRSvqSW5CfF4sDYuIKThSbc-QRUqb00LES8';
+const begin = 'https://photos.google.com/photo/AF1QipNzkow5N1dJcc8Krtj1OMeDTLaPUz1Krq_rzNTx';
 const end = 'https://photos.google.com/photo/AF1QipN9nrzcnyI1Vntf89ApvkkQtOOSszXpy2wTvZeJ';
 
-test("add to albums", async ({ page }) => {
-    test.setTimeout(3600000);
+test(`add to albums, start: ${begin}`, async ({ page }) => {
+    test.setTimeout(2147483647);
     await page.goto(begin);
     // Click [aria-label="Info öffnen"]
     await page.locator('[aria-label="Info öffnen"]').click();
@@ -58,13 +57,21 @@ test("add to albums", async ({ page }) => {
 
         await test.step(`${text}`, async () => {
             const name = text?.split("_")[0];
-            if (await page.locator(`li:has-text("${name}")`).count() == 0) {
+            const albums = await page.locator(`li:has-text("${name}")`).count();
+            if (albums == 0) {
                 await page.locator('text=Upload unvollständig360°-VideoBewegung aktivierenTeilenBearbeitenZoomenInfoAls F >> [aria-label="Weitere Optionen"]').click({ trial: true, delay: 10 });
                 await page.locator('text=Upload unvollständig360°-VideoBewegung aktivierenTeilenBearbeitenZoomenInfoAls F >> [aria-label="Weitere Optionen"]').click();
                 await page.locator('text=Zu Album hinzufügen').click({ trial: true, delay: 200 });
                 await page.locator('text=Zu Album hinzufügen').click();
                 await page.locator('li[role="option"]:has-text("Neues Album")').waitFor({ state: 'visible', timeout: 2000 });
-                const present = await page.locator(`[aria-label="Albumliste"] >> text=${name}`).count();
+                let present = 0;
+                for (let i = 0; i < 10; i++) {
+                    present = await page.locator(`[aria-label="Albumliste"] >> text=${name}`).count();
+                    if (present) {
+                        break;
+                    }
+                    await page.mouse.wheel(0, 100000);
+                }
                 console.log(text, name, present, page.url());
                 if (present) {
                     await page.locator(`[aria-label="Albumliste"] >> text=${name}`).first().click();
@@ -81,6 +88,10 @@ test("add to albums", async ({ page }) => {
                     // Click [aria-label="Zurück"]
                     await page.locator('[aria-label="Zurück"]').click();
                 }
+            } else if (albums == 1) {
+                console.log('has album', text, name, albums, page.url(), await page.locator(`li:has-text("${name}")`).allInnerTexts())
+            } else if (albums > 1) {
+                console.log('has more albums', text, name, albums, page.url(), await page.locator(`li:has-text("${name}")`).allInnerTexts())
             }
             await page.locator('[aria-label="Nächstes Foto ansehen"]').click();
             await page.reload();

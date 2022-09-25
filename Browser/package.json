@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "e2eGenerate": "npx playwright codegen http://localhost:4200/",
+    "e2e:debug": "npx playwright test --debug",
     "e2e": "npx playwright test && npx playwright show-report",
     "allure": "npx allure generate allure-results -o allure-report --clean && npx allure open allure-report"
   },
