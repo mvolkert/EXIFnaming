@@ -44,7 +44,7 @@ for (const name of people) {
 }
 */
 
-const begin = 'https://photos.google.com/photo/AF1QipNzkow5N1dJcc8Krtj1OMeDTLaPUz1Krq_rzNTx';
+const begin = 'https://photos.google.com/photo/AF1QipPP4_GFKxgRAUo7rtNXRgTgEDszeyLBGcFqVMkm';
 const end = 'https://photos.google.com/photo/AF1QipN9nrzcnyI1Vntf89ApvkkQtOOSszXpy2wTvZeJ';
 
 test(`add to albums, start: ${begin}`, async ({ page }) => {
@@ -63,18 +63,23 @@ test(`add to albums, start: ${begin}`, async ({ page }) => {
                 await page.locator('text=Upload unvollständig360°-VideoBewegung aktivierenTeilenBearbeitenZoomenInfoAls F >> [aria-label="Weitere Optionen"]').click();
                 await page.locator('text=Zu Album hinzufügen').click({ trial: true, delay: 200 });
                 await page.locator('text=Zu Album hinzufügen').click();
-                await page.locator('li[role="option"]:has-text("Neues Album")').waitFor({ state: 'visible', timeout: 2000 });
+                await page.locator('li[role="option"]:has-text("Neues Album")').waitFor({ state: 'visible', timeout: 5000 });
+                const albumLocator = page.locator(`[aria-label="Albumliste"] >> text="${name}"`);
                 let present = 0;
-                for (let i = 0; i < 10; i++) {
-                    present = await page.locator(`[aria-label="Albumliste"] >> text=${name}`).count();
+                for (let i = 0; i < 100; i++) {
+                    present = await albumLocator.count();
                     if (present) {
                         break;
                     }
                     await page.mouse.wheel(0, 100000);
+                    console.log(text, name, present, i);
+                }
+                if (present >= 2) {
+                    console.log(text, name, present, page.url(), await albumLocator.allInnerTexts())
                 }
                 console.log(text, name, present, page.url());
                 if (present) {
-                    await page.locator(`[aria-label="Albumliste"] >> text=${name}`).first().click();
+                    await albumLocator.first().click();
                 } else {
                     await page.locator('li[role="option"]:has-text("Neues Album")').click();
                     // Click [aria-label="Albumnamen bearbeiten"]
