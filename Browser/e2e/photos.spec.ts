@@ -1,10 +1,22 @@
-import { test } from '@playwright/test';
+import { test as testBase } from '@playwright/test';
+import { GPhotos } from './gphotos.po';
+import path from 'path';
+
+const test = testBase.extend<{ gphotos: GPhotos }>({
+    gphotos: async ({ page }, use) => {
+        const gPage = new GPhotos(page);
+        await use(gPage);
+    }
+})
 
 test.use({
     storageState: 'login.json',
     baseURL: '',
     channel: 'msedge'
 });
+
+
+
 /*
 const people = [];
 for (const name of people) {
@@ -44,62 +56,45 @@ for (const name of people) {
 }
 */
 
-const begin = 'https://photos.google.com/photo/AF1QipPP4_GFKxgRAUo7rtNXRgTgEDszeyLBGcFqVMkm';
-const end = 'https://photos.google.com/photo/AF1QipN9nrzcnyI1Vntf89ApvkkQtOOSszXpy2wTvZeJ';
+const updateFile = (begin: string, end: string, i: number = 0) => {
+    const content = `{"begin": "${begin}", "end": "${end}"}`
+    require('fs').writeFileSync(path.join(__dirname, `configs/${i}.json`), content, 'utf8');
+}
+const configs = new Array<{ begin: string, end: string }>();
+for (let i = 0; i < 6; i++) {
+    configs.push(JSON.parse(require('fs').readFileSync(path.join(__dirname, `configs/${i}.json`), 'utf8')))
+}
 
-test(`add to albums, start: ${begin}`, async ({ page }) => {
-    test.setTimeout(2147483647);
-    await page.goto(begin);
-    // Click [aria-label="Info öffnen"]
-    await page.locator('[aria-label="Info öffnen"]').click();
-    while (page.url() != end) {
-        const text = await page.locator('[aria-label^="Dateiname"]').first().textContent();
+test.describe.parallel('add to albums', () => {
+    for (let i = 0; i < configs.length; i++) {
+        let config = configs[i];
+        test(`add to albums, start: ${config.begin}`, async ({ page, gphotos }) => {
+            test.setTimeout(2147483647);
+            await page.goto(config.begin);
+            await gphotos.infos().click();
+            while (page.url() != config.end) {
+                await gphotos.init();
 
-        await test.step(`${text}`, async () => {
-            const name = text?.split("_")[0];
-            const albums = await page.locator(`li:has-text("${name}")`).count();
-            if (albums == 0) {
-                await page.locator('text=Upload unvollständig360°-VideoBewegung aktivierenTeilenBearbeitenZoomenInfoAls F >> [aria-label="Weitere Optionen"]').click({ trial: true, delay: 10 });
-                await page.locator('text=Upload unvollständig360°-VideoBewegung aktivierenTeilenBearbeitenZoomenInfoAls F >> [aria-label="Weitere Optionen"]').click();
-                await page.locator('text=Zu Album hinzufügen').click({ trial: true, delay: 200 });
-                await page.locator('text=Zu Album hinzufügen').click();
-                await page.locator('li[role="option"]:has-text("Neues Album")').waitFor({ state: 'visible', timeout: 5000 });
-                const albumLocator = page.locator(`[aria-label="Albumliste"] >> text="${name}"`);
-                let present = 0;
-                for (let i = 0; i < 100; i++) {
-                    present = await albumLocator.count();
-                    if (present) {
-                        break;
+                await test.step(`${gphotos.filenameText}`, async () => {
+                    const albums = await gphotos.album().count();
+                    if (albums == 0) {
+                        await gphotos.openAddToAlbum();
+                        const present = await gphotos.searchPresentAlbum();
+                        if (present) {
+                            await gphotos.listAlbum().first().click();
+                        } else {
+                            await gphotos.createNewAlbum();
+                        }
+                    } else if (albums == 1) {
+                        console.log('has album', gphotos.filenameText, gphotos.name, albums, page.url(), await gphotos.album().allInnerTexts())
+                    } else if (albums > 1) {
+                        console.log('has more albums', gphotos.filenameText, gphotos.name, albums, page.url(), await gphotos.album().allInnerTexts())
                     }
-                    await page.mouse.wheel(0, 100000);
-                    console.log(text, name, present, i);
-                }
-                if (present >= 2) {
-                    console.log(text, name, present, page.url(), await albumLocator.allInnerTexts())
-                }
-                console.log(text, name, present, page.url());
-                if (present) {
-                    await albumLocator.first().click();
-                } else {
-                    await page.locator('li[role="option"]:has-text("Neues Album")').click();
-                    // Click [aria-label="Albumnamen bearbeiten"]
-                    await page.locator('[aria-label="Albumnamen bearbeiten"]').click();
-                    // Fill [aria-label="Albumnamen bearbeiten"]
-                    await page.locator('[aria-label="Albumnamen bearbeiten"]').fill(name ?? '');
-                    // Press Enter
-                    await page.locator('[aria-label="Albumnamen bearbeiten"]').press('Enter');
-                    // Click [aria-label="Fertig"]
-                    await page.locator('[aria-label="Fertig"]').click();
-                    // Click [aria-label="Zurück"]
-                    await page.locator('[aria-label="Zurück"]').click();
-                }
-            } else if (albums == 1) {
-                console.log('has album', text, name, albums, page.url(), await page.locator(`li:has-text("${name}")`).allInnerTexts())
-            } else if (albums > 1) {
-                console.log('has more albums', text, name, albums, page.url(), await page.locator(`li:has-text("${name}")`).allInnerTexts())
+                    await gphotos.next().click();
+                    await page.reload();
+                    updateFile(page.url(), config.end, i)
+                })
             }
-            await page.locator('[aria-label="Nächstes Foto ansehen"]').click();
-            await page.reload();
-        })
+        });
     }
 });
