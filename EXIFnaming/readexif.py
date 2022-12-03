@@ -422,10 +422,13 @@ def _read_timetable_new(filename: str = None):
     return dirNameDict
 
 
-def better_gpx_via_timetable(gpxfilename: str):
+def better_gpx_via_timetable(gpxfilename: str, gpxTimeRegex: str = "%Y-%m-%dT%H:%M:%SZ", timedelta = 3600, timezone = 0):
     """
     crossmatch gpx file with timetable and take only entries for which photos exist
     :param gpxfilename: input gpx file
+    :param gpxTimeRegex: regex of time in gpx file
+    :param timedelta: how near the gpx Data has to be to the timetable in secounds
+    :param timezone: hours compaired to UTC
     output: _new1.gpx containing only usefull locations
             _new2.gpx containing only not usefull locations
 
@@ -459,8 +462,9 @@ def better_gpx_via_timetable(gpxfilename: str):
                 continue
             line = line.replace("wpt", "trkpt")
             time = match.group(2)
-            time = dt.datetime.strptime(time, "%Y-%m-%dT%H:%M:%SZ")
-            dirName = find_dir_with_closest_time_new(dirNameDict, time, 3600)
+            time = dt.datetime.strptime(time, gpxTimeRegex)
+            time = time + dt.timedelta(hours=timezone)
+            dirName = find_dir_with_closest_time_new(dirNameDict, time, timedelta)
             if "unrelated" in dirName:
                 write(dirName_last2, gpxfile_out2)
                 dirName_last2 = dirName
