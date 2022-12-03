@@ -68,13 +68,13 @@ export class GPhotos {
         await this.options().click();
         await this.addToAlbum().click({ trial: true, delay: 200 });
         await this.addToAlbum().click();
-        await this.newAlbum().waitFor({ state: 'visible', timeout: 5000 });
+        await this.newAlbum().waitFor({ state: 'visible', timeout: 10000 });
     }
 
     async searchPresentAlbum(name?: string): Promise<number> {
         name = name ?? this.name;
         let present = 0;
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 200; i++) {
             present = await this.listAlbum(name).count();
             if (present) {
                 break;

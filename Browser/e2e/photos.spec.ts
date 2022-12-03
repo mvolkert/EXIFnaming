@@ -57,11 +57,15 @@ for (const name of people) {
 */
 
 const updateFile = (begin: string, end: string, i: number = 0) => {
-    const content = `{"begin": "${begin}", "end": "${end}"}`
-    require('fs').writeFileSync(path.join(__dirname, `configs/${i}.json`), content, 'utf8');
+    const content = `{"begin": "${begin}", "end": "${end}"}`;
+    try {
+        require('fs').writeFileSync(path.join(__dirname, `configs/${i}.json`), content, 'utf8');
+    } catch (e) {
+        console.log(e);
+    }
 }
 const configs = new Array<{ begin: string, end: string }>();
-for (let i = 0; i < 6; i++) {
+for (let i = 0; i < 22; i++) {
     configs.push(JSON.parse(require('fs').readFileSync(path.join(__dirname, `configs/${i}.json`), 'utf8')))
 }
 
