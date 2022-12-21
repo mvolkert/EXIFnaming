@@ -5,6 +5,7 @@ Picture processing, no usage of exif infos
 dependencies: scikit-image, opencv-python, PIL
 """
 import os
+import re
 
 from PIL import Image
 
@@ -70,7 +71,7 @@ def resize(size=(128, 128)):
     dest = os.path.join(inpath, "SMALL")
     os.mkdir(dest)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if is_invalid_path(dirpath, blacklist= ["SMALL"] ): continue
+        if is_invalid_path(dirpath, blacklist=["SMALL"]): continue
         for filename in filenames:
             if not file_has_ext(filename, ('.JPG', ".jpg")): continue
             # Load the original image:
@@ -80,3 +81,32 @@ def resize(size=(128, 128)):
             accessor.processes.append("SMALL")
             outfile = os.path.join(dest, accessor.sorted_filename())
             img.save(outfile, 'JPEG', quality=90)
+
+
+def make_gif(duration=100):
+    inpath = os.getcwd()
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if is_invalid_path(dirpath, whitelist=["S"]): continue
+        pictures = []
+        last_main = ""
+        last_end = ""
+        for filename in filenames:
+            if not file_has_ext(filename, ('.JPG', ".jpg")): continue
+            match = re.search(r'(.+[0-9]+)S([0-9]+)_(.+)\.(JPG|jpg)', filename)
+            if match:
+                main = match.group(1)
+                if last_main == main:
+                    pictures.append(filename)
+                else:
+                    if len(pictures)>2:
+                        frames = [Image.open(dirpath+os.sep+image) for image in pictures]
+                        frame_one = frames[0]
+                        frames_resized = []
+                        for frame in frames:
+                            frame = frame.resize((int(frame_one.width/2), int(frame_one.height/2)))
+                            frames_resized.append(frame)
+                        frames_resized[0].save(f"{last_main}_{last_end}.gif", format="GIF", append_images=frames_resized[1:],
+                            save_all=True, duration=duration, loop=0)
+                    last_main = main
+                    last_end = match.group(3)
+                    pictures = [filename]
