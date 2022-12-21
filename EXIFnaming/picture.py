@@ -83,7 +83,7 @@ def resize(size=(128, 128)):
             img.save(outfile, 'JPEG', quality=90)
 
 
-def make_gif(duration=100):
+def make_gif(duration: int = 100):
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, whitelist=["S"]): continue
@@ -98,15 +98,15 @@ def make_gif(duration=100):
                 if last_main == main:
                     pictures.append(filename)
                 else:
-                    if len(pictures)>2:
-                        frames = [Image.open(dirpath+os.sep+image) for image in pictures]
+                    if len(pictures) > 2:
+                        frames = [Image.open(dirpath + os.sep + image) for image in pictures]
                         frame_one = frames[0]
                         frames_resized = []
                         for frame in frames:
-                            frame = frame.resize((int(frame_one.width/2), int(frame_one.height/2)))
+                            frame = frame.resize((int(frame_one.width / 2), int(frame_one.height / 2)))
                             frames_resized.append(frame)
                         frames_resized[0].save(f"{last_main}_{last_end}.gif", format="GIF", append_images=frames_resized[1:],
-                            save_all=True, duration=duration, loop=0)
+                                               save_all=True, duration=duration, loop=0)
                     last_main = main
                     last_end = match.group(3)
                     pictures = [filename]
