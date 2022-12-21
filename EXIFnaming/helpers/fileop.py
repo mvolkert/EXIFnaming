@@ -138,6 +138,21 @@ def moveSeries(dirpath: str, filenames: list, series_type: str = "S", counter_ma
     return other_filenames
 
 
+def moveHDR(dirpath: str, filenames: list) -> List[str]:
+    other_filenames = []
+    for filename in filenames:
+        if not file_has_ext(filename, settings.image_types):
+            other_filenames.append(filename)
+            continue
+        match = re.search(r'(HDR[^_.]*)', filename)
+        if match:
+            hdrType = match.groups()[0]
+            print(filename, hdrType)
+            moveToSubpath(filename, dirpath, hdrType)
+        else:
+            other_filenames.append(filename)
+    return other_filenames
+
 def move_media(dirpath: str, filenames: list, name_searches: list, dest: str) -> List[str]:
     other_filenames = []
     for filename in filenames:

@@ -17,7 +17,7 @@ import EXIFnaming.helpers.constants as c
 from EXIFnaming.helpers.date import dateformating
 from EXIFnaming.helpers.fileop import renameInPlace, renameTemp, moveBracketSeries, moveSeries, move, removeIfEmtpy, \
     get_relpath_depth, move_media, copyFilesTo, writeToFile, is_invalid_path, filterFiles, isfile, \
-    file_has_ext, remove_ext, get_plain_filenames_of_type
+    file_has_ext, remove_ext, get_plain_filenames_of_type, moveHDR
 from EXIFnaming.helpers.misc import askToContinue
 from EXIFnaming.helpers.program_dir import get_saves_dir, get_info_dir, get_setexif_dir, log, log_function_call
 from EXIFnaming.helpers.settings import image_types
@@ -30,7 +30,7 @@ __all__ = ["filter_series", "filter_primary", "copy_subdirectories", "copy_files
            "create_example_csvs", "create_rating_csv", "move_each_pretag_to_folder"]
 
 
-def filter_series():
+def filter_series(hdr_per_config=True):
     """
     put each kind of series in its own directory
     """
@@ -57,7 +57,10 @@ def filter_series():
         filenames = move_media(dirpath, filenames, ["ZOOM"], "ZOOM")
         filenames = move_media(dirpath, filenames, ["SMALL"], "SMALL")
         filenames = move_media(dirpath, filenames, ["CUT"], "CUT")
-        filenames = move_media(dirpath, filenames, ["HDR"], "HDR")
+        if hdr_per_config:
+            filenames = moveHDR(dirpath, filenames)
+        else:
+            filenames = move_media(dirpath, filenames, ["HDR"], "HDR")
         move_media(dirpath, filenames, settings.image_types, "single")
 
 
