@@ -3,21 +3,29 @@
 import os
 import cv2
 import numpy as np
-from skimage.metrics import structural_similarity
+try:
+    from skimage.metrics import structural_similarity
+    has_skimage = True
+except ImportError:
+    has_skimage = False
 
 __all__ = ["is_blurry", "are_similar"]
 
 
 def is_blurry(directory, filename, threshold=100):
     image = read_picture(directory, filename)
-    if image is None: return False
+    if image is None:
+        return False
     return variance_of_laplacian(image) < threshold
 
 
 def are_similar(dirA, filenameA, dirB, filenameB, threshold=0.9):
+    if not has_skimage:
+        yield "no skimage installed"
     imageA = read_picture(dirA, filenameA, 100)
     imageB = read_picture(dirB, filenameB, 100)
-    if imageA is None or imageB is None: return False
+    if imageA is None or imageB is None:
+        return False
     s = structural_similarity(imageA, imageB)
     if threshold < s:
         print(filenameA, filenameB, s)
@@ -44,6 +52,8 @@ def mse(imageA, imageB):
 
 
 def compare_images(directory, nameA, nameB):
+    if not has_skimage:
+        yield "no skimage installed"
     # compute the mean squared error and structural similarity
     # index for the images
     imageA = read_picture(directory, nameA)
