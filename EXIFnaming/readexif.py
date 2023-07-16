@@ -422,10 +422,10 @@ def _read_timetable_new(filename: str = None):
     return dirNameDict
 
 
-def better_gpx_via_timetable(gpxfilename: str, gpxTimeRegex: str = "%Y-%m-%dT%H:%M:%SZ", timedelta = 3600, timezone = 0):
+def better_gpx_via_timetable(gpxfilename: str = "", gpxTimeRegex: str = "%Y-%m-%dT%H:%M:%S.%fZ", timedelta=3600, timezone=0):
     """
     crossmatch gpx file with timetable and take only entries for which photos exist
-    :param gpxfilename: input gpx file
+    :param gpxfilename: input gpx file, can be left empty to use all
     :param gpxTimeRegex: regex of time in gpx file
     :param timedelta: how near the gpx Data has to be to the timetable in secounds
     :param timezone: hours compaired to UTC
@@ -441,36 +441,48 @@ def better_gpx_via_timetable(gpxfilename: str, gpxTimeRegex: str = "%Y-%m-%dT%H:
             gpxfile_out.write("<trk><name>" + dirName + "</name><trkseg>\r\n")
         gpxfile_out.write(line)
 
+    def get_gpx_files():
+        gpxDir = get_gps_dir()
+        files = []
+        for (dirpath, dirnames, filenames) in os.walk(gpxDir):
+            if not gpxDir == dirpath: break
+            for filename in filenames:
+                if not filename.endswith(".gpx"): continue
+                files.append(os.path.join(gpxDir, filename))
+        return files
+
     timefile = get_info_dir("timetable.txt")
-    gpxfilename = get_gps_dir(gpxfilename)
+    gpxfilenames = [get_gps_dir(gpxfilename)] if gpxfilename else get_gpx_files()
     dirNameDict = _read_timetable_new(timefile)
     timeregex = re.compile("(.*<time>)([^<]*)(</time>.*)")
-    gpxfilename_out, ext = gpxfilename.rsplit('.', 1)
+    gpxfilename_out, ext = gpxfilenames[0].rsplit('.', 1)
     dirName_last1 = ""
     dirName_last2 = ""
     gpxfile_out1 = open(gpxfilename_out + "_new1." + ext, "w")
     gpxfile_out2 = open(gpxfilename_out + "_new2." + ext, "w")
-    with open(gpxfilename, "r") as gpxfile:
-        for line in gpxfile:
-            match = timeregex.match(line)
-            if not match:
-                if "</gpx>" in line:
-                    gpxfile_out1.write("</trkseg></trk>\r\n")
-                    gpxfile_out2.write("</trkseg></trk>\r\n")
-                gpxfile_out1.write(line)
-                gpxfile_out2.write(line)
-                continue
-            line = line.replace("wpt", "trkpt")
-            time = match.group(2)
-            time = dt.datetime.strptime(time, gpxTimeRegex)
-            time = time + dt.timedelta(hours=timezone)
-            dirName = find_dir_with_closest_time_new(dirNameDict, time, timedelta)
-            if "unrelated" in dirName:
-                write(dirName_last2, gpxfile_out2)
-                dirName_last2 = dirName
-            else:
-                write(dirName_last1, gpxfile_out1)
-                dirName_last1 = dirName
+    for gpxfilename in gpxfilenames:
+        with open(gpxfilename, "r") as gpxfile:
+            for line in gpxfile:
+                match = timeregex.match(line)
+                if not match:
+                    if "</gpx>" in line:
+                        gpxfile_out1.write("</trkseg></trk>\r\n")
+                        gpxfile_out2.write("</trkseg></trk>\r\n")
+                    gpxfile_out1.write(line)
+                    gpxfile_out2.write(line)
+                    continue
+                line = line.replace("wpt", "trkpt")
+                time = match.group(2)
+                time = dt.datetime.strptime(time, gpxTimeRegex)
+                time = time + dt.timedelta(hours=timezone)
+                dirName = find_dir_with_closest_time_new(dirNameDict, time, timedelta)
+                if "unrelated" in dirName:
+                    write(dirName_last2, gpxfile_out2)
+                    dirName_last2 = dirName
+                else:
+                    write(dirName_last1, gpxfile_out1)
+                    dirName_last1 = dirName
+                    print(dirName_last1, dirName_last2)
     gpxfile_out1.close()
     gpxfile_out2.close()
 
