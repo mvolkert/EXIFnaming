@@ -85,6 +85,7 @@ def resize(size=(128, 128)):
 
 def make_gif(duration: int = 100):
     inpath = os.getcwd()
+    os.makedirs("gif", exist_ok=True)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, whitelist=["S"]): continue
         pictures = []
@@ -110,3 +111,20 @@ def make_gif(duration: int = 100):
                     last_main = main
                     last_end = match.group(3)
                     pictures = [filename]
+
+
+def make_gif_per_dir(duration: int = 100):
+    inpath = os.getcwd()
+    os.makedirs("gif_dir", exist_ok=True)
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if is_invalid_path(dirpath, whitelist=["S"]): continue
+        baseDir = dirpath.replace(inpath, '').split(os.sep)[1]
+        if len(filenames) < 2: continue
+        frames = [Image.open(dirpath + os.sep + image) for image in filenames]
+        frame_one = frames[0]
+        frames_resized = []
+        for frame in frames:
+            frame = frame.resize((int(frame_one.width / 2), int(frame_one.height / 2)))
+            frames_resized.append(frame)
+        frames_resized[0].save(f"gif_dir/{baseDir}.gif", format="GIF", append_images=frames_resized[1:],
+                               save_all=True, duration=duration, loop=0)
