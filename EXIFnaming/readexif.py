@@ -487,6 +487,41 @@ def better_gpx_via_timetable(gpxfilename: str = "", gpxTimeRegex: str = "%Y-%m-%
     gpxfile_out2.close()
 
 
+def tidy_gpx(gpxfilename: str = ""):
+    gpxfilename = get_gps_dir(gpxfilename)
+    gpxfilename_out, ext = gpxfilename.rsplit('.', 1)
+    gpxfile_out = open(gpxfilename_out + "_new1." + ext, "w")
+    gpxfile_out.write(
+        '<?xml version="1.0" encoding="UTF-8" ?><gpx version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/0" xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">\r\n')
+    import xml.etree.ElementTree as ET
+    tree = ET.parse(gpxfilename)
+    root = tree.getroot()
+    for child in root:
+        if "trk" in child.tag:
+            gpxfile_out.write("<trk>")
+            for child2 in child:
+                if "trkseg" in child2.tag:
+                    gpxfile_out.write("<trkseg>\n")
+                    for child3 in child2:
+                        if "trkpt" in child3.tag:
+                            gpxfile_out.write(f'<trkpt lat="{child3.attrib["lat"]}" lon="{child3.attrib["lon"]}">')
+                            for child4 in child3:
+                                if "ele" in child4.tag:
+                                    gpxfile_out.write(f'<ele>{child4.text}</ele>')
+                                if "time" in child4.tag:
+                                    gpxfile_out.write(f'<time>{child4.text}</time>')
+                                if "course" in child4.tag:
+                                    gpxfile_out.write(f'<course>{child4.text}</course>')
+                                if "speed" in child4.tag:
+                                    gpxfile_out.write(f'<speed>{child4.text}</speed>')
+                        gpxfile_out.write("</trkpt>\n")
+                    gpxfile_out.write("</trkseg>\n")
+            gpxfile_out.write("</trk>")
+
+    gpxfile_out.write('</gpx>')
+    gpxfile_out.close()
+
+
 def find_bad_exif(do_move=True, check_date_additional=False, folder: str = r""):
     """
     find files with missing exif data
