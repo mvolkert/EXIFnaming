@@ -37,13 +37,13 @@ def filter_series(hdr_per_config=True):
     log_function_call(filter_series.__name__)
     inpath = os.getcwd()
     skipdirs = ["B" + str(i) for i in range(1, 8)]
-    skipdirs += ["S", "SM", "TL", "mp4", r'(HDR[^_.]*)', "single", "PANO", "others", "TLM"]
+    skipdirs += ["S", "SM", "TL", "mp4", "single", "PANO", "others", "TLM"]
     # TLM: Timelapse manual - pictures on different days to be combined to a Timelapse
     skipdirs += [model for model in c.CameraModelShort.values() if model]
 
     log().info(inpath)
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if is_invalid_path(dirpath, skipdirs): continue
+        if is_invalid_path(dirpath, skipdirs, regex_black=r'(HDR[^_.]*)'): continue
         log().info("%s #dirs:%d #files:%d", dirpath, len(dirnames), len(filenames))
         filenames = moveBracketSeries(dirpath, filenames)
         filenames = moveSeries(dirpath, filenames, "S")
