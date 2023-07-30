@@ -64,25 +64,28 @@ def filter_series(hdr_per_config=True):
         move_media(dirpath, filenames, settings.image_types, "single")
 
 
-def filter_primary():
+def filter_primary(hdr_per_config=True):
     """
     put single and B1 in same directory
     """
     log_function_call(filter_primary.__name__)
     inpath = os.getcwd()
-    skipdirs = ["S", "SM", "TL", "mp4", "HDR", "single", "PANO", "others"]
+    skipdirs = ["S", "SM", "TL", "mp4", "single", "PANO", "others", "TLM"]
     skipdirs += [model for model in c.CameraModelShort.values() if model]
 
     log().info(inpath)
     folders_to_main(dirs=["B" + str(i) for i in range(1, 8)])
     for (dirpath, dirnames, filenames) in os.walk(inpath):
-        if is_invalid_path(dirpath, skipdirs): continue
+        if is_invalid_path(dirpath, skipdirs, regex_black=r'(HDR[^_.]*)'): continue
         log().info("%s #dirs:%d #files:%d", dirpath, len(dirnames), len(filenames))
         filenames = moveSeries(dirpath, filenames, "S")
         filenames = moveSeries(dirpath, filenames, "SM")
         filenames = moveSeries(dirpath, filenames, "TL")
         filenames = move_media(dirpath, filenames, settings.video_types, "mp4")
-        filenames = move_media(dirpath, filenames, ["HDR"], "HDR")
+        if hdr_per_config:
+            filenames = moveHDR(dirpath, filenames)
+        else:
+            filenames = move_media(dirpath, filenames, ["HDR"], "HDR")
         filenames = moveSeries(dirpath, filenames, "B", "1", "primary")
         filenames = moveSeries(dirpath, filenames, "B")
         move_media(dirpath, filenames, settings.image_types, "primary")
