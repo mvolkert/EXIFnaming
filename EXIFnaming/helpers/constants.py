@@ -9,11 +9,18 @@ CameraModelShort['DMC-TZ7'] = 'TZ7'
 CameraModelShort['DMC-TZ101'] = 'TZ101'
 CameraModelShort['E4800'] = 'N'
 CameraModelShort['SM-G900F'] = 'S5'
+CameraModelShort['SM-G991B'] = 'S21'
 CameraModelShort['DCR-TRV25E'] = 'VS'
 CameraModelShort['HDC-SD300'] = 'V'
 CameraModelShort['M2002J9G'] = 'MI10'
+CameraModelShort['SM-A536B'] = 'A53'
+CameraModelShort['SM-G973F'] = 'S10'
+CameraModelShort['SM-G990B2'] = 'S21FE'
 #CameraModelShort['Canon EOS 450D'] = 'F'
 #CameraModelShort['Canon EOS 5D Mark II'] = 'F'
+#CameraModelShort['Canon EOS 600D'] = 'F'
+#CameraModelShort['COOLPIX P7800'] = 'F'
+#CameraModelShort['ILCE-6300'] = 'F'
 
 RecModes = ["4KB", "4K", "HS", "FHD"]
 

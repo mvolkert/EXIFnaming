@@ -80,8 +80,5 @@ class NormalFile(ModelBase):
     def get_sequence_number(self) -> int:
         return 0
 
-    def get_model_abbr(self) -> str:
-        return ""
-
     def ignore_same_date(self) -> bool:
         return True
