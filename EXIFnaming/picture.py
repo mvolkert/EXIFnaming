@@ -7,12 +7,15 @@ dependencies: scikit-image, opencv-python, PIL
 import os
 import re
 
+import cv2
+import numpy
 from PIL import Image
+from tifffile import tifffile
 
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
-from EXIFnaming.helpers.fileop import moveToSubpath, isfile, is_invalid_path, file_has_ext
+from EXIFnaming.helpers.fileop import moveToSubpath, isfile, is_invalid_path, file_has_ext, changeExtension
 
-__all__ = ["detect_blurry", "detect_similar", "resize"]
+__all__ = ["detect_blurry", "detect_similar", "resize", "convert_tiff"]
 
 from EXIFnaming.helpers.program_dir import log_function_call
 from EXIFnaming.helpers.tag_conversion import FilenameAccessor
@@ -128,3 +131,36 @@ def make_gif_per_dir(duration: int = 100):
             frames_resized.append(frame)
         frames_resized[0].save(f"gif_dir/{baseDir}.gif", format="GIF", append_images=frames_resized[1:],
                                save_all=True, duration=duration, loop=0)
+
+
+def convert_tiff():
+    inpath = os.getcwd()
+    for (dirpath, dirnames, filenames) in os.walk(inpath):
+        if is_invalid_path(dirpath, regex=r'(HDR[^_.]*)'): continue
+        for filename in filenames:
+            if not file_has_ext(filename, ('.TIF', ".tif")): continue
+            outfile = os.path.join(dirpath, changeExtension(filename, ".jpg"))
+            # read = cv2.imread(os.path.join(dirpath, filename), cv2.IMREAD_UNCHANGED)
+            # cv2.imwrite(outfile,read,[int(cv2.IMWRITE_JPEG_QUALITY), 90])
+            with tifffile.TiffFile(os.path.join(dirpath, filename)) as tif:
+                data = tif.asarray()
+                imagej_metadata = tif.imagej_metadata
+                if imagej_metadata:
+                    imagej_metadata['axes'] = tif.series[0].axes
+                resolution = tif.pages[0].resolution
+                resolutionunit = tif.pages[0].resolutionunit
+
+            if imagej_metadata:
+                del imagej_metadata['hyperstack']
+                imagej_metadata['min'] = 0
+                imagej_metadata['max'] = 255
+
+            tifffile.imwrite(
+                outfile,
+                numpy.round(255 * data).astype(numpy.uint8),
+                imagej=True,
+                resolution=resolution,
+                resolutionunit=resolutionunit,
+                metadata=imagej_metadata,
+                photometric = 'rgb'
+            )

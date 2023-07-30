@@ -15,7 +15,7 @@ from EXIFnaming.helpers import settings
 __all__ = ["count_files", "count_files_in", "is_invalid_path", "writeToFile", "renameInPlace", "moveFiles",
            "renameTemp", "move", "copyFilesTo", "get_filename_sorted_dirfiletuples", "moveToSubpath", "isfile",
            "moveBracketSeries", "moveSeries", "removeIfEmtpy", "get_relpath_depth", "move_media", "get_plain_filenames",
-           "filterFiles", "file_has_ext", "remove_ext", "get_plain_filenames_of_type", "create_csv_writer"]
+           "filterFiles", "file_has_ext", "remove_ext", "get_plain_filenames_of_type", "create_csv_writer", "changeExtension"]
 
 
 def moveFiles(filenames: List[Tuple[str, str]], path: str):
