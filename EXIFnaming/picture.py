@@ -12,7 +12,9 @@ import numpy
 from PIL import Image
 from tifffile import tifffile
 
+from EXIFnaming.helpers import settings
 from EXIFnaming.helpers.cv2op import is_blurry, are_similar
+from EXIFnaming.helpers.decode import exec_sub_process
 from EXIFnaming.helpers.fileop import moveToSubpath, isfile, is_invalid_path, file_has_ext, changeExtension
 
 __all__ = ["detect_blurry", "detect_similar", "resize", "convert_tiff"]
@@ -137,30 +139,5 @@ def convert_tiff():
     inpath = os.getcwd()
     for (dirpath, dirnames, filenames) in os.walk(inpath):
         if is_invalid_path(dirpath, regex=r'(HDR[^_.]*)'): continue
-        for filename in filenames:
-            if not file_has_ext(filename, ('.TIF', ".tif")): continue
-            outfile = os.path.join(dirpath, changeExtension(filename, ".jpg"))
-            # read = cv2.imread(os.path.join(dirpath, filename), cv2.IMREAD_UNCHANGED)
-            # cv2.imwrite(outfile,read,[int(cv2.IMWRITE_JPEG_QUALITY), 90])
-            with tifffile.TiffFile(os.path.join(dirpath, filename)) as tif:
-                data = tif.asarray()
-                imagej_metadata = tif.imagej_metadata
-                if imagej_metadata:
-                    imagej_metadata['axes'] = tif.series[0].axes
-                resolution = tif.pages[0].resolution
-                resolutionunit = tif.pages[0].resolutionunit
-
-            if imagej_metadata:
-                del imagej_metadata['hyperstack']
-                imagej_metadata['min'] = 0
-                imagej_metadata['max'] = 255
-
-            tifffile.imwrite(
-                outfile,
-                numpy.round(255 * data).astype(numpy.uint8),
-                imagej=True,
-                resolution=resolution,
-                resolutionunit=resolutionunit,
-                metadata=imagej_metadata,
-                photometric = 'rgb'
-            )
+        err, out = exec_sub_process([os.path.join(settings.magick_directory, 'magick'), "mogrify", "-format", "jpg", "*.tif"], dirpath)
+        print(err, out)

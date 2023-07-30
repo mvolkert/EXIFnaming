@@ -19,4 +19,5 @@ photographer = None
 standard_camera = ""
 googlemaps_api_key = ""
 exiftool_directory = r""
+magick_directory = r"C:\Program Files\ImageMagick-7.1.1-Q16-HDRI"
 loglevel = 20

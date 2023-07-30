@@ -13,7 +13,7 @@ from EXIFnaming.models import ModelBase
 from sortedcollections import OrderedSet
 
 __all__ = ["read_exiftags", "call_exiftool", "askToContinue", "write_exiftags", "count_files_in", "write_exiftag",
-           "has_not_keys", "call_exiftool_direct", "read_exiftag"]
+           "has_not_keys", "call_exiftool_direct", "read_exiftag", "exec_sub_process"]
 
 
 def read_exiftags(inpath="", file_types: List[str] = settings.image_types, skipdirs: List[str] = None,
@@ -148,13 +148,18 @@ def call_exiftool_direct(options: List[str] = None, override=True) -> (str, List
     encoding_args = ["-charset", settings.encoding_format, "-charset", "FileName=" + settings.encoding_format]
     args = [path + "exiftool"] + encoding_args + options
     if override and options: args.append("-overwrite_original_in_place")
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = proc.communicate()
+    err, out = exec_sub_process(args)
     out = out.decode(settings.encoding_format)
     errorLines = _decode_error(err)
     for line in errorLines:
         log().warning(line)
     return out, errorLines
+
+
+def exec_sub_process(args, cwd=None):
+    proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+    (out, err) = proc.communicate()
+    return err, out
 
 
 call_exiftool_direct.auto_fix_options_bad_format = ["-all=", "-tagsfromfile", "@", "-all:all", "-unsafe",
