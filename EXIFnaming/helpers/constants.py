@@ -18,11 +18,21 @@ CameraModelShort['M2002J9G'] = 'MI10'
 RecModes = ["4KB", "4K", "HS", "FHD"]
 
 hdr_algorithm = OrderedDict()
+hdr_algorithm["A"] = "Average"
 hdr_algorithm["E"] = "Entropy"
 hdr_algorithm["Ld"] = "Luminance distance"
-hdr_algorithm["LRGB"] = "Luminance RGB"
 hdr_algorithm["C"] = "Colourmix"
+hdr_algorithm["Le"] = "Luminance entropy"
+hdr_algorithm["LRGB"] = "Luminance RGB"
+hdr_algorithm["Lil"] = "Linear luminance"
+hdr_algorithm["Ll"] = "Logarithmic luminance"
+hdr_algorithm["Ql"] = "Quadratic luminance"
+hdr_algorithm["Cr"] = "Chroma"
+hdr_algorithm["Ad"] = "Absolute distance"
 hdr_algorithm["Ls"] = "Luminance sharpness"
+hdr_algorithm["Cs"] = "Colour sharpness"
+hdr_algorithm["Rn"] = "Repro neutral"
+hdr_algorithm["Ri"] = "Repro intense"
 
 tm_preset = OrderedDict()
 tm_preset["Nb"] = "Natural balanced"
