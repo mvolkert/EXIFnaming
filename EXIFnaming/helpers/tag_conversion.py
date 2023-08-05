@@ -442,7 +442,7 @@ class FilenameAccessor:
         return tag in self.primtags or tag in self.posttags
 
     def sorted_filename(self):
-        arr = self.main + self.scenes + self.processes + self.posttags
+        arr = self.main + self.processes + self.scenes + self.posttags
         if len(arr) == 0:
             return self.filename
         return "_".join(arr) + self.ext
