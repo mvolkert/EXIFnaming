@@ -72,7 +72,7 @@ def rename(Prefix="", dateformat='YYMM-DD', startindex=1, onlyprint=False, keept
     :param name: optional name between date and filenumber, seldom used
     :param ignore_model: whether to sort by model
     """
-    log_function_call(rename.__name__, Prefix, dateformat, startindex, onlyprint, keeptags, is_video, name)
+    log_function_call(rename.__name__, Prefix, dateformat, startindex, onlyprint, keeptags, is_video, name, ignore_model)
     Tagdict = read_exiftags(file_types=settings.video_types if is_video else settings.image_types, ignore_model=ignore_model)
     if not Tagdict: return
 

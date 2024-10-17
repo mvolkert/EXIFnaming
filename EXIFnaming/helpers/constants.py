@@ -16,11 +16,11 @@ CameraModelShort['M2002J9G'] = 'MI10'
 CameraModelShort['SM-A536B'] = 'A53'
 CameraModelShort['SM-G973F'] = 'S10'
 CameraModelShort['SM-G990B2'] = 'S21FE'
-#CameraModelShort['Canon EOS 450D'] = 'F'
-#CameraModelShort['Canon EOS 5D Mark II'] = 'F'
-#CameraModelShort['Canon EOS 600D'] = 'F'
-#CameraModelShort['COOLPIX P7800'] = 'F'
-#CameraModelShort['ILCE-6300'] = 'F'
+CameraModelShort['Canon EOS 450D'] = '450D'
+CameraModelShort['Canon EOS 5D Mark II'] = '5DMarkII'
+CameraModelShort['Canon EOS 600D'] = '600D'
+CameraModelShort['COOLPIX P7800'] = 'P7800'
+CameraModelShort['ILCE-6300'] = '6300'
 
 RecModes = ["4KB", "4K", "HS", "FHD"]
 

@@ -10,6 +10,7 @@ from typing import Callable, Dict
 
 from EXIFnaming.helpers.program_dir import log
 from EXIFnaming.models import *
+from EXIFnaming.models.ILCE_6300 import ILCE_6300
 
 dateTimeKey = "Date/Time Original"
 modelKey = "Camera Model Name"
@@ -26,6 +27,7 @@ def getPath(Tagdict, i: int):
 ModelInit: Dict[str, Callable[[dict, int], ModelBase]] = OrderedDict()
 ModelInit['DMC-TZ101'] = lambda Tagdict, i: DMC_TZ101(Tagdict, i)
 ModelInit['DMC-TZ7'] = lambda Tagdict, i: DMC_TZ7(Tagdict, i)
+ModelInit['ILCE-6300'] = lambda Tagdict, i: ILCE_6300(Tagdict, i)
 
 SceneModeAbbreviations = set()
 SceneModeAbbreviations.update(DMC_TZ101.SceneShort.values())

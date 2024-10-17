@@ -245,7 +245,7 @@ class ModelBase:
     def get_model_abbr(self) -> str:
         if not self.has('Camera Model Name'): return ""
         model = self.get_entry('Camera Model Name')
-        if model == settings.standard_camera:
+        if model in settings.standard_cameras:
             return ""
         if model in c.CameraModelShort:
             return c.CameraModelShort[model]

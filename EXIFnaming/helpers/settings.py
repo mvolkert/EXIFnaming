@@ -8,6 +8,8 @@ googlemaps_api_key: if you want to use placeinfo.py - you need a api key of goog
 loglevel: preset is DEBUG(10) if you want printed less - set it to INFO(20)
 photographer: Here comes your name
 """
+from typing import List, Tuple
+
 includeSubdirs = True
 encoding_format = "latin"
 image_types = (".JPG", ".jpg", ".jpeg", ".png", ".tif", ".tiff", ".hdr", ".exr", ".ufo", ".fpx", ".RW2", ".Raw", ".gif")
@@ -16,7 +18,7 @@ project_types = (".data", ".hdrProject", ".pto")
 hdr_program = "franzis HDR projects"
 panorama_program = "Hugin"
 photographer = None
-standard_camera = ""
+standard_cameras: Tuple[str] = ()
 googlemaps_api_key = ""
 exiftool_directory = r""
 magick_directory = r"C:\Program Files\ImageMagick-7.1.1-Q16-HDRI"
